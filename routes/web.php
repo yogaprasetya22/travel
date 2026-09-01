@@ -94,6 +94,7 @@ Route::middleware('auth')->group(function () {
     // Agency & Commission Routes
     Route::get('/agents', [MitraAgenController::class, 'index'])->name('keagenan.agents.index');
     Route::post('/agents', [MitraAgenController::class, 'store'])->name('keagenan.agents.store');
+    Route::get('/agents/{agent}/jamaah', [MitraAgenController::class, 'getJamaah'])->name('keagenan.agents.jamaah');
     Route::put('/agents/{agent}', [MitraAgenController::class, 'update'])->name('keagenan.agents.update');
     Route::delete('/agents/{agent}', [MitraAgenController::class, 'destroy'])->name('keagenan.agents.destroy');
     Route::get('/commissions', [PembagianKomisiController::class, 'index'])->name('keagenan.commissions.index');

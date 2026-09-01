@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Keagenan;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -151,5 +152,69 @@ class MitraAgenController extends Controller
         $agent->delete();
 
         return redirect()->back()->with('success', 'Mitra agen berhasil dihapus dari sistem.');
+    }
+
+    /**
+     * Get list of jamaah / customers registered under the given agent (for quick-view drawer).
+     */
+    public function getJamaah(Request $request, User $agent): JsonResponse
+    {
+        $user = auth()->user();
+        if (! in_array($user->role, ['owner_travel', 'admin_travel', 'super_admin_master'])) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $tenantId = $user->getActiveTenantId();
+        if ($agent->tenant_id !== $tenantId || $agent->role !== 'agen') {
+            abort(403, 'Mitra agen tidak ditemukan.');
+        }
+
+        $search = $request->input('search');
+
+        $query = $agent->jamaah()
+            ->with(['paket', 'crmStage', 'pembayaran' => function ($q) {
+                $q->where('status_verifikasi', 'Verified');
+            }]);
+
+        if (! empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_lengkap', 'ilike', "%{$search}%")
+                    ->orWhere('no_hp', 'ilike', "%{$search}%")
+                    ->orWhere('nik', 'ilike', "%{$search}%");
+            });
+        }
+
+        $jamaahList = $query->latest()->get()->map(function ($j) {
+            $totalPaid = (float) $j->pembayaran->sum('nominal');
+            $hargaPaket = (float) ($j->paket?->harga ?? 0);
+            $sisaTagihan = max(0, $hargaPaket - $totalPaid);
+
+            return [
+                'id' => $j->id,
+                'nama_lengkap' => $j->nama_lengkap,
+                'no_hp' => $j->no_hp,
+                'email' => $j->email,
+                'nik' => $j->nik,
+                'nama_paket' => $j->paket?->nama_paket ?? '-',
+                'harga_paket' => $hargaPaket,
+                'total_paid' => $totalPaid,
+                'sisa_tagihan' => $sisaTagihan,
+                'status_bayar' => $totalPaid >= $hargaPaket && $hargaPaket > 0 ? 'Lunas' : ($totalPaid > 0 ? 'DP Terbayar' : 'Belum Bayar'),
+                'stage' => $j->crmStage?->nama_tahap ?? 'New Leads',
+                'tanggal_keberangkatan' => $j->tanggal_keberangkatan,
+                'created_at' => $j->created_at?->format('d M Y'),
+            ];
+        });
+
+        return response()->json([
+            'agent' => [
+                'id' => $agent->id,
+                'name' => $agent->name,
+                'email' => $agent->email,
+                'total_jamaah' => $jamaahList->count(),
+                'total_omzet' => $jamaahList->sum('total_paid'),
+            ],
+            'jamaah' => $jamaahList,
+        ]);
     }
 }
