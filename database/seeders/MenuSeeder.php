@@ -146,7 +146,7 @@ class MenuSeeder extends Seeder
             'title' => 'Settings Travel',
             'url' => '#',
             'icon' => 'Settings',
-            'roles' => ['owner_travel', 'supervisor', 'team_leader', 'agen'],
+            'roles' => ['super_admin_master', 'owner_travel', 'supervisor', 'team_leader', 'agen'],
             'urutan' => 8,
         ]);
 
@@ -154,7 +154,7 @@ class MenuSeeder extends Seeder
             'parent_id' => $settingsMenu->id,
             'title' => 'Pengaturan Aplikasi',
             'url' => '/settings/app',
-            'roles' => ['owner_travel', 'supervisor', 'team_leader', 'agen'],
+            'roles' => ['super_admin_master', 'owner_travel', 'supervisor', 'team_leader', 'agen'],
             'urutan' => 1,
         ]);
 
@@ -186,7 +186,7 @@ class MenuSeeder extends Seeder
             'parent_id' => $settingsMenu->id,
             'title' => 'Roles & Permissions (RBAC)',
             'url' => '/settings/menus',
-            'roles' => ['owner_travel'],
+            'roles' => ['super_admin_master', 'owner_travel'],
             'urutan' => 5,
         ]);
     }

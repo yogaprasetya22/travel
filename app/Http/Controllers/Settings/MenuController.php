@@ -56,9 +56,15 @@ class MenuController extends Controller
             ];
         });
 
+        $tenants = $currentUser->role === 'super_admin_master'
+            ? Tenant::orderBy('nama_travel')->get(['id', 'nama_travel', 'slug'])
+            : [];
+
         return Inertia::render('Settings/Menus', [
             'menus' => $menus,
             'availableLevels' => $availableLevels,
+            'tenants' => $tenants,
+            'selectedTenantId' => $tenantId,
         ]);
     }
 
