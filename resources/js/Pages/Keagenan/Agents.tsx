@@ -463,11 +463,11 @@ export default function Agents({ agents, metrics, filters }: Props) {
                         </div>
                     </div>
 
-                    {/* Drawer Body: Infinite Scroll Container */}
+                    {/* Drawer Body: Infinite Scroll Container (Hidden Scrollbar) */}
                     <div
                         ref={scrollContainerRef}
                         onScroll={handleDrawerScroll}
-                        className="flex-1 overflow-y-auto p-6 flex flex-col gap-3"
+                        className="flex-1 overflow-y-auto no-scrollbar p-6 flex flex-col gap-3"
                     >
                         {isLoadingInitial && (
                             <div className="py-20 flex flex-col items-center justify-center gap-3 text-muted-foreground">

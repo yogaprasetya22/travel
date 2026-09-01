@@ -532,10 +532,10 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
                                     </span>
                                 </div>
 
-                                {/* Scrollable Leads Container with Infinite Scroll */}
+                                {/* Scrollable Leads Container with Infinite Scroll (Hidden Scrollbar) */}
                                 <div
                                     onScroll={(e) => handleColumnScroll(e, stage.id)}
-                                    className="flex flex-col gap-3 min-h-[120px] max-h-[calc(100vh-270px)] overflow-y-auto pr-1"
+                                    className="flex flex-col gap-3 min-h-[120px] max-h-[calc(100vh-270px)] overflow-y-auto no-scrollbar"
                                 >
                                     {stage.jamaah.map((lead) => (
                                         <div
