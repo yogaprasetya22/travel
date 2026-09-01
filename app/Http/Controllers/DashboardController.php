@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CrmStage;
 use App\Models\Jamaah;
 use App\Models\KomisiAgen;
+use App\Models\Paket;
 use App\Models\Pembayaran;
+use App\Models\Tenant;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -68,6 +73,93 @@ class DashboardController extends Controller
                 ->get();
         }
 
+        // 6. Analytics: Omzet By Tenant (Multi-Tenant comparison for Super Admin)
+        $omzetByTenant = [];
+        if ($user->role === 'super_admin_master') {
+            $tenants = Tenant::all();
+            foreach ($tenants as $t) {
+                $omzet = (float) Pembayaran::where('tenant_id', $t->id)
+                    ->where('status_verifikasi', 'Verified')
+                    ->sum('nominal');
+                $omzetByTenant[] = [
+                    'tenant_id' => $t->id,
+                    'nama_travel' => $t->nama_travel,
+                    'omzet' => $omzet,
+                    'jamaah_count' => Jamaah::where('tenant_id', $t->id)->count(),
+                ];
+            }
+        }
+
+        // 7. Analytics: 6-Month Monthly Trend (Omzet & Leads)
+        $monthlyTrend = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $monthOmzet = (float) Pembayaran::where('tenant_id', $tenantId)
+                ->where('status_verifikasi', 'Verified')
+                ->whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->sum('nominal');
+
+            $monthLeads = Jamaah::where('tenant_id', $tenantId)
+                ->whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->count();
+
+            $monthlyTrend[] = [
+                'month' => $date->translatedFormat('M Y'),
+                'omzet' => $monthOmzet,
+                'leads' => $monthLeads,
+            ];
+        }
+
+        // 8. Analytics: Package Distribution
+        $packageDistribution = Paket::where('tenant_id', $tenantId)
+            ->withCount('jamaah')
+            ->orderByDesc('jamaah_count')
+            ->get()
+            ->map(function ($p) {
+                return [
+                    'name' => $p->nama_paket,
+                    'value' => (int) $p->jamaah_count,
+                    'harga' => (float) $p->harga,
+                ];
+            });
+
+        // 9. Analytics: CRM Funnel
+        $crmFunnel = CrmStage::where('tenant_id', $tenantId)
+            ->withCount('jamaah')
+            ->orderBy('urutan')
+            ->get()
+            ->map(function ($s) {
+                return [
+                    'stage' => $s->nama_tahap,
+                    'count' => (int) $s->jamaah_count,
+                    'urutan' => (int) $s->urutan,
+                ];
+            });
+
+        // 10. Analytics: Top 5 Agents Leaderboard
+        $topAgents = User::where('tenant_id', $tenantId)
+            ->where('role', 'agen')
+            ->withCount(['jamaah as closing_count' => function ($q) {
+                $q->whereHas('pembayaran', function ($qp) {
+                    $qp->where('status_verifikasi', 'Verified');
+                });
+            }])
+            ->withSum('komisi as total_komisi', 'nominal_komisi')
+            ->orderByDesc('closing_count')
+            ->take(5)
+            ->get()
+            ->map(function ($a) {
+                return [
+                    'id' => $a->id,
+                    'name' => $a->name,
+                    'email' => $a->email,
+                    'closing_count' => (int) ($a->closing_count ?? 0),
+                    'total_komisi' => (float) ($a->total_komisi ?? 0),
+                ];
+            });
+
         return Inertia::render('Dashboard', [
             'stats' => [
                 'total_leads' => $totalLeads,
@@ -76,6 +168,13 @@ class DashboardController extends Controller
                 'total_commission' => $totalCommission,
                 'paid_commission' => $paidCommission,
                 'ready_commission' => $readyCommission,
+            ],
+            'analytics' => [
+                'omzet_by_tenant' => $omzetByTenant,
+                'monthly_trend' => $monthlyTrend,
+                'package_distribution' => $packageDistribution,
+                'crm_funnel' => $crmFunnel,
+                'top_agents' => $topAgents,
             ],
             'logisticsReadyList' => $logisticsReadyList,
             'pendingPayments' => $pendingPayments,
