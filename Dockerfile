@@ -42,32 +42,11 @@ RUN apk add --no-cache \
     bash \
     curl \
     git \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    libwebp-dev \
-    freetype-dev \
-    libzip-dev \
-    zip \
-    unzip \
-    icu-dev \
-    oniguruma-dev \
-    postgresql-dev \
     supervisor
 
-# Install PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install -j$(nproc) \
-        gd \
-        pdo \
-        pdo_pgsql \
-        pgsql \
-        zip \
-        intl \
-        mbstring \
-        opcache \
-        pcntl \
-        bcmath \
-    && docker-php-ext-enable opcache
+# Install PHP extensions using mlocati for pre-compiled binaries (faster than compiling from source)
+COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
+RUN install-php-extensions gd pdo_pgsql pgsql zip intl opcache pcntl bcmath
 
 # OPcache tuning for production
 RUN { \
