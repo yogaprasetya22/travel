@@ -17,7 +17,7 @@ class PembagianKomisiController extends Controller
     public function index(Request $request): Response
     {
         $user = auth()->user();
-        if (! in_array($user->role, ['owner_travel', 'admin_travel'])) {
+        if (! in_array($user->role, ['owner_travel', 'admin_travel', 'super_admin_master'])) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -73,7 +73,7 @@ class PembagianKomisiController extends Controller
     public function update(Request $request, KomisiAgen $commission): RedirectResponse
     {
         $user = auth()->user();
-        if (! in_array($user->role, ['owner_travel', 'admin_travel'])) {
+        if (! in_array($user->role, ['owner_travel', 'admin_travel', 'super_admin_master'])) {
             abort(403, 'Unauthorized action.');
         }
 

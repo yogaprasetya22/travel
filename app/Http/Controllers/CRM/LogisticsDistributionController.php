@@ -17,7 +17,7 @@ class LogisticsDistributionController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $tenantId = $user->tenant_id;
+        $tenantId = $user->getActiveTenantId();
 
         $query = Jamaah::where('tenant_id', $tenantId)
             ->whereHas('inventarisTransaksi', function ($q) {

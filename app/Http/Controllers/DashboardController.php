@@ -17,7 +17,7 @@ class DashboardController extends Controller
     public function __invoke(Request $request): Response
     {
         $user = $request->user();
-        $tenantId = $user->tenant_id;
+        $tenantId = $user->getActiveTenantId();
 
         // 1. Leads and Jamaah metrics
         $leadsQuery = Jamaah::where('tenant_id', $tenantId);

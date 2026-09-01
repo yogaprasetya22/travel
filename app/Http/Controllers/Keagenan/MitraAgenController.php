@@ -18,13 +18,15 @@ class MitraAgenController extends Controller
     public function index(Request $request): Response
     {
         $user = auth()->user();
-        if (! in_array($user->role, ['owner_travel', 'admin_travel'])) {
+        if (! in_array($user->role, ['owner_travel', 'admin_travel', 'super_admin_master'])) {
             abort(403, 'Unauthorized action.');
         }
 
         $perPage = (int) $request->input('per_page', 15);
+        $tenantId = $user->getActiveTenantId();
 
-        $agents = User::where('role', 'agen')
+        $agents = User::where('tenant_id', $tenantId)
+            ->where('role', 'agen')
             ->withCount('jamaah')
             ->orderBy('name')
             ->paginate($perPage)
@@ -41,7 +43,7 @@ class MitraAgenController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $user = auth()->user();
-        if (! in_array($user->role, ['owner_travel', 'admin_travel'])) {
+        if (! in_array($user->role, ['owner_travel', 'admin_travel', 'super_admin_master'])) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -52,7 +54,7 @@ class MitraAgenController extends Controller
         ]);
 
         User::create([
-            'tenant_id' => $user->tenant_id,
+            'tenant_id' => $user->getActiveTenantId(),
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),

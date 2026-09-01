@@ -3,7 +3,6 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Traits\BelongsToTenant;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -31,7 +30,27 @@ use Illuminate\Support\Carbon;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use BelongsToTenant, HasFactory, Notifiable;
+    use HasFactory, Notifiable;
+
+    /**
+     * Get active tenant ID for current user (handles super admin active session).
+     */
+    public function getActiveTenantId(): int
+    {
+        if ($this->getRawOriginal('tenant_id')) {
+            return (int) $this->getRawOriginal('tenant_id');
+        }
+
+        if (app()->bound('tenant')) {
+            return (int) app('tenant')->id;
+        }
+
+        if (request()->hasSession() && request()->session()->has('tenant_id')) {
+            return (int) request()->session()->get('tenant_id');
+        }
+
+        return (int) (Tenant::first()?->id ?? 1);
+    }
 
     /**
      * Get the attributes that should be cast.

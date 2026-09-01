@@ -21,7 +21,7 @@ class InventarisController extends Controller
     {
         $user = auth()->user();
         $allowedRoles = Menu::where('url', '/inventaris')->value('roles') ?? [];
-        if (! in_array($user->role, $allowedRoles)) {
+        if ($user->role !== 'super_admin_master' && ! in_array($user->role, $allowedRoles)) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -29,9 +29,10 @@ class InventarisController extends Controller
         $logsPerPage = (int) $request->input('logs_per_page', 15);
         $search = $request->input('search');
         $statusFilter = $request->input('status', 'ALL');
+        $tenantId = $user->getActiveTenantId();
 
         // Base query for items
-        $itemsQuery = Inventaris::where('tenant_id', $user->tenant_id);
+        $itemsQuery = Inventaris::where('tenant_id', $tenantId);
 
         // Search filter
         if ($request->filled('search')) {
@@ -57,7 +58,7 @@ class InventarisController extends Controller
             ->withQueryString();
 
         // Transaction Logs query
-        $logsQuery = InventarisTransaksi::where('tenant_id', $user->tenant_id)
+        $logsQuery = InventarisTransaksi::where('tenant_id', $tenantId)
             ->with(['inventaris', 'jamaah', 'creator']);
 
         if ($request->filled('log_search')) {
@@ -77,7 +78,7 @@ class InventarisController extends Controller
             ->withQueryString();
 
         // 4 Key ERP Summary Metrics
-        $allItems = Inventaris::where('tenant_id', $user->tenant_id)->get();
+        $allItems = Inventaris::where('tenant_id', $tenantId)->get();
         $totalSku = $allItems->count();
         $totalStockUnits = $allItems->sum('stok_tersedia');
         $totalAssetValue = $allItems->sum(fn ($i) => (float) $i->stok_tersedia * (float) $i->harga_pokok);
@@ -109,7 +110,7 @@ class InventarisController extends Controller
     {
         $user = auth()->user();
         $allowedRoles = Menu::where('url', '/inventaris')->value('roles') ?? [];
-        if (! in_array($user->role, $allowedRoles)) {
+        if ($user->role !== 'super_admin_master' && ! in_array($user->role, $allowedRoles)) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -132,7 +133,7 @@ class InventarisController extends Controller
             }
 
             $item = Inventaris::create([
-                'tenant_id' => $user->tenant_id,
+                'tenant_id' => $user->getActiveTenantId(),
                 'sku' => $sku,
                 'nama_barang' => $validated['nama_barang'],
                 'kategori' => $validated['kategori'] ?? 'Perlengkapan',
@@ -145,7 +146,7 @@ class InventarisController extends Controller
 
             if ($item->stok_tersedia > 0) {
                 InventarisTransaksi::create([
-                    'tenant_id' => $user->tenant_id,
+                    'tenant_id' => $user->getActiveTenantId(),
                     'inventaris_id' => $item->id,
                     'jamaah_id' => null,
                     'qty' => $item->stok_tersedia,
@@ -166,7 +167,7 @@ class InventarisController extends Controller
     {
         $user = auth()->user();
         $allowedRoles = Menu::where('url', '/inventaris')->value('roles') ?? [];
-        if (! in_array($user->role, $allowedRoles)) {
+        if ($user->role !== 'super_admin_master' && ! in_array($user->role, $allowedRoles)) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -200,7 +201,7 @@ class InventarisController extends Controller
     {
         $user = auth()->user();
         $allowedRoles = Menu::where('url', '/inventaris')->value('roles') ?? [];
-        if (! in_array($user->role, $allowedRoles)) {
+        if ($user->role !== 'super_admin_master' && ! in_array($user->role, $allowedRoles)) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -226,7 +227,7 @@ class InventarisController extends Controller
             }
 
             InventarisTransaksi::create([
-                'tenant_id' => $user->tenant_id,
+                'tenant_id' => $user->getActiveTenantId(),
                 'inventaris_id' => $item->id,
                 'jamaah_id' => null,
                 'qty' => $qty,

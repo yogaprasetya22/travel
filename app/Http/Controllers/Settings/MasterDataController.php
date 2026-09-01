@@ -19,7 +19,7 @@ class MasterDataController extends Controller
      */
     public function index(Request $request): Response
     {
-        $tenantId = auth()->user()->tenant_id;
+        $tenantId = auth()->user()->getActiveTenantId();
 
         $stages = CrmStage::where('tenant_id', $tenantId)->orderBy('urutan')->get();
         $packages = Paket::where('tenant_id', $tenantId)->with('inventaris')->orderBy('nama_paket')->get();
@@ -49,7 +49,7 @@ class MasterDataController extends Controller
         ]);
 
         CrmStage::create([
-            'tenant_id' => auth()->user()->tenant_id,
+            'tenant_id' => auth()->user()->getActiveTenantId(),
             'nama_tahap' => $validated['nama_tahap'],
             'urutan' => $validated['urutan'],
             'periode_mulai' => $validated['periode_mulai'] ?? null,
@@ -77,7 +77,7 @@ class MasterDataController extends Controller
         ]);
 
         $paket = Paket::create([
-            'tenant_id' => auth()->user()->tenant_id,
+            'tenant_id' => auth()->user()->getActiveTenantId(),
             'nama_paket' => $validated['nama_paket'],
             'harga' => $validated['harga'],
             'komisi_flat' => $validated['komisi_flat'] ?? 0,
@@ -101,7 +101,7 @@ class MasterDataController extends Controller
      */
     public function updatePackage(Request $request, Paket $paket): RedirectResponse
     {
-        if ($paket->tenant_id !== auth()->user()->tenant_id) {
+        if (auth()->user()->role !== 'super_admin_master' && $paket->tenant_id !== auth()->user()->getActiveTenantId()) {
             abort(403, 'Aksi tidak diizinkan.');
         }
 
@@ -142,7 +142,7 @@ class MasterDataController extends Controller
      */
     public function togglePackage(Paket $paket): RedirectResponse
     {
-        if ($paket->tenant_id !== auth()->user()->tenant_id) {
+        if (auth()->user()->role !== 'super_admin_master' && $paket->tenant_id !== auth()->user()->getActiveTenantId()) {
             abort(403, 'Aksi tidak diizinkan.');
         }
 
@@ -160,7 +160,7 @@ class MasterDataController extends Controller
      */
     public function destroyPackage(Paket $paket): RedirectResponse
     {
-        if ($paket->tenant_id !== auth()->user()->tenant_id) {
+        if (auth()->user()->role !== 'super_admin_master' && $paket->tenant_id !== auth()->user()->getActiveTenantId()) {
             abort(403, 'Aksi tidak diizinkan.');
         }
 
@@ -186,7 +186,7 @@ class MasterDataController extends Controller
         ]);
 
         RekeningTenant::create([
-            'tenant_id' => auth()->user()->tenant_id,
+            'tenant_id' => auth()->user()->getActiveTenantId(),
             'nama_bank' => $validated['nama_bank'],
             'nomor_rekening' => $validated['nomor_rekening'],
             'atas_nama' => $validated['atas_nama'],

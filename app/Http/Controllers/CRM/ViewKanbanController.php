@@ -19,18 +19,19 @@ class ViewKanbanController extends Controller
     public function __invoke(Request $request): Response
     {
         $user = auth()->user();
+        $tenantId = $user->getActiveTenantId();
         $search = $request->input('search');
         $stagePages = $request->input('stage_pages', []); // ['stage_1' => 1, 'stage_2' => 2]
         $perPage = (int) $request->input('per_page', 5);
 
         // Retrieve active stages for tenant
-        $stages = CrmStage::where('tenant_id', $user->tenant_id)
+        $stages = CrmStage::where('tenant_id', $tenantId)
             ->orderBy('urutan')
             ->get();
 
         // RBAC scope for Jamaah
-        $buildScopedQuery = function () use ($user, $search) {
-            $query = Jamaah::where('jamaah.tenant_id', $user->tenant_id);
+        $buildScopedQuery = function () use ($user, $tenantId, $search) {
+            $query = Jamaah::where('jamaah.tenant_id', $tenantId);
 
             if ($user->role === 'agen') {
                 $query->where('jamaah.agen_id', $user->id);
@@ -115,21 +116,21 @@ class ViewKanbanController extends Controller
             ];
         });
 
-        $packages = Paket::where('tenant_id', $user->tenant_id)
+        $packages = Paket::where('tenant_id', $tenantId)
             ->select('id', 'nama_paket', 'harga')
             ->orderBy('nama_paket')
             ->get();
 
         // Agents dropdown scope
         if ($user->role === 'admin_travel') {
-            $agents = User::where('tenant_id', $user->tenant_id)
+            $agents = User::where('tenant_id', $tenantId)
                 ->where('role', 'agen')
                 ->where('created_by', $user->id)
                 ->select('id', 'name', 'email')
                 ->orderBy('name')
                 ->get();
         } else {
-            $agents = User::where('tenant_id', $user->tenant_id)
+            $agents = User::where('tenant_id', $tenantId)
                 ->where('role', 'agen')
                 ->select('id', 'name', 'email')
                 ->orderBy('name')

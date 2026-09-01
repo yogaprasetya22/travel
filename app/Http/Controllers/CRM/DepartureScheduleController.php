@@ -18,7 +18,7 @@ class DepartureScheduleController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $tenantId = $user->tenant_id;
+        $tenantId = $user->getActiveTenantId();
         $search = $request->input('search');
         $statusFilter = $request->input('status', 'ALL'); // ALL, SCHEDULED, UNSCHEDULED
         $periodFilter = $request->input('period', 'ALL'); // ALL or 'YYYY-MM'
@@ -102,8 +102,20 @@ class DepartureScheduleController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        // Group schedules per departure date from current paginated page
-        $schedules = $paginatedJamaah->getCollection()->groupBy(function ($j) {
+        // Kloter Groups
+        $kloterRecords = (clone $query)
+            ->with([
+                'paket:id,nama_paket,harga',
+                'agen:id,name,email',
+                'crmStage:id,nama_tahap',
+                'pembayaran',
+                'inventarisTransaksi.inventaris',
+            ])
+            ->orderByRaw('jamaah.tanggal_keberangkatan IS NULL, jamaah.tanggal_keberangkatan ASC')
+            ->take(300)
+            ->get();
+
+        $schedules = $kloterRecords->groupBy(function ($j) {
             return $j->tanggal_keberangkatan ? $j->tanggal_keberangkatan : 'Belum Ditentukan';
         });
 

@@ -24,7 +24,7 @@ class StoreJamaahController extends Controller
             'catatan_admin' => ['nullable', 'string'],
         ]);
 
-        $tenantId = auth()->user()->tenant_id;
+        $tenantId = auth()->user()->getActiveTenantId();
         $authUserId = auth()->user()->role === 'agen' ? auth()->id() : null;
 
         $action->execute($validated, $tenantId, $authUserId);

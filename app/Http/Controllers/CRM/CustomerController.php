@@ -20,7 +20,7 @@ class CustomerController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $tenantId = $user->tenant_id;
+        $tenantId = $user->getActiveTenantId();
         $search = $request->input('search');
         $statusFilter = $request->input('status', 'ALL'); // ALL, LUNAS, CICILAN
         $docFilter = $request->input('doc', 'ALL'); // ALL, PASSPORT_READY, PASSPORT_PENDING
