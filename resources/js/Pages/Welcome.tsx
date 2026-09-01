@@ -110,9 +110,6 @@ export default function Welcome({
                         <a href="#keunggulan" className="hover:text-[#3E2723] transition-colors">
                             Keunggulan
                         </a>
-                        <a href="#rekening" className="hover:text-[#3E2723] transition-colors">
-                            Rekening Resmi
-                        </a>
                         <a href="#kontak" className="hover:text-[#3E2723] transition-colors">
                             Kontak CS
                         </a>
@@ -424,46 +421,6 @@ export default function Welcome({
                                 Dibimbing langsung oleh ustadz dan mutawwif yang berkompeten, ramah, dan berpengalaman.
                             </p>
                         </Card>
-                    </div>
-                </div>
-            </section>
-
-            {/* Official Banks Section (#rekening) */}
-            <section id="rekening" className="py-20 bg-[#FAF7F2] border-t border-[#E8DFD8]">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center max-w-3xl mx-auto mb-14 flex flex-col gap-3">
-                        <Badge variant="secondary" className="w-fit mx-auto bg-[#EFEBE9] text-[#5D4037] border-[#D7CCC8] font-bold text-xs">
-                            KEAMANAN TRANSAKSI
-                        </Badge>
-                        <h2 className="text-3xl font-black text-[#2C1A14] tracking-tight">
-                            Rekening Resmi Pembayaran Travel
-                        </h2>
-                        <p className="text-xs sm:text-sm text-[#6D4C41]">
-                            Demi keamanan bersama, seluruh pembayaran DP dan pelunasan hanya ditransfer ke rekening resmi berbadan hukum atas nama travel kami.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                        {banks.length === 0 ? (
-                            <Card className="col-span-full p-8 text-center text-xs text-[#8D6E63]">
-                                Rekening bank resmi akan diinformasikan saat proses konfirmasi pendaftaran.
-                            </Card>
-                        ) : (
-                            banks.map((bank) => (
-                                <Card key={bank.id} className="rounded-2xl border border-[#E8DFD8] bg-white p-6 shadow-xs flex flex-col gap-2">
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-black text-sm text-[#2C1A14]">{bank.nama_bank}</span>
-                                        <CreditCard className="w-4 h-4 text-[#8D6E63]" />
-                                    </div>
-                                    <div className="text-lg font-mono font-black text-[#3E2723] tracking-wider mt-1">
-                                        {bank.nomor_rekening}
-                                    </div>
-                                    <div className="text-xs text-[#8D6E63] font-medium">
-                                        a.n <strong className="text-[#2C1A14]">{bank.atas_nama}</strong>
-                                    </div>
-                                </Card>
-                            ))
-                        )}
                     </div>
                 </div>
             </section>
