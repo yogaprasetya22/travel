@@ -59,8 +59,15 @@ export default function CurrencyInput({
     };
 
     return (
-        <div className="relative flex items-center rounded-xl border border-input bg-background shadow-xs transition-colors focus-within:ring-2 focus-within:ring-ring focus-within:border-ring">
-            <span className="flex items-center justify-center pl-3.5 pr-1.5 text-xs font-bold text-muted-foreground select-none">
+        <div
+            data-slot="input"
+            className={cn(
+                "relative flex h-8 w-full min-w-0 items-center rounded-lg border border-input bg-transparent text-base transition-colors outline-none md:text-sm dark:bg-input/30 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
+                disabled && "pointer-events-none cursor-not-allowed bg-input/50 opacity-50 dark:bg-input/80",
+                className
+            )}
+        >
+            <span className="flex items-center justify-center pl-2.5 pr-1 text-xs font-semibold text-muted-foreground select-none">
                 {prefix}
             </span>
             <input
@@ -71,10 +78,7 @@ export default function CurrencyInput({
                 value={displayValue}
                 onChange={handleChange}
                 placeholder={placeholder}
-                className={cn(
-                    'w-full bg-transparent py-2 pr-3.5 pl-1 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
-                    className
-                )}
+                className="h-full w-full min-w-0 bg-transparent py-1 pr-2.5 pl-0 text-sm font-medium text-foreground placeholder:text-muted-foreground border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 focus:border-none disabled:cursor-not-allowed"
             />
         </div>
     );
