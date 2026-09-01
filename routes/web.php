@@ -53,6 +53,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/crm/logistics', [LogisticsDistributionController::class, 'index'])->name('crm.logistics.index');
     Route::post('/crm/logistics/{jamaah}/handover', [LogisticsDistributionController::class, 'handover'])->name('crm.logistics.handover');
     Route::get('/crm/schedules', [DepartureScheduleController::class, 'index'])->name('crm.schedules.index');
+    Route::post('/crm/schedules/{jamaah}/update-departure', [DepartureScheduleController::class, 'updateDeparture'])->name('crm.schedules.update-departure');
 
     // Finance/Payment Routes
     Route::get('/finance/payment', ViewPaymentController::class)->name('payment.index');

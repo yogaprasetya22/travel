@@ -14,19 +14,41 @@ import {
     AlertCircle,
     FileCheck,
     UserCheck,
+    Download,
+    ChevronDown,
+    ChevronUp,
+    Edit3,
+    ArrowRight,
+    Package,
+    Receipt,
+    Phone,
+    Mail,
+    User,
+    Check,
+    Filter,
 } from 'lucide-react';
 
 import DataTablePagination, { PaginatedData } from '@/Components/DataTablePagination';
 import PerPageSelector from '@/Components/PerPageSelector';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useMounted } from '@/hooks/use-mounted';
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetDescription,
+    SheetFooter,
+} from '@/Components/ui/sheet';
 
 interface JamaahSchedule {
     id: number;
     nama_lengkap: string;
     no_hp: string;
+    email?: string | null;
     nomor_paspor: string | null;
     tanggal_keberangkatan: string | null;
+    created_at?: string;
     paket: {
         id: number;
         nama_paket: string;
@@ -35,7 +57,28 @@ interface JamaahSchedule {
     agen: {
         id: number;
         name: string;
+        email?: string;
     } | null;
+    crmStage?: {
+        id: number;
+        nama_stage: string;
+        warna?: string;
+    } | null;
+    pembayaran?: Array<{
+        id: number;
+        jumlah: number;
+        tipe_pembayaran: string;
+        status_verifikasi: string;
+        tanggal_bayar?: string;
+    }>;
+    inventaris_transaksi?: Array<{
+        id: number;
+        qty: number;
+        inventaris: {
+            nama_barang: string;
+            kode_sku?: string;
+        };
+    }>;
 }
 
 interface Metrics {
@@ -48,10 +91,12 @@ interface Metrics {
 interface DepartureScheduleProps extends PageProps {
     schedules: Record<string, JamaahSchedule[]>;
     paginatedJamaah: PaginatedData<JamaahSchedule>;
+    availablePeriods?: Array<{ key: string; label: string }>;
     metrics: Metrics;
     filters: {
         search: string;
         status: string;
+        period?: string;
         per_page: number;
     };
 }
@@ -59,6 +104,7 @@ interface DepartureScheduleProps extends PageProps {
 export default function DepartureSchedule({
     schedules = {},
     paginatedJamaah,
+    availablePeriods = [],
     metrics,
     filters,
 }: DepartureScheduleProps) {
@@ -66,6 +112,17 @@ export default function DepartureSchedule({
     const [viewMode, setViewMode] = useState<'group' | 'table'>('group');
     const [searchQuery, setSearchQuery] = useState(filters?.search || '');
     const [statusFilter, setStatusFilter] = useState(filters?.status || 'ALL');
+    const [periodFilter, setPeriodFilter] = useState(filters?.period || 'ALL');
+
+    // Selected Jamaah for Detailing Drawer
+    const [selectedJamaah, setSelectedJamaah] = useState<JamaahSchedule | null>(null);
+
+    // Accordion expand/collapse state per dateKey
+    const [collapsedKloters, setCollapsedKloters] = useState<Record<string, boolean>>({});
+
+    // Reschedule form state inside drawer
+    const [rescheduleDate, setRescheduleDate] = useState<string>('');
+    const [isSubmittingSchedule, setIsSubmittingSchedule] = useState(false);
 
     const debouncedSearchQuery = useDebounce(searchQuery, 350);
     const isInitialMount = useRef(true);
@@ -79,8 +136,9 @@ export default function DepartureSchedule({
         router.get(
             route('crm.schedules.index'),
             {
-                search: debouncedSearchQuery,
-                status: statusFilter,
+                search: debouncedSearchQuery || undefined,
+                status: statusFilter !== 'ALL' ? statusFilter : undefined,
+                period: periodFilter !== 'ALL' ? periodFilter : undefined,
                 per_page: paginatedJamaah.per_page,
             },
             {
@@ -89,7 +147,13 @@ export default function DepartureSchedule({
                 replace: true,
             }
         );
-    }, [debouncedSearchQuery, statusFilter]);
+    }, [debouncedSearchQuery, statusFilter, periodFilter]);
+
+    useEffect(() => {
+        if (selectedJamaah) {
+            setRescheduleDate(selectedJamaah.tanggal_keberangkatan || '');
+        }
+    }, [selectedJamaah]);
 
     if (!isMounted) {
         return null;
@@ -97,6 +161,62 @@ export default function DepartureSchedule({
 
     const scheduleKeys = Object.keys(schedules);
     const jamaahTableData = paginatedJamaah.data || [];
+
+    const toggleKloterCollapse = (key: string) => {
+        setCollapsedKloters((prev) => ({
+            ...prev,
+            [key]: !prev[key],
+        }));
+    };
+
+    const handleUpdateDeparture = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedJamaah) return;
+
+        setIsSubmittingSchedule(true);
+        router.post(
+            route('crm.schedules.update-departure', selectedJamaah.id),
+            {
+                tanggal_keberangkatan: rescheduleDate || null,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setSelectedJamaah((prev) =>
+                        prev ? { ...prev, tanggal_keberangkatan: rescheduleDate || null } : null
+                    );
+                    setIsSubmittingSchedule(false);
+                },
+                onError: () => {
+                    setIsSubmittingSchedule(false);
+                },
+            }
+        );
+    };
+
+    const handleExportManifest = (dateKey: string, members: JamaahSchedule[]) => {
+        const title = dateKey === 'Belum Ditentukan' ? 'Manifest_Antrean_Belum_Terjadwal' : `Manifest_Kloter_${dateKey}`;
+        const headers = ['No', 'Nama Jamaah', 'No HP', 'No Paspor', 'Paket Umroh/Haji', 'Mitra Agen', 'Tanggal Keberangkatan'];
+        
+        const rows = members.map((m, idx) => [
+            idx + 1,
+            `"${m.nama_lengkap.replace(/"/g, '""')}"`,
+            `"${m.no_hp}"`,
+            `"${m.nomor_paspor || '-'}"`,
+            `"${m.paket?.nama_paket || '-'}"`,
+            `"${m.agen?.name || 'Direct / Pusat'}"`,
+            `"${m.tanggal_keberangkatan || 'Belum Terjadwal'}"`,
+        ]);
+
+        const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', `${title}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     return (
         <PageLayout
@@ -148,7 +268,7 @@ export default function DepartureSchedule({
                 </div>
             </div>
 
-            {/* 4 Summary Metric Cards */}
+            {/* Metrics Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-card/70 border border-border/80 rounded-2xl p-5 shadow-xs flex items-center gap-4">
                     <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -199,9 +319,9 @@ export default function DepartureSchedule({
                 </div>
             </div>
 
-            {/* Filter Toolbar */}
-            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-card/60 p-3.5 rounded-2xl border border-border/80">
-                <div className="relative w-full md:w-80">
+            {/* Filter Toolbar with Search, Status, and Period Dropdowns */}
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-card/60 p-4 rounded-2xl border border-border/80">
+                <div className="relative w-full lg:w-80">
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input
                         type="text"
@@ -213,12 +333,31 @@ export default function DepartureSchedule({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
+                    {/* Period Filter Dropdown */}
+                    <div className="flex items-center gap-2 bg-muted/60 px-3 py-1.5 rounded-xl border border-border/70 text-xs">
+                        <Calendar className="w-3.5 h-3.5 text-primary" />
+                        <span className="font-semibold text-muted-foreground">Periode:</span>
+                        <select
+                            value={periodFilter}
+                            onChange={(e) => setPeriodFilter(e.target.value)}
+                            className="bg-background border border-border rounded-lg px-2.5 py-1 text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        >
+                            <option value="ALL">Semua Periode Terbang</option>
+                            {availablePeriods.map((p) => (
+                                <option key={p.key} value={p.key}>
+                                    {p.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Status Filter Toggle */}
                     <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground font-medium shrink-0">Status Jadwal:</span>
+                        <span className="text-xs text-muted-foreground font-medium shrink-0">Status:</span>
                         <div className="flex bg-muted/60 p-1 rounded-xl border border-border/70">
                             {[
                                 { id: 'ALL', label: 'Semua' },
-                                { id: 'SCHEDULED', label: 'Sudah Terjadwal' },
+                                { id: 'SCHEDULED', label: 'Terjadwal' },
                                 { id: 'UNSCHEDULED', label: 'Belum Terjadwal' },
                             ].map((st) => (
                                 <button
@@ -247,13 +386,14 @@ export default function DepartureSchedule({
                     {scheduleKeys.map((dateKey) => {
                         const group = schedules[dateKey];
                         const isUnassigned = dateKey === 'Belum Ditentukan';
+                        const isCollapsed = !!collapsedKloters[dateKey];
 
                         return (
                             <div
                                 key={dateKey}
-                                className="bg-card/70 border border-border/80 rounded-2xl p-6 shadow-xs flex flex-col gap-4"
+                                className="bg-card/70 border border-border/80 rounded-2xl p-6 shadow-xs flex flex-col gap-4 transition-all"
                             >
-                                <div className="flex justify-between items-center pb-3 border-b border-border/60">
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pb-3 border-b border-border/60">
                                     <div className="flex items-center gap-3">
                                         <div className={`p-2.5 rounded-xl ${isUnassigned ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-primary/10 text-primary'}`}>
                                             {isUnassigned ? <Clock className="w-5 h-5" /> : <Plane className="w-5 h-5" />}
@@ -265,32 +405,58 @@ export default function DepartureSchedule({
                                             <p className="text-xs text-muted-foreground">Total: {group.length} Jamaah Terdaftar dalam Kloter Ini</p>
                                         </div>
                                     </div>
-                                    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-muted border border-border text-foreground">
-                                        {group.length} Orang
-                                    </span>
+                                    
+                                    <div className="flex items-center gap-2 self-end sm:self-center">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleExportManifest(dateKey, group)}
+                                            className="px-3 py-1.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground flex items-center gap-1.5 transition cursor-pointer shadow-2xs"
+                                            title="Export Manifest CSV"
+                                        >
+                                            <Download className="w-3.5 h-3.5 text-primary" />
+                                            <span>Export Manifest</span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleKloterCollapse(dateKey)}
+                                            className="px-3 py-1.5 rounded-xl border border-border bg-muted/40 hover:bg-muted text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition cursor-pointer"
+                                        >
+                                            <span>{isCollapsed ? 'Tampilkan' : 'Sembunyikan'} ({group.length})</span>
+                                            {isCollapsed ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {group.map((jm) => (
-                                        <div key={jm.id} className="p-4 rounded-xl border border-border/60 bg-muted/20 flex flex-col gap-2">
-                                            <div className="flex justify-between items-start">
-                                                <div className="font-bold text-sm text-foreground">{jm.nama_lengkap}</div>
-                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
-                                                    jm.nomor_paspor
-                                                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                                                        : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                                                }`}>
-                                                    {jm.nomor_paspor ? `Paspor: ${jm.nomor_paspor}` : 'Paspor Pending'}
-                                                </span>
+                                {!isCollapsed && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {group.map((jm) => (
+                                            <div
+                                                key={jm.id}
+                                                onClick={() => setSelectedJamaah(jm)}
+                                                className="p-4 rounded-xl border border-border/60 bg-muted/20 hover:bg-card hover:border-primary/50 transition-all flex flex-col gap-2 cursor-pointer group shadow-2xs"
+                                            >
+                                                <div className="flex justify-between items-start">
+                                                    <div className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">
+                                                        {jm.nama_lengkap}
+                                                    </div>
+                                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
+                                                        jm.nomor_paspor
+                                                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                                                            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                                                    }`}>
+                                                        {jm.nomor_paspor ? `Paspor: ${jm.nomor_paspor}` : 'Paspor Pending'}
+                                                    </span>
+                                                </div>
+                                                <div className="text-xs text-primary font-medium">{jm.paket?.nama_paket}</div>
+                                                <div className="text-xs text-muted-foreground flex justify-between items-center pt-2 border-t border-border/40">
+                                                    <span>HP: {jm.no_hp}</span>
+                                                    <span>{jm.agen ? `Agen: ${jm.agen.name}` : 'Direct'}</span>
+                                                </div>
                                             </div>
-                                            <div className="text-xs text-primary font-medium">{jm.paket?.nama_paket}</div>
-                                            <div className="text-xs text-muted-foreground flex justify-between items-center pt-2 border-t border-border/40">
-                                                <span>HP: {jm.no_hp}</span>
-                                                <span>{jm.agen ? `Agen: ${jm.agen.name}` : 'Direct'}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         );
                     })}
@@ -303,102 +469,244 @@ export default function DepartureSchedule({
                 </div>
             )}
 
-            {/* MODE 2: TABLE MANIFEST */}
+            {/* MODE 2: TABEL MANIFEST LENGKAP */}
             {viewMode === 'table' && (
-                <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/70 backdrop-blur-md shadow-xs">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="border-b border-border/80 bg-muted/50 text-xs font-bold text-foreground uppercase tracking-wider">
-                                    <th className="px-6 py-4">Nama Jamaah &amp; Kontak</th>
-                                    <th className="px-6 py-4">Paket Umroh</th>
-                                    <th className="px-6 py-4">Status Dokumen Paspor</th>
-                                    <th className="px-6 py-4">Plot Tanggal Terbang</th>
-                                    <th className="px-6 py-4">PIC Agen</th>
-                                    <th className="px-6 py-4 text-center">Aksi Pelunasan</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border/60 text-xs">
-                                {jamaahTableData.map((jm) => (
-                                    <tr key={jm.id} className="hover:bg-muted/30 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="font-bold text-sm text-foreground">{jm.nama_lengkap}</div>
-                                            <div className="text-[11px] text-muted-foreground mt-0.5">HP: {jm.no_hp}</div>
-                                        </td>
-
-                                        <td className="px-6 py-4">
-                                            <div className="font-semibold text-foreground">{jm.paket?.nama_paket}</div>
-                                        </td>
-
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-block text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
-                                                jm.nomor_paspor
-                                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                                                    : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                                            }`}>
-                                                {jm.nomor_paspor ? `Paspor: ${jm.nomor_paspor}` : 'Belum Ada Paspor'}
-                                            </span>
-                                        </td>
-
-                                        <td className="px-6 py-4">
-                                            {jm.tanggal_keberangkatan ? (
-                                                <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-                                                    <Plane className="w-3.5 h-3.5 text-primary shrink-0" />
-                                                    <span>
-                                                        {new Date(jm.tanggal_keberangkatan).toLocaleDateString('id-ID', {
-                                                            day: 'numeric',
-                                                            month: 'long',
-                                                            year: 'numeric',
-                                                        })}
+                <div className="flex flex-col gap-4">
+                    <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/70 backdrop-blur-md shadow-xs">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr className="border-b border-border/80 bg-muted/50 text-muted-foreground">
+                                        <th className="px-5 py-3.5 font-bold">Nama Jamaah &amp; Kontak</th>
+                                        <th className="px-5 py-3.5 font-bold">No. Paspor</th>
+                                        <th className="px-5 py-3.5 font-bold">Paket Umroh / Haji</th>
+                                        <th className="px-5 py-3.5 font-bold">Mitra Agen</th>
+                                        <th className="px-5 py-3.5 font-bold">Jadwal Keberangkatan</th>
+                                        <th className="px-5 py-3.5 font-bold text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-border/60">
+                                    {jamaahTableData.map((jm) => (
+                                        <tr
+                                            key={jm.id}
+                                            onClick={() => setSelectedJamaah(jm)}
+                                            className="hover:bg-muted/30 transition-colors cursor-pointer"
+                                        >
+                                            <td className="px-5 py-3.5">
+                                                <div className="font-bold text-sm text-foreground">{jm.nama_lengkap}</div>
+                                                <div className="text-muted-foreground mt-0.5">HP: {jm.no_hp}</div>
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                {jm.nomor_paspor ? (
+                                                    <span className="font-mono font-bold text-foreground bg-muted/60 px-2 py-0.5 rounded border border-border/40">
+                                                        {jm.nomor_paspor}
                                                     </span>
-                                                </div>
-                                            ) : (
-                                                <span className="text-xs text-amber-600 dark:text-amber-400 italic font-semibold">
-                                                    Belum Dijadwalkan
-                                                </span>
-                                            )}
-                                        </td>
+                                                ) : (
+                                                    <span className="text-amber-600 dark:text-amber-400 italic">Belum Diisi</span>
+                                                )}
+                                            </td>
+                                            <td className="px-5 py-3.5 font-semibold text-foreground">
+                                                {jm.paket?.nama_paket || '-'}
+                                            </td>
+                                            <td className="px-5 py-3.5 text-muted-foreground">
+                                                {jm.agen ? jm.agen.name : <span className="italic">Direct / Pusat</span>}
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                {jm.tanggal_keberangkatan ? (
+                                                    <span className="font-bold text-primary flex items-center gap-1.5">
+                                                        <Plane className="w-3.5 h-3.5" />
+                                                        <span>
+                                                            {new Date(jm.tanggal_keberangkatan).toLocaleDateString('id-ID', {
+                                                                day: 'numeric',
+                                                                month: 'short',
+                                                                year: 'numeric',
+                                                            })}
+                                                        </span>
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-amber-600 dark:text-amber-400 font-medium">
+                                                        Antrean (Belum Ada Tanggal)
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-5 py-3.5 text-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedJamaah(jm);
+                                                    }}
+                                                    className="px-3 py-1 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground font-semibold rounded-lg transition cursor-pointer"
+                                                >
+                                                    Detail &amp; Plot
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
 
-                                        <td className="px-6 py-4 text-muted-foreground">
-                                            {jm.agen ? jm.agen.name : 'Direct Kantor'}
-                                        </td>
-
-                                        <td className="px-6 py-4 text-center">
-                                            <a
-                                                href={`/crm/customers?customer_id=${jm.id}&tab=financial`}
-                                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground font-semibold text-xs transition cursor-pointer"
-                                                title="Buka Rincian Keuangan & Pelunasan"
-                                            >
-                                                <span>Rincian &amp; Bayar</span>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                ))}
-
-                                {jamaahTableData.length === 0 && (
-                                    <tr>
-                                        <td colSpan={6} className="px-6 py-12 text-center text-sm text-muted-foreground italic">
-                                            Tidak ada data manifest yang sesuai filter.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                                    {jamaahTableData.length === 0 && (
+                                        <tr>
+                                            <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                                                Tidak ada data jamaah manifest.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
-                    {/* Pagination */}
-                    <div className="border-t border-border/80 px-4 bg-muted/20">
-                        <DataTablePagination
-                            links={paginatedJamaah.links}
-                            from={paginatedJamaah.from}
-                            to={paginatedJamaah.to}
-                            total={paginatedJamaah.total}
-                            currentPage={paginatedJamaah.current_page}
-                            lastPage={paginatedJamaah.last_page}
-                        />
-                    </div>
+                    <DataTablePagination
+                        links={paginatedJamaah.links}
+                        from={paginatedJamaah.from}
+                        to={paginatedJamaah.to}
+                        total={paginatedJamaah.total}
+                        currentPage={paginatedJamaah.current_page}
+                        lastPage={paginatedJamaah.last_page}
+                    />
                 </div>
             )}
+
+            {/* DETAILING & RESCHEDULE DRAWER (SLIDE-OUT SHEET) */}
+            <Sheet open={!!selectedJamaah} onOpenChange={(open) => { if (!open) setSelectedJamaah(null); }}>
+                <SheetContent side="right" className="w-1/2 max-w-none flex flex-col justify-between">
+                    <div className="flex flex-col gap-6 p-4 flex-1 overflow-y-auto">
+                        <SheetHeader className="pb-4 border-b border-border/60">
+                            <div className="flex justify-between items-start gap-4">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-bold text-primary uppercase tracking-wider">
+                                            Rincian Manifest Jamaah &amp; Jadwal
+                                        </span>
+                                    </div>
+                                    <SheetTitle className="text-2xl font-bold text-foreground mt-1">
+                                        {selectedJamaah?.nama_lengkap}
+                                    </SheetTitle>
+                                    <SheetDescription className="text-xs text-muted-foreground mt-0.5">
+                                        ID Jamaah: #{selectedJamaah?.id} • Paket: {selectedJamaah?.paket?.nama_paket}
+                                    </SheetDescription>
+                                </div>
+                                <span
+                                    className={`text-xs font-bold px-3 py-1.5 rounded-full border shrink-0 ${
+                                        selectedJamaah?.tanggal_keberangkatan
+                                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                                            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                                    }`}
+                                >
+                                    {selectedJamaah?.tanggal_keberangkatan ? 'Terjadwal' : 'Belum Terjadwal'}
+                                </span>
+                            </div>
+                        </SheetHeader>
+
+                        {/* Quick Reschedule / Assign Kloter Form */}
+                        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 shadow-xs flex flex-col gap-3">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                                <Plane className="w-4 h-4" />
+                                <span>Plot / Ubah Tanggal Keberangkatan (Kloter)</span>
+                            </h4>
+                            <form onSubmit={handleUpdateDeparture} className="flex flex-col sm:flex-row gap-3 items-end">
+                                <div className="flex-1 w-full">
+                                    <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                                        Tanggal Terbang / Kloter:
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={rescheduleDate}
+                                        onChange={(e) => setRescheduleDate(e.target.value)}
+                                        className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmittingSchedule}
+                                    className="w-full sm:w-auto px-4 py-2 bg-primary text-primary-foreground text-xs font-bold rounded-xl hover:opacity-90 transition cursor-pointer flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-50"
+                                >
+                                    <Check className="w-3.5 h-3.5" />
+                                    <span>{isSubmittingSchedule ? 'Menyimpan...' : 'Simpan Jadwal'}</span>
+                                </button>
+                            </form>
+                        </div>
+
+                        {/* Customer Info Card */}
+                        <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs flex flex-col gap-3">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                Data Identitas, Paspor &amp; Pembina
+                            </h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                                <div className="flex items-center gap-2.5 text-muted-foreground">
+                                    <Phone className="w-4 h-4 text-primary shrink-0" />
+                                    <span>No. HP: <strong className="text-foreground">{selectedJamaah?.no_hp || '-'}</strong></span>
+                                </div>
+                                <div className="flex items-center gap-2.5 text-muted-foreground">
+                                    <Mail className="w-4 h-4 text-primary shrink-0" />
+                                    <span>Email: <strong className="text-foreground">{selectedJamaah?.email || '-'}</strong></span>
+                                </div>
+                                <div className="flex items-center gap-2.5 text-muted-foreground">
+                                    <FileCheck className="w-4 h-4 text-primary shrink-0" />
+                                    <span>No. Paspor: <strong className="text-foreground font-mono">{selectedJamaah?.nomor_paspor || 'Belum diisi'}</strong></span>
+                                </div>
+                                <div className="flex items-center gap-2.5 text-muted-foreground">
+                                    <User className="w-4 h-4 text-primary shrink-0" />
+                                    <span>Mitra Agen: <strong className="text-foreground">{selectedJamaah?.agen?.name || 'Pusat / Direct'}</strong></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Verified Payment History */}
+                        <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs flex flex-col gap-3">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                <Receipt className="w-4 h-4 text-primary" />
+                                <span>Riwayat Pembayaran &amp; DP</span>
+                            </h4>
+                            <div className="flex flex-col gap-2">
+                                {selectedJamaah?.pembayaran && selectedJamaah.pembayaran.length > 0 ? (
+                                    selectedJamaah.pembayaran.map((p) => (
+                                        <div key={p.id} className="p-3 bg-muted/30 rounded-xl border border-border/50 flex justify-between items-center text-xs">
+                                            <div>
+                                                <div className="font-bold text-foreground capitalize">{p.tipe_pembayaran}</div>
+                                                <div className="text-[11px] text-muted-foreground">Status: {p.status_verifikasi}</div>
+                                            </div>
+                                            <div className="font-bold text-emerald-600 dark:text-emerald-400">
+                                                Rp {new Intl.NumberFormat('id-ID').format(p.jumlah)}
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-xs text-muted-foreground italic">Belum ada riwayat pembayaran tercatat.</div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Allocated Logistics Overview */}
+                        {selectedJamaah?.inventaris_transaksi && selectedJamaah.inventaris_transaksi.length > 0 && (
+                            <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs flex flex-col gap-3">
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                    <Package className="w-4 h-4 text-primary" />
+                                    <span>Alokasi Barang &amp; Perlengkapan</span>
+                                </h4>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {selectedJamaah.inventaris_transaksi.map((tx) => (
+                                        <span key={tx.id} className="text-xs font-medium px-2.5 py-1 rounded-lg bg-muted/40 border border-border text-foreground flex items-center gap-1.5">
+                                            <span>{tx.qty}x {tx.inventaris.nama_barang}</span>
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Drawer Footer Actions */}
+                    <SheetFooter className="p-4 border-t border-border/60 flex sm:justify-between items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setSelectedJamaah(null)}
+                            className="px-4 py-2.5 border border-border rounded-xl text-xs font-semibold hover:bg-muted transition cursor-pointer"
+                        >
+                            Tutup Detail
+                        </button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
         </PageLayout>
     );
 }
