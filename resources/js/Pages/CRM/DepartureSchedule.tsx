@@ -119,6 +119,10 @@ export default function DepartureSchedule({
     // Accordion expand/collapse state per dateKey
     const [collapsedKloters, setCollapsedKloters] = useState<Record<string, boolean>>({});
 
+    // Per-kloter pagination state (dateKey -> page)
+    const [kloterPages, setKloterPages] = useState<Record<string, number>>({});
+    const kloterPageSize = 12;
+
     // Reschedule form state inside drawer
     const [rescheduleDate, setRescheduleDate] = useState<string>('');
     const [isSubmittingSchedule, setIsSubmittingSchedule] = useState(false);
@@ -375,7 +379,7 @@ export default function DepartureSchedule({
                         </div>
                     </div>
 
-                    <PerPageSelector value={paginatedJamaah.per_page} />
+                    {viewMode === 'table' && <PerPageSelector value={paginatedJamaah.per_page} />}
                 </div>
             </div>
 
@@ -386,6 +390,10 @@ export default function DepartureSchedule({
                         const group = schedules[dateKey];
                         const isUnassigned = dateKey === 'Belum Ditentukan';
                         const isCollapsed = !!collapsedKloters[dateKey];
+
+                        const currentPage = kloterPages[dateKey] || 1;
+                        const totalPages = Math.ceil(group.length / kloterPageSize);
+                        const displayedGroup = group.slice((currentPage - 1) * kloterPageSize, currentPage * kloterPageSize);
 
                         return (
                             <div
@@ -401,7 +409,9 @@ export default function DepartureSchedule({
                                             <h3 className="font-bold text-base text-foreground">
                                                 {isUnassigned ? 'Antrean Belum Plot Tanggal Terbang' : `Kloter Penerbangan: ${new Date(dateKey).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`}
                                             </h3>
-                                            <p className="text-xs text-muted-foreground">Total: {group.length} Jamaah Terdaftar dalam Kloter Ini</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                Total: {group.length} Jamaah Terdaftar dalam Kloter Ini {totalPages > 1 && `(Halaman ${currentPage} dari ${totalPages})`}
+                                            </p>
                                         </div>
                                     </div>
                                     
@@ -428,33 +438,87 @@ export default function DepartureSchedule({
                                 </div>
 
                                 {!isCollapsed && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {group.map((jm) => (
-                                            <div
-                                                key={jm.id}
-                                                onClick={() => setSelectedJamaah(jm)}
-                                                className="p-4 rounded-xl border border-border/60 bg-muted/20 hover:bg-card hover:border-primary/50 transition-all flex flex-col gap-2 cursor-pointer group shadow-2xs"
-                                            >
-                                                <div className="flex justify-between items-start">
-                                                    <div className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">
-                                                        {jm.nama_lengkap}
+                                    <>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {displayedGroup.map((jm) => (
+                                                <div
+                                                    key={jm.id}
+                                                    onClick={() => setSelectedJamaah(jm)}
+                                                    className="p-4 rounded-xl border border-border/60 bg-muted/20 hover:bg-card hover:border-primary/50 transition-all flex flex-col gap-2 cursor-pointer group shadow-2xs"
+                                                >
+                                                    <div className="flex justify-between items-start">
+                                                        <div className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">
+                                                            {jm.nama_lengkap}
+                                                        </div>
+                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
+                                                            jm.nomor_paspor
+                                                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                                                                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                                                        }`}>
+                                                            {jm.nomor_paspor ? `Paspor: ${jm.nomor_paspor}` : 'Paspor Pending'}
+                                                        </span>
                                                     </div>
-                                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
-                                                        jm.nomor_paspor
-                                                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                                                            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                                                    }`}>
-                                                        {jm.nomor_paspor ? `Paspor: ${jm.nomor_paspor}` : 'Paspor Pending'}
-                                                    </span>
+                                                    <div className="text-xs text-primary font-medium">{jm.paket?.nama_paket}</div>
+                                                    <div className="text-xs text-muted-foreground flex justify-between items-center pt-2 border-t border-border/40">
+                                                        <span>HP: {jm.no_hp}</span>
+                                                        <span>{jm.agen ? `Agen: ${jm.agen.name}` : 'Direct'}</span>
+                                                    </div>
                                                 </div>
-                                                <div className="text-xs text-primary font-medium">{jm.paket?.nama_paket}</div>
-                                                <div className="text-xs text-muted-foreground flex justify-between items-center pt-2 border-t border-border/40">
-                                                    <span>HP: {jm.no_hp}</span>
-                                                    <span>{jm.agen ? `Agen: ${jm.agen.name}` : 'Direct'}</span>
+                                            ))}
+                                        </div>
+
+                                        {/* Per-Kloter Pagination Controls */}
+                                        {totalPages > 1 && (
+                                            <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-3 border-t border-border/50 text-xs">
+                                                <span className="text-muted-foreground font-medium">
+                                                    Menampilkan {(currentPage - 1) * kloterPageSize + 1} - {Math.min(currentPage * kloterPageSize, group.length)} dari {group.length} jamaah
+                                                </span>
+                                                <div className="flex items-center gap-1">
+                                                    <button
+                                                        type="button"
+                                                        disabled={currentPage === 1}
+                                                        onClick={() => setKloterPages((prev) => ({ ...prev, [dateKey]: Math.max(1, currentPage - 1) }))}
+                                                        className="px-2.5 py-1 rounded-lg border border-border bg-card hover:bg-muted text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                                                    >
+                                                        Sebelumnya
+                                                    </button>
+                                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => {
+                                                        if (pg === 1 || pg === totalPages || (pg >= currentPage - 1 && pg <= currentPage + 1)) {
+                                                            return (
+                                                                <button
+                                                                    key={pg}
+                                                                    type="button"
+                                                                    onClick={() => setKloterPages((prev) => ({ ...prev, [dateKey]: pg }))}
+                                                                    className={`w-7 h-7 rounded-lg text-xs font-bold transition cursor-pointer ${
+                                                                        currentPage === pg
+                                                                            ? 'bg-primary text-primary-foreground shadow-xs'
+                                                                            : 'border border-border bg-card hover:bg-muted text-foreground'
+                                                                    }`}
+                                                                >
+                                                                    {pg}
+                                                                </button>
+                                                            );
+                                                        }
+                                                        if (pg === 2 && currentPage > 3) {
+                                                            return <span key="ellipsis-start" className="px-1 text-muted-foreground">...</span>;
+                                                        }
+                                                        if (pg === totalPages - 1 && currentPage < totalPages - 2) {
+                                                            return <span key="ellipsis-end" className="px-1 text-muted-foreground">...</span>;
+                                                        }
+                                                        return null;
+                                                    })}
+                                                    <button
+                                                        type="button"
+                                                        disabled={currentPage === totalPages}
+                                                        onClick={() => setKloterPages((prev) => ({ ...prev, [dateKey]: Math.min(totalPages, currentPage + 1) }))}
+                                                        className="px-2.5 py-1 rounded-lg border border-border bg-card hover:bg-muted text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                                                    >
+                                                        Selanjutnya
+                                                    </button>
                                                 </div>
                                             </div>
-                                        ))}
-                                    </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         );
@@ -554,18 +618,17 @@ export default function DepartureSchedule({
                             </table>
                         </div>
                     </div>
+
+                    <DataTablePagination
+                        links={paginatedJamaah.links}
+                        from={paginatedJamaah.from}
+                        to={paginatedJamaah.to}
+                        total={paginatedJamaah.total}
+                        currentPage={paginatedJamaah.current_page}
+                        lastPage={paginatedJamaah.last_page}
+                    />
                 </div>
             )}
-
-            {/* Pagination Controls - Always Visible */}
-            <DataTablePagination
-                links={paginatedJamaah.links}
-                from={paginatedJamaah.from}
-                to={paginatedJamaah.to}
-                total={paginatedJamaah.total}
-                currentPage={paginatedJamaah.current_page}
-                lastPage={paginatedJamaah.last_page}
-            />
 
             {/* DETAILING & RESCHEDULE DRAWER (SLIDE-OUT SHEET) */}
             <Sheet open={!!selectedJamaah} onOpenChange={(open) => { if (!open) setSelectedJamaah(null); }}>
