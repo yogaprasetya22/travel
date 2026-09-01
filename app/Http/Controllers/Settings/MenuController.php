@@ -26,14 +26,16 @@ class MenuController extends Controller
         $tenantId = $currentUser->getActiveTenantId();
 
         $menus = Menu::whereNull('parent_id')
+            ->where('url', '!=', '/tenants')
             ->with(['children' => function ($query) {
                 $query->orderBy('urutan');
             }])
             ->orderBy('urutan')
             ->get();
 
-        // Get dynamic hierarchy levels for this tenant
+        // Get dynamic hierarchy levels for this tenant (excluding admin_travel)
         $hierarchyLevels = HierarchyLevel::where('tenant_id', $tenantId)
+            ->where('role_key', '!=', 'admin_travel')
             ->orderBy('urutan')
             ->get();
 
