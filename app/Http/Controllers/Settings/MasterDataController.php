@@ -97,6 +97,84 @@ class MasterDataController extends Controller
     }
 
     /**
+     * Update existing Paket Umroh / Haji.
+     */
+    public function updatePackage(Request $request, Paket $paket): RedirectResponse
+    {
+        if ($paket->tenant_id !== auth()->user()->tenant_id) {
+            abort(403, 'Aksi tidak diizinkan.');
+        }
+
+        $validated = $request->validate([
+            'nama_paket' => ['required', 'string', 'max:255'],
+            'harga' => ['required', 'numeric', 'min:0'],
+            'komisi_flat' => ['nullable', 'numeric', 'min:0'],
+            'komisi_persentase' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'periode_mulai' => ['nullable', 'date'],
+            'periode_selesai' => ['nullable', 'date', 'after_or_equal:periode_mulai'],
+            'is_active' => ['nullable', 'boolean'],
+            'inventaris_ids' => ['nullable', 'array'],
+        ]);
+
+        $paket->update([
+            'nama_paket' => $validated['nama_paket'],
+            'harga' => $validated['harga'],
+            'komisi_flat' => $validated['komisi_flat'] ?? 0,
+            'komisi_persentase' => $validated['komisi_persentase'] ?? 0,
+            'periode_mulai' => $validated['periode_mulai'] ?? null,
+            'periode_selesai' => $validated['periode_selesai'] ?? null,
+            'is_active' => $validated['is_active'] ?? true,
+        ]);
+
+        if (isset($validated['inventaris_ids'])) {
+            $syncData = [];
+            foreach ($validated['inventaris_ids'] as $invId) {
+                $syncData[$invId] = ['qty' => 1];
+            }
+            $paket->inventaris()->sync($syncData);
+        }
+
+        return redirect()->back()->with('success', 'Paket travel berhasil diperbarui.');
+    }
+
+    /**
+     * Toggle active/inactive status of a package.
+     */
+    public function togglePackage(Paket $paket): RedirectResponse
+    {
+        if ($paket->tenant_id !== auth()->user()->tenant_id) {
+            abort(403, 'Aksi tidak diizinkan.');
+        }
+
+        $paket->update([
+            'is_active' => ! $paket->is_active,
+        ]);
+
+        $statusText = $paket->is_active ? 'diaktifkan' : 'dinonaktifkan';
+
+        return redirect()->back()->with('success', "Paket travel berhasil {$statusText}.");
+    }
+
+    /**
+     * Delete a package if no jamaah is attached.
+     */
+    public function destroyPackage(Paket $paket): RedirectResponse
+    {
+        if ($paket->tenant_id !== auth()->user()->tenant_id) {
+            abort(403, 'Aksi tidak diizinkan.');
+        }
+
+        if ($paket->jamaah()->exists()) {
+            return redirect()->back()->with('error', 'Paket tidak dapat dihapus karena sudah memiliki data jamaah yang terdaftar. Anda dapat menonaktifkan status paket ini.');
+        }
+
+        $paket->inventaris()->detach();
+        $paket->delete();
+
+        return redirect()->back()->with('success', 'Paket travel berhasil dihapus.');
+    }
+
+    /**
      * Store new Bank Account.
      */
     public function storeBank(Request $request): RedirectResponse

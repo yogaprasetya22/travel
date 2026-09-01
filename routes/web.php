@@ -66,6 +66,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings/master', [MasterDataController::class, 'index'])->name('settings.master.index');
     Route::post('/settings/master/stage', [MasterDataController::class, 'storeStage'])->name('settings.master.store-stage');
     Route::post('/settings/master/package', [MasterDataController::class, 'storePackage'])->name('settings.master.store-package');
+    Route::put('/settings/master/package/{paket}', [MasterDataController::class, 'updatePackage'])->name('settings.master.update-package');
+    Route::patch('/settings/master/package/{paket}/toggle', [MasterDataController::class, 'togglePackage'])->name('settings.master.toggle-package');
+    Route::delete('/settings/master/package/{paket}', [MasterDataController::class, 'destroyPackage'])->name('settings.master.destroy-package');
     Route::post('/settings/master/bank', [MasterDataController::class, 'storeBank'])->name('settings.master.store-bank');
     Route::get('/settings/banks', [MasterDataController::class, 'index'])->name('settings.banks.index');
     Route::get('/settings/stages', [MasterDataController::class, 'index'])->name('settings.stages.index');

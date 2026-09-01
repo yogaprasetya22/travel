@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm, usePage, router } from '@inertiajs/react';
 import { PageProps } from '@/Types';
 import PageLayout from '@/Components/Layouts/PageLayout';
 import TextInput from '@/Components/TextInput';
@@ -28,6 +28,10 @@ import {
     Percent,
     Banknote,
     Calendar,
+    Edit2,
+    Trash2,
+    Power,
+    Check,
 } from 'lucide-react';
 
 interface Stage {
@@ -94,8 +98,11 @@ export default function MasterData({
     // Drawers states
     const [isAddStageOpen, setIsAddStageOpen] = useState(false);
     const [isAddPackageOpen, setIsAddPackageOpen] = useState(false);
+    const [isEditPackageOpen, setIsEditPackageOpen] = useState(false);
+    const [editingPackage, setEditingPackage] = useState<PackageItem | null>(null);
     const [isAddBankOpen, setIsAddBankOpen] = useState(false);
     const [commissionType, setCommissionType] = useState<'flat' | 'percentage'>('flat');
+    const [editCommissionType, setEditCommissionType] = useState<'flat' | 'percentage'>('flat');
 
     // Form Stage
     const stageForm = useForm({
@@ -106,12 +113,24 @@ export default function MasterData({
         is_active: true,
     });
 
-    // Form Package
+    // Form Package (Create)
     const packageForm = useForm({
         nama_paket: '',
         harga: '',
         komisi_flat: '1500000',
         komisi_persentase: '5',
+        periode_mulai: '',
+        periode_selesai: '',
+        is_active: true,
+        inventaris_ids: [] as number[],
+    });
+
+    // Form Package (Edit)
+    const editPackageForm = useForm({
+        nama_paket: '',
+        harga: '',
+        komisi_flat: '0',
+        komisi_persentase: '0',
         periode_mulai: '',
         periode_selesai: '',
         is_active: true,
@@ -143,6 +162,54 @@ export default function MasterData({
                 setIsAddPackageOpen(false);
             },
         });
+    };
+
+    const handleOpenEditPackage = (pkg: PackageItem) => {
+        setEditingPackage(pkg);
+        const isPct = Number(pkg.komisi_persentase) > 0;
+        setEditCommissionType(isPct ? 'percentage' : 'flat');
+
+        editPackageForm.setData({
+            nama_paket: pkg.nama_paket,
+            harga: pkg.harga.toString(),
+            komisi_flat: (pkg.komisi_flat || 0).toString(),
+            komisi_persentase: (pkg.komisi_persentase || 0).toString(),
+            periode_mulai: pkg.periode_mulai ? pkg.periode_mulai.split('T')[0] : '',
+            periode_selesai: pkg.periode_selesai ? pkg.periode_selesai.split('T')[0] : '',
+            is_active: pkg.is_active !== false,
+            inventaris_ids: (pkg.inventaris || []).map((i) => i.id),
+        });
+
+        setIsEditPackageOpen(true);
+    };
+
+    const handleEditPackageSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingPackage) return;
+
+        editPackageForm.put(route('settings.master.update-package', editingPackage.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                setIsEditPackageOpen(false);
+                setEditingPackage(null);
+            },
+        });
+    };
+
+    const handleTogglePackage = (pkg: PackageItem) => {
+        router.patch(
+            route('settings.master.toggle-package', pkg.id),
+            {},
+            { preserveScroll: true }
+        );
+    };
+
+    const handleDeletePackage = (pkg: PackageItem) => {
+        if (window.confirm(`Apakah Anda yakin ingin menghapus paket travel "${pkg.nama_paket}"?`)) {
+            router.delete(route('settings.master.destroy-package', pkg.id), {
+                preserveScroll: true,
+            });
+        }
     };
 
     const handleBankSubmit = (e: React.FormEvent) => {
@@ -310,21 +377,67 @@ export default function MasterData({
                                     const hasPercentage = Number(pkg.komisi_persentase) > 0;
                                     const hasFlat = Number(pkg.komisi_flat) > 0;
                                     const hasPeriod = pkg.periode_mulai || pkg.periode_selesai;
+                                    const isActive = pkg.is_active !== false;
 
                                     return (
-                                        <div key={pkg.id} className="p-4 rounded-xl border border-border/70 bg-card/40 flex flex-col justify-between gap-3 shadow-xs">
+                                        <div
+                                            key={pkg.id}
+                                            className={`p-4 rounded-xl border flex flex-col justify-between gap-3 shadow-xs transition-all ${
+                                                isActive
+                                                    ? 'border-border/70 bg-card/60'
+                                                    : 'border-dashed border-border/60 bg-muted/20 opacity-80'
+                                            }`}
+                                        >
                                             <div>
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <h4 className="font-bold text-sm text-foreground">{pkg.nama_paket}</h4>
-                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                                                        hasPercentage
-                                                            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                                                            : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                                                    }`}>
-                                                        {hasPercentage ? `Komisi ${pkg.komisi_persentase}%` : 'Komisi Flat'}
-                                                    </span>
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div>
+                                                        <h4 className="font-bold text-sm text-foreground">{pkg.nama_paket}</h4>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                                                hasPercentage
+                                                                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                                                                    : 'bg-primary/10 text-primary border-primary/20'
+                                                            }`}>
+                                                                {hasPercentage ? `Komisi ${pkg.komisi_persentase}%` : 'Komisi Flat'}
+                                                            </span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleTogglePackage(pkg)}
+                                                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full border transition cursor-pointer flex items-center gap-1 ${
+                                                                    isActive
+                                                                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
+                                                                        : 'bg-muted text-muted-foreground border-border hover:bg-muted/80'
+                                                                }`}
+                                                                title="Klik untuk mengubah status aktif/non-aktif"
+                                                            >
+                                                                <Power className="w-2.5 h-2.5" />
+                                                                <span>{isActive ? 'Aktif' : 'Non-Aktif'}</span>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Card Actions: Edit & Delete */}
+                                                    <div className="flex items-center gap-1 shrink-0">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleOpenEditPackage(pkg)}
+                                                            className="p-1.5 rounded-lg border border-border/80 bg-card text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer shadow-2xs"
+                                                            title="Edit Paket"
+                                                        >
+                                                            <Edit2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDeletePackage(pkg)}
+                                                            className="p-1.5 rounded-lg border border-red-500/20 bg-red-500/5 text-red-600 dark:text-red-400 hover:bg-red-500/15 transition cursor-pointer shadow-2xs"
+                                                            title="Hapus Paket"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <div className="text-base font-extrabold text-primary mt-1">
+
+                                                <div className="text-base font-extrabold text-primary mt-2">
                                                     {toRupiah(pkg.harga)}
                                                 </div>
                                                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
@@ -673,6 +786,194 @@ export default function MasterData({
                         <SheetFooter>
                             <button type="button" onClick={() => setIsAddPackageOpen(false)} className="px-4 py-2 border border-border rounded-xl text-sm font-medium">Batal</button>
                             <PrimaryButton disabled={packageForm.processing}>Simpan Paket</PrimaryButton>
+                        </SheetFooter>
+                    </form>
+                </SheetContent>
+            </Sheet>
+
+            {/* Drawer: Edit Package */}
+            <Sheet open={isEditPackageOpen} onOpenChange={setIsEditPackageOpen}>
+                <SheetContent side="right" className="w-1/2 max-w-none">
+                    <SheetHeader>
+                        <SheetTitle>Edit Paket Umroh & Haji</SheetTitle>
+                        <SheetDescription>Perbarui rincian harga paket, skema komisi agen, masa aktif, atau paket inventaris bawaan.</SheetDescription>
+                    </SheetHeader>
+                    <form onSubmit={handleEditPackageSubmit} className="flex flex-col gap-5 p-4 flex-1 overflow-y-auto">
+                        <div>
+                            <InputLabel htmlFor="edit_nama_paket" value="Nama Paket" />
+                            <TextInput
+                                id="edit_nama_paket"
+                                type="text"
+                                value={editPackageForm.data.nama_paket}
+                                className="mt-1 block w-full"
+                                onChange={(e) => editPackageForm.setData('nama_paket', e.target.value)}
+                                required
+                            />
+                            <InputError message={editPackageForm.errors.nama_paket} className="mt-2" />
+                        </div>
+
+                        <div>
+                            <InputLabel htmlFor="edit_harga" value="Harga Paket" />
+                            <div className="mt-1">
+                                <CurrencyInput
+                                    id="edit_harga"
+                                    value={editPackageForm.data.harga}
+                                    onChange={(val) => editPackageForm.setData('harga', val)}
+                                    placeholder="35.000.000"
+                                    required
+                                />
+                            </div>
+                            <InputError message={editPackageForm.errors.harga} className="mt-2" />
+                        </div>
+
+                        {/* Commission Type Switcher */}
+                        <div className="flex flex-col gap-2 p-4 rounded-xl bg-muted/40 border border-border">
+                            <InputLabel value="Skema Komisi Agen" />
+                            <div className="grid grid-cols-2 gap-2 mt-1">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setEditCommissionType('flat');
+                                        editPackageForm.setData('komisi_persentase', '0');
+                                    }}
+                                    className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition cursor-pointer border ${
+                                        editCommissionType === 'flat'
+                                            ? 'bg-primary text-primary-foreground border-primary shadow-xs'
+                                            : 'bg-background text-muted-foreground border-border hover:text-foreground'
+                                    }`}
+                                >
+                                    <Banknote className="w-3.5 h-3.5" />
+                                    <span>Nominal Standar (Rp)</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setEditCommissionType('percentage');
+                                        editPackageForm.setData('komisi_flat', '0');
+                                    }}
+                                    className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition cursor-pointer border ${
+                                        editCommissionType === 'percentage'
+                                            ? 'bg-primary text-primary-foreground border-primary shadow-xs'
+                                            : 'bg-background text-muted-foreground border-border hover:text-foreground'
+                                    }`}
+                                >
+                                    <Percent className="w-3.5 h-3.5" />
+                                    <span>Persentase (%)</span>
+                                </button>
+                            </div>
+
+                            {editCommissionType === 'flat' ? (
+                                <div className="mt-2">
+                                    <InputLabel htmlFor="edit_komisi_flat" value="Nominal Komisi Flat" />
+                                    <div className="mt-1">
+                                        <CurrencyInput
+                                            id="edit_komisi_flat"
+                                            value={editPackageForm.data.komisi_flat}
+                                            onChange={(val) => editPackageForm.setData('komisi_flat', val)}
+                                            placeholder="1.500.000"
+                                        />
+                                    </div>
+                                    <InputError message={editPackageForm.errors.komisi_flat} className="mt-2" />
+                                </div>
+                            ) : (
+                                <div className="mt-2">
+                                    <InputLabel htmlFor="edit_komisi_persentase" value="Persentase Komisi (%)" />
+                                    <div className="relative mt-1 flex items-center">
+                                        <TextInput
+                                            id="edit_komisi_persentase"
+                                            type="number"
+                                            min="0"
+                                            max="100"
+                                            step="0.1"
+                                            value={editPackageForm.data.komisi_persentase}
+                                            className="block w-full pr-8"
+                                            onChange={(e) => editPackageForm.setData('komisi_persentase', e.target.value)}
+                                            placeholder="5"
+                                        />
+                                        <span className="absolute right-3 text-sm font-bold text-muted-foreground">%</span>
+                                    </div>
+                                    <p className="text-[11px] text-muted-foreground mt-1">
+                                        Perkiraan komisi per jamaah: <strong className="text-foreground">{toRupiah((Number(editPackageForm.data.harga || 0) * Number(editPackageForm.data.komisi_persentase || 0)) / 100)}</strong>
+                                    </p>
+                                    <InputError message={editPackageForm.errors.komisi_persentase} className="mt-2" />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Active Period Configuration */}
+                        <div className="flex flex-col gap-3 p-4 rounded-xl bg-muted/40 border border-border">
+                            <div className="flex items-center gap-2">
+                                <Calendar className="w-4 h-4 text-primary" />
+                                <span className="text-xs font-bold text-foreground">Pengaturan Periode Aktif Paket</span>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+                                <div>
+                                    <InputLabel htmlFor="edit_pkg_periode_mulai" value="Tanggal Mulai Berlaku (Opsional)" />
+                                    <TextInput
+                                        id="edit_pkg_periode_mulai"
+                                        type="date"
+                                        value={editPackageForm.data.periode_mulai}
+                                        className="mt-1 block w-full text-xs"
+                                        onChange={(e) => editPackageForm.setData('periode_mulai', e.target.value)}
+                                    />
+                                    <InputError message={editPackageForm.errors.periode_mulai} className="mt-1" />
+                                </div>
+                                <div>
+                                    <InputLabel htmlFor="edit_pkg_periode_selesai" value="Tanggal Berakhir (Opsional)" />
+                                    <TextInput
+                                        id="edit_pkg_periode_selesai"
+                                        type="date"
+                                        value={editPackageForm.data.periode_selesai}
+                                        className="mt-1 block w-full text-xs"
+                                        onChange={(e) => editPackageForm.setData('periode_selesai', e.target.value)}
+                                    />
+                                    <InputError message={editPackageForm.errors.periode_selesai} className="mt-1" />
+                                </div>
+                            </div>
+                            <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer pt-1">
+                                <input
+                                    type="checkbox"
+                                    checked={editPackageForm.data.is_active}
+                                    onChange={(e) => editPackageForm.setData('is_active', e.target.checked)}
+                                    className="rounded border-border text-primary focus:ring-primary"
+                                />
+                                <span>Status Paket Langsung Aktif Ditawarkan</span>
+                            </label>
+                        </div>
+
+                        {/* Inventory items attachment */}
+                        {inventoryItems.length > 0 && (
+                            <div className="flex flex-col gap-2">
+                                <InputLabel value="Paket Logistik & Perlengkapan Bawaan" />
+                                <div className="grid grid-cols-1 gap-2 max-h-36 overflow-y-auto p-2 border border-border rounded-xl bg-background">
+                                    {inventoryItems.map((inv) => {
+                                        const isChecked = editPackageForm.data.inventaris_ids.includes(inv.id);
+                                        return (
+                                            <label key={inv.id} className="flex items-center gap-2.5 text-xs text-foreground cursor-pointer p-1.5 rounded-lg hover:bg-muted">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isChecked}
+                                                    onChange={(e) => {
+                                                        const current = editPackageForm.data.inventaris_ids;
+                                                        if (e.target.checked) {
+                                                            editPackageForm.setData('inventaris_ids', [...current, inv.id]);
+                                                        } else {
+                                                            editPackageForm.setData('inventaris_ids', current.filter((id) => id !== inv.id));
+                                                        }
+                                                    }}
+                                                    className="rounded border-border text-primary focus:ring-primary"
+                                                />
+                                                <span>{inv.nama_barang}</span>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        <SheetFooter>
+                            <button type="button" onClick={() => setIsEditPackageOpen(false)} className="px-4 py-2 border border-border rounded-xl text-sm font-medium cursor-pointer">Batal</button>
+                            <PrimaryButton disabled={editPackageForm.processing}>Simpan Perubahan</PrimaryButton>
                         </SheetFooter>
                     </form>
                 </SheetContent>
