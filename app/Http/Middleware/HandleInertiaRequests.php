@@ -41,6 +41,13 @@ class HandleInertiaRequests extends Middleware
                     return [];
                 }
 
+                if ($user->role === 'super_admin_master') {
+                    return Menu::whereNull('parent_id')
+                        ->with(['children' => fn ($query) => $query->orderBy('urutan')])
+                        ->orderBy('urutan')
+                        ->get();
+                }
+
                 $userRoles = [$user->role];
                 if ($user->jabatan) {
                     $userRoles[] = strtolower(str_replace(' ', '_', $user->jabatan));

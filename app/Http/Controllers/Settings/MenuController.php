@@ -57,7 +57,7 @@ class MenuController extends Controller
         });
 
         $tenants = $currentUser->role === 'super_admin_master'
-            ? Tenant::orderBy('nama_travel')->get(['id', 'nama_travel', 'slug'])
+            ? Tenant::orderBy('nama_travel')->get(['id', 'nama_travel', 'domain_atau_subdomain'])
             : [];
 
         return Inertia::render('Settings/Menus', [

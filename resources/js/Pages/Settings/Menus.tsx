@@ -25,7 +25,7 @@ interface LevelItem {
 interface TenantItem {
     id: number
     nama_travel: string
-    slug: string
+    domain_atau_subdomain?: string
 }
 
 interface Props {
