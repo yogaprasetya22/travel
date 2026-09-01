@@ -8,7 +8,7 @@ use Illuminate\Database\Seeder;
 class MenuSeeder extends Seeder
 {
     /**
-     * Seed application navigation menus and RBAC permissions.
+     * Seed application navigation menus and RBAC permissions with clear, friendly Indonesian naming.
      */
     public function run(): void
     {
@@ -23,7 +23,7 @@ class MenuSeeder extends Seeder
         ]);
 
         $tenantMenu = Menu::create([
-            'title' => 'Tenants Management',
+            'title' => 'Kelola Travel (Multi-Tenant)',
             'url' => '/tenants',
             'icon' => 'Building2',
             'roles' => ['super_admin_master'],
@@ -40,7 +40,7 @@ class MenuSeeder extends Seeder
 
         Menu::create([
             'parent_id' => $crmMenu->id,
-            'title' => 'Pipeline Leads (Kanban)',
+            'title' => 'Prospek Calon Jamaah',
             'url' => '/crm',
             'roles' => ['owner_travel', 'supervisor', 'team_leader', 'agen'],
             'urutan' => 1,
@@ -48,7 +48,7 @@ class MenuSeeder extends Seeder
 
         Menu::create([
             'parent_id' => $crmMenu->id,
-            'title' => 'Distribusi Logistik',
+            'title' => 'Distribusi Koper & Barang',
             'url' => '/crm/logistics',
             'roles' => ['owner_travel', 'supervisor', 'team_leader', 'agen'],
             'urutan' => 2,
@@ -72,7 +72,7 @@ class MenuSeeder extends Seeder
 
         Menu::create([
             'parent_id' => $financeMenu->id,
-            'title' => 'Progres Pelunasan Jamaah',
+            'title' => 'Daftar Jamaah & Tagihan',
             'url' => '/crm/customers',
             'roles' => ['owner_travel', 'supervisor', 'team_leader', 'agen'],
             'urutan' => 1,
@@ -80,7 +80,7 @@ class MenuSeeder extends Seeder
 
         Menu::create([
             'parent_id' => $financeMenu->id,
-            'title' => 'Verifikasi Mutasi Bank',
+            'title' => 'Verifikasi Pembayaran',
             'url' => '/finance/payment',
             'roles' => ['owner_travel', 'supervisor'],
             'urutan' => 2,
@@ -96,7 +96,7 @@ class MenuSeeder extends Seeder
 
         Menu::create([
             'parent_id' => $userMgmtMenu->id,
-            'title' => 'Hierarki & Izin User',
+            'title' => 'Struktur Tim & Jabatan',
             'url' => '/settings/users',
             'roles' => ['super_admin_master', 'owner_travel', 'supervisor', 'team_leader'],
             'urutan' => 1,
@@ -120,14 +120,14 @@ class MenuSeeder extends Seeder
 
         Menu::create([
             'parent_id' => $agencyMenu->id,
-            'title' => 'Pembagian Komisi',
+            'title' => 'Komisi & Rekap Agen',
             'url' => '/commissions',
             'roles' => ['owner_travel', 'supervisor', 'team_leader', 'agen'],
             'urutan' => 1,
         ]);
 
         $inventoryMenu = Menu::create([
-            'title' => 'Inventaris / Logistik',
+            'title' => 'Inventaris & Gudang',
             'url' => '#',
             'icon' => 'Package',
             'roles' => ['owner_travel', 'supervisor'],
@@ -136,14 +136,14 @@ class MenuSeeder extends Seeder
 
         Menu::create([
             'parent_id' => $inventoryMenu->id,
-            'title' => 'Stok Perlengkapan',
+            'title' => 'Stok Koper & Barang',
             'url' => '/inventaris',
             'roles' => ['owner_travel', 'supervisor'],
             'urutan' => 1,
         ]);
 
         $settingsMenu = Menu::create([
-            'title' => 'Settings Travel',
+            'title' => 'Pengaturan Travel',
             'url' => '#',
             'icon' => 'Settings',
             'roles' => ['super_admin_master', 'owner_travel', 'supervisor', 'team_leader', 'agen'],
@@ -168,7 +168,7 @@ class MenuSeeder extends Seeder
 
         Menu::create([
             'parent_id' => $settingsMenu->id,
-            'title' => 'Tahap CRM Stages',
+            'title' => 'Alur Tahapan Prospek',
             'url' => '/settings/stages',
             'roles' => ['owner_travel', 'supervisor'],
             'urutan' => 3,
@@ -176,7 +176,7 @@ class MenuSeeder extends Seeder
 
         Menu::create([
             'parent_id' => $settingsMenu->id,
-            'title' => 'Paket Umroh Config',
+            'title' => 'Katalog Paket Umroh & Haji',
             'url' => '/settings/packages',
             'roles' => ['owner_travel', 'supervisor'],
             'urutan' => 4,
@@ -184,7 +184,7 @@ class MenuSeeder extends Seeder
 
         Menu::create([
             'parent_id' => $settingsMenu->id,
-            'title' => 'Roles & Permissions (RBAC)',
+            'title' => 'Hak Akses Menu & Fitur',
             'url' => '/settings/menus',
             'roles' => ['super_admin_master', 'owner_travel'],
             'urutan' => 5,
