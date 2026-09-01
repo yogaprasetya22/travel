@@ -25,56 +25,82 @@ class TeamMonitoringController extends Controller
 
         $downlineIds = $currentUser->getDownlineUserIds();
 
-        // 1. Query Downline Users with performance statistics
-        $teamMembers = User::whereIn('id', $downlineIds)
+        $search = $request->input('search', '');
+        $levelFilter = $request->input('level', 'all');
+        $perPage = (int) $request->input('per_page', 10);
+
+        // 1. Calculate overall summary metrics across ALL downlines (unpaginated)
+        $allDownlines = User::whereIn('id', $downlineIds)
+            ->where('tenant_id', $targetTenantId)
+            ->withCount('jamaah')
+            ->get();
+
+        $allJamaahIds = Jamaah::whereIn('agen_id', $downlineIds)->pluck('id');
+
+        $totalTeamOmzet = (float) Pembayaran::whereIn('jamaah_id', $allJamaahIds)
+            ->where('status_verifikasi', 'verified')
+            ->sum('nominal');
+
+        $totalTeamKomisi = (float) KomisiAgen::whereIn('agen_id', $downlineIds)->sum('nominal_komisi');
+        $totalKomisiPaid = (float) KomisiAgen::whereIn('agen_id', $downlineIds)->where('status_pencairan', 'paid')->sum('nominal_komisi');
+        $totalKomisiPending = (float) KomisiAgen::whereIn('agen_id', $downlineIds)->where('status_pencairan', 'pending')->sum('nominal_komisi');
+
+        // 2. Query Paginated Downline Users
+        $teamMembersQuery = User::whereIn('id', $downlineIds)
             ->where('tenant_id', $targetTenantId)
             ->with(['hierarchyLevel', 'creator'])
-            ->withCount('jamaah')
-            ->get()
-            ->map(function ($member) {
-                // Calculate verified revenue from member's jamaah
-                $jamaahIds = Jamaah::where('agen_id', $member->id)->pluck('id');
+            ->withCount('jamaah');
 
-                $verifiedRevenue = (float) Pembayaran::whereIn('jamaah_id', $jamaahIds)
-                    ->where('status_verifikasi', 'verified')
-                    ->sum('nominal');
+        if ($search) {
+            $teamMembersQuery->where(function ($q) use ($search) {
+                $q->where('name', 'ilike', "%{$search}%")
+                    ->orWhere('email', 'ilike', "%{$search}%")
+                    ->orWhere('jabatan', 'ilike', "%{$search}%")
+                    ->orWhereHas('creator', fn ($c) => $c->where('name', 'ilike', "%{$search}%"));
+            });
+        }
 
-                // Total commission from KomisiAgen
-                $totalKomisi = (float) KomisiAgen::where('agen_id', $member->id)->sum('nominal_komisi');
-                $totalKomisiPaid = (float) KomisiAgen::where('agen_id', $member->id)->where('status_pencairan', 'paid')->sum('nominal_komisi');
-                $totalKomisiPending = (float) KomisiAgen::where('agen_id', $member->id)->where('status_pencairan', 'pending')->sum('nominal_komisi');
+        if ($levelFilter && $levelFilter !== 'all') {
+            $teamMembersQuery->where(function ($q) use ($levelFilter) {
+                $q->whereHas('hierarchyLevel', fn ($h) => $h->where('urutan', (int) $levelFilter));
+            });
+        }
 
-                return [
-                    'id' => $member->id,
-                    'name' => $member->name,
-                    'email' => $member->email,
-                    'level' => $member->level,
-                    'level_label' => $member->level_label,
-                    'level_badge' => $member->level_badge,
-                    'jabatan' => $member->jabatan ?: $member->hierarchyLevel?->nama_level ?: 'Staff',
-                    'hierarchy_level_id' => $member->hierarchy_level_id,
-                    'creator' => $member->creator ? [
-                        'id' => $member->creator->id,
-                        'name' => $member->creator->name,
-                        'jabatan' => $member->creator->jabatan ?: $member->creator->hierarchyLevel?->nama_level,
-                    ] : null,
-                    'total_jamaah' => $member->jamaah_count,
-                    'total_omzet' => $verifiedRevenue,
-                    'total_komisi' => $totalKomisi,
-                    'komisi_paid' => $totalKomisiPaid,
-                    'komisi_pending' => $totalKomisiPending,
-                ];
-            })
-            ->sortBy('level')
-            ->values();
+        $paginatedMembers = $teamMembersQuery->orderBy('id')->paginate($perPage)->withQueryString();
 
-        // 2. Summary Statistics
-        $totalTeamMembers = $teamMembers->count();
-        $totalTeamJamaah = $teamMembers->sum('total_jamaah');
-        $totalTeamOmzet = $teamMembers->sum('total_omzet');
-        $totalTeamKomisi = $teamMembers->sum('total_komisi');
-        $totalKomisiPaid = $teamMembers->sum('komisi_paid');
-        $totalKomisiPending = $teamMembers->sum('komisi_pending');
+        // Transform paginated items with computed stats
+        $paginatedMembers->getCollection()->transform(function ($member) {
+            $jamaahIds = Jamaah::where('agen_id', $member->id)->pluck('id');
+
+            $verifiedRevenue = (float) Pembayaran::whereIn('jamaah_id', $jamaahIds)
+                ->where('status_verifikasi', 'verified')
+                ->sum('nominal');
+
+            $totalKomisi = (float) KomisiAgen::where('agen_id', $member->id)->sum('nominal_komisi');
+            $totalKomisiPaid = (float) KomisiAgen::where('agen_id', $member->id)->where('status_pencairan', 'paid')->sum('nominal_komisi');
+            $totalKomisiPending = (float) KomisiAgen::where('agen_id', $member->id)->where('status_pencairan', 'pending')->sum('nominal_komisi');
+
+            return [
+                'id' => $member->id,
+                'name' => $member->name,
+                'email' => $member->email,
+                'level' => $member->level,
+                'level_label' => $member->level_label,
+                'level_badge' => $member->level_badge,
+                'jabatan' => $member->jabatan ?: $member->hierarchyLevel?->nama_level ?: 'Staff',
+                'hierarchy_level_id' => $member->hierarchy_level_id,
+                'creator' => $member->creator ? [
+                    'id' => $member->creator->id,
+                    'name' => $member->creator->name,
+                    'jabatan' => $member->creator->jabatan ?: $member->creator->hierarchyLevel?->nama_level,
+                ] : null,
+                'total_jamaah' => $member->jamaah_count,
+                'total_omzet' => $verifiedRevenue,
+                'total_komisi' => $totalKomisi,
+                'komisi_paid' => $totalKomisiPaid,
+                'komisi_pending' => $totalKomisiPending,
+            ];
+        });
 
         // 3. Dynamic hierarchy levels in this tenant for filtering
         $hierarchyLevels = HierarchyLevel::where('tenant_id', $targetTenantId)
@@ -83,16 +109,21 @@ class TeamMonitoringController extends Controller
             ->get();
 
         return Inertia::render('Keagenan/Monitoring', [
-            'teamMembers' => $teamMembers,
+            'teamMembers' => $paginatedMembers,
             'summary' => [
-                'total_members' => $totalTeamMembers,
-                'total_jamaah' => $totalTeamJamaah,
+                'total_members' => $allDownlines->count(),
+                'total_jamaah' => $allDownlines->sum('jamaah_count'),
                 'total_omzet' => $totalTeamOmzet,
                 'total_komisi' => $totalTeamKomisi,
                 'total_paid' => $totalKomisiPaid,
                 'total_pending' => $totalKomisiPending,
             ],
             'hierarchyLevels' => $hierarchyLevels,
+            'filters' => [
+                'search' => $search,
+                'level' => $levelFilter,
+                'per_page' => $perPage,
+            ],
             'currentUser' => [
                 'id' => $currentUser->id,
                 'name' => $currentUser->name,
@@ -103,7 +134,7 @@ class TeamMonitoringController extends Controller
     }
 
     /**
-     * Get paginated jamaah/nasabah list for a specific team member drawer.
+     * Get paginated jamaah/nasabah list for a specific team member drawer (Infinite Scroll).
      */
     public function getMemberJamaah(Request $request, User $member): JsonResponse
     {
@@ -124,9 +155,9 @@ class TeamMonitoringController extends Controller
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('nama_lengkap', 'like', "%{$search}%")
-                    ->orWhere('nomor_hp', 'like', "%{$search}%")
-                    ->orWhere('nomor_paspor', 'like', "%{$search}%");
+                $q->where('nama_lengkap', 'ilike', "%{$search}%")
+                    ->orWhere('nomor_hp', 'ilike', "%{$search}%")
+                    ->orWhere('nomor_paspor', 'ilike', "%{$search}%");
             });
         }
 

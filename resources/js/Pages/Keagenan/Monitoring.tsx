@@ -1,7 +1,7 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PageLayout from '@/Components/Layouts/PageLayout';
 import { PageProps } from '@/Types';
-import { Card, CardContent } from '@/Components/ui/card';
+import { Card } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -13,20 +13,17 @@ import {
     Search,
     Shield,
     TrendingUp,
-    ChevronRight,
-    ArrowUpRight,
     Eye,
-    CheckCircle2,
-    Clock,
     X,
     Phone,
     Plane,
-    Calendar,
     Loader2,
     SlidersHorizontal,
-    Sparkles,
 } from 'lucide-react';
 import { useDebounce } from '@/hooks/use-debounce';
+import { router } from '@inertiajs/react';
+import DataTablePagination, { PaginatedData } from '@/Components/DataTablePagination';
+import PerPageSelector from '@/Components/PerPageSelector';
 
 interface TeamMember {
     id: number;
@@ -47,7 +44,6 @@ interface TeamMember {
     total_komisi: number;
     komisi_paid: number;
     komisi_pending: number;
-    override_komisi: number;
 }
 
 interface HierarchyLevelItem {
@@ -76,12 +72,12 @@ interface JamaahDetailItem {
     pembayaran?: Array<{
         id: number;
         nominal: number;
-        status: string;
+        status_verifikasi: string;
     }>;
 }
 
 interface Props extends PageProps {
-    teamMembers: TeamMember[];
+    teamMembers: PaginatedData<TeamMember>;
     summary: {
         total_members: number;
         total_jamaah: number;
@@ -91,6 +87,11 @@ interface Props extends PageProps {
         total_pending: number;
     };
     hierarchyLevels: HierarchyLevelItem[];
+    filters: {
+        search?: string;
+        level?: string;
+        per_page?: number;
+    };
     currentUser: {
         id: number;
         name: string;
@@ -100,15 +101,18 @@ interface Props extends PageProps {
 }
 
 export default function Monitoring({
-    teamMembers = [],
+    teamMembers,
     summary,
     hierarchyLevels = [],
+    filters,
     currentUser,
 }: Props) {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedLevelFilter, setSelectedLevelFilter] = useState<string>('all');
+    const [searchQuery, setSearchQuery] = useState(filters?.search || '');
+    const debouncedSearch = useDebounce(searchQuery, 400);
+    const [selectedLevelFilter, setSelectedLevelFilter] = useState(filters?.level || 'all');
+    const isFirstRender = useRef(true);
 
-    // Customer Drawer State
+    // Customer Drawer State (Infinite Scroll)
     const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
     const [drawerJamaahList, setDrawerJamaahList] = useState<JamaahDetailItem[]>([]);
     const [drawerSearch, setDrawerSearch] = useState('');
@@ -120,23 +124,30 @@ export default function Monitoring({
     const [totalJamaahInDrawer, setTotalJamaahInDrawer] = useState(0);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-    // Filtered Team Members
-    const filteredMembers = useMemo(() => {
-        return teamMembers.filter((m) => {
-            const matchesSearch =
-                m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                m.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                m.jabatan.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (m.creator?.name && m.creator.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    // Apply filters via Inertia router
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
 
-            const matchesLevel =
-                selectedLevelFilter === 'all' || m.level.toString() === selectedLevelFilter;
+        router.get(
+            route('keagenan.monitoring.index'),
+            {
+                search: debouncedSearch || undefined,
+                level: selectedLevelFilter !== 'all' ? selectedLevelFilter : undefined,
+                per_page: filters?.per_page || 10,
+                page: 1,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            }
+        );
+    }, [debouncedSearch, selectedLevelFilter]);
 
-            return matchesSearch && matchesLevel;
-        });
-    }, [teamMembers, searchQuery, selectedLevelFilter]);
-
-    // Drawer Data Fetching
+    // Drawer Data Fetching (Infinite Scroll)
     const fetchMemberJamaah = async (memberId: number, pageToFetch: number, isNewSearch = false) => {
         if (pageToFetch === 1) {
             setIsLoadingInitial(true);
@@ -214,6 +225,8 @@ export default function Monitoring({
         }
     };
 
+    const membersList = teamMembers?.data || [];
+
     return (
         <PageLayout
             title="Pemantauan Tim & Omzet"
@@ -254,11 +267,11 @@ export default function Monitoring({
                 {/* 1. Total Anggota Tim Downline */}
                 <Card className="bg-card/70 backdrop-blur-md border border-border/80 rounded-2xl p-5 shadow-xs flex items-center justify-between">
                     <div className="flex flex-col">
-                        <span className="text-xs font-semibold text-muted-foreground">Anggota Tim Downline</span>
+                        <span className="text-xs font-semibold text-muted-foreground">Total Tim Downline</span>
                         <span className="text-2xl font-extrabold text-foreground mt-1">
                             {summary?.total_members || 0}
                         </span>
-                        <span className="text-[11px] text-muted-foreground mt-0.5">Bawahan di jalur Anda</span>
+                        <span className="text-[11px] text-muted-foreground mt-0.5">Seluruh bawahan aktif</span>
                     </div>
                     <div className="p-3 rounded-2xl bg-primary/10 text-primary">
                         <Users className="w-6 h-6" />
@@ -268,7 +281,7 @@ export default function Monitoring({
                 {/* 2. Total Jamaah Tim */}
                 <Card className="bg-card/70 backdrop-blur-md border border-border/80 rounded-2xl p-5 shadow-xs flex items-center justify-between">
                     <div className="flex flex-col">
-                        <span className="text-xs font-semibold text-muted-foreground">Total Jamaah Terdaftar</span>
+                        <span className="text-xs font-semibold text-muted-foreground">Total Jamaah Tim</span>
                         <span className="text-2xl font-extrabold text-foreground mt-1">
                             {summary?.total_jamaah || 0}
                         </span>
@@ -296,12 +309,12 @@ export default function Monitoring({
                 {/* 4. Total Komisi & Override Tim */}
                 <Card className="bg-card/70 backdrop-blur-md border border-border/80 rounded-2xl p-5 shadow-xs flex items-center justify-between">
                     <div className="flex flex-col">
-                        <span className="text-xs font-semibold text-muted-foreground">Total Komisi &amp; Override</span>
+                        <span className="text-xs font-semibold text-muted-foreground">Total Komisi Tim</span>
                         <span className="text-xl font-extrabold text-amber-600 dark:text-amber-400 mt-1">
                             Rp {(summary?.total_komisi || 0).toLocaleString('id-ID')}
                         </span>
                         <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-0.5">
-                            <span className="text-emerald-600 font-bold">Dicairkan: Rp {(summary?.total_paid || 0).toLocaleString('id-ID')}</span>
+                            <span className="text-emerald-600 font-bold">Lunas: Rp {(summary?.total_paid || 0).toLocaleString('id-ID')}</span>
                         </div>
                     </div>
                     <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
@@ -310,7 +323,7 @@ export default function Monitoring({
                 </Card>
             </div>
 
-            {/* Filter & Search Bar */}
+            {/* Filter & Search Bar + PerPageSelector */}
             <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 bg-card/40 p-4 rounded-2xl border border-border/80">
                 <div className="relative flex-1 max-w-md">
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -326,7 +339,7 @@ export default function Monitoring({
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-2">
                         <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-xs font-semibold text-muted-foreground">Filter Tingkat:</span>
+                        <span className="text-xs font-semibold text-muted-foreground">Tingkat:</span>
                     </div>
 
                     <select
@@ -334,14 +347,30 @@ export default function Monitoring({
                         onChange={(e) => setSelectedLevelFilter(e.target.value)}
                         className="text-xs bg-background border border-border rounded-xl px-3 py-1.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium"
                     >
-                        <option value="all">Semua Tingkatan ({teamMembers.length})</option>
+                        <option value="all">Semua Tingkatan</option>
                         {hierarchyLevels.map((lvl) => (
                             <option key={lvl.id} value={lvl.urutan.toString()}>
-                                Level {lvl.urutan} - {lvl.nama_level} (
-                                {teamMembers.filter((m) => m.level === lvl.urutan).length})
+                                Level {lvl.urutan} - {lvl.nama_level}
                             </option>
                         ))}
                     </select>
+
+                    <PerPageSelector
+                        value={teamMembers.per_page}
+                        options={[5, 10, 20, 50]}
+                        onChange={(newPerPage) => {
+                            router.get(
+                                route('keagenan.monitoring.index'),
+                                {
+                                    search: debouncedSearch || undefined,
+                                    level: selectedLevelFilter !== 'all' ? selectedLevelFilter : undefined,
+                                    per_page: newPerPage,
+                                    page: 1,
+                                },
+                                { preserveState: true, preserveScroll: true }
+                            );
+                        }}
+                    />
                 </div>
             </div>
 
@@ -367,7 +396,7 @@ export default function Monitoring({
                                     Omzet Terverifikasi
                                 </th>
                                 <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-foreground">
-                                    Komisi &amp; Override
+                                    Komisi
                                 </th>
                                 <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-foreground">
                                     Aksi
@@ -375,14 +404,14 @@ export default function Monitoring({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/60">
-                            {filteredMembers.length === 0 ? (
+                            {membersList.length === 0 ? (
                                 <tr>
                                     <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground text-xs font-medium">
                                         Tidak ada anggota tim bawahan yang sesuai dengan filter pencarian.
                                     </td>
                                 </tr>
                             ) : (
-                                filteredMembers.map((member) => (
+                                membersList.map((member) => (
                                     <tr key={member.id} className="hover:bg-muted/30 transition-colors">
                                         {/* Anggota Info */}
                                         <td className="px-6 py-4">
@@ -490,6 +519,32 @@ export default function Monitoring({
                         </tbody>
                     </table>
                 </div>
+
+                {/* Table Pagination Footer */}
+                {teamMembers && (
+                    <div className="p-4 border-t border-border/80">
+                        <DataTablePagination
+                            links={teamMembers.links}
+                            from={teamMembers.from}
+                            to={teamMembers.to}
+                            total={teamMembers.total}
+                            currentPage={teamMembers.current_page}
+                            lastPage={teamMembers.last_page}
+                            onPageChange={(page) => {
+                                router.get(
+                                    route('keagenan.monitoring.index'),
+                                    {
+                                        search: debouncedSearch || undefined,
+                                        level: selectedLevelFilter !== 'all' ? selectedLevelFilter : undefined,
+                                        per_page: teamMembers.per_page,
+                                        page: page,
+                                    },
+                                    { preserveState: true, preserveScroll: true }
+                                );
+                            }}
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Quick-View Customer Drawer (Infinite Scroll) */}
