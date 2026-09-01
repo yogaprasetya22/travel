@@ -637,8 +637,8 @@ export default function Commissions({
 
             {/* MODAL: CETAK SLIP RESMI REKAP KOMISI (PRINT FRIENDLY) */}
             <Dialog open={isSlipOpen} onOpenChange={setIsSlipOpen}>
-                <DialogContent className="max-w-lg p-0 overflow-hidden">
-                    <div id="printable-slip" className="p-6 flex flex-col gap-4 bg-card text-foreground">
+                <DialogContent className="sm:max-w-xl md:max-w-2xl p-0 overflow-hidden rounded-2xl shadow-2xl">
+                    <div id="printable-slip" className="p-7 flex flex-col gap-5 bg-card text-foreground">
                         {/* Kop Slip */}
                         <div className="flex items-center justify-between pb-4 border-b border-border">
                             <div className="flex items-center gap-2.5">
