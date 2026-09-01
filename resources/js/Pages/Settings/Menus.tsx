@@ -55,7 +55,12 @@ interface Props {
 
 type AccessLevel = "none" | "view" | "full"
 
-export default function Menus({ menus, availableLevels = [] }: Props) {
+export default function Menus({
+    menus,
+    availableLevels = [],
+    tenants = [],
+    selectedTenantId,
+}: Props) {
     const [searchQuery, setSearchQuery] = useState("")
     const [selectedCategory, setSelectedCategory] = useState<string>("all")
     const [expandedMenuIds, setExpandedMenuIds] = useState<number[]>(() =>
@@ -240,6 +245,33 @@ export default function Menus({ menus, availableLevels = [] }: Props) {
                     </div>
                 </div>
             </div>
+
+            {/* Super Admin Master Tenant Selector */}
+            {tenants && tenants.length > 0 && (
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-primary/5 border border-primary/20 rounded-2xl">
+                    <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-primary" />
+                        <span className="text-xs font-bold text-foreground">
+                            Pilih Tenant Travel yang Dikonfigurasi (Super Admin):
+                        </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                        {tenants.map((t) => (
+                            <button
+                                key={t.id}
+                                onClick={() => router.post(route("tenants.switch"), { tenant_id: t.id })}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                                    selectedTenantId === t.id
+                                        ? "bg-primary text-primary-foreground shadow-xs"
+                                        : "bg-background/80 hover:bg-muted text-muted-foreground border border-border"
+                                }`}
+                            >
+                                {t.nama_travel}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Filter, Search & Bulk Actions Bar */}
             <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 bg-card/40 p-4 rounded-2xl border border-border/80">

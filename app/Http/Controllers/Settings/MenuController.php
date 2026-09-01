@@ -33,9 +33,9 @@ class MenuController extends Controller
             ->orderBy('urutan')
             ->get();
 
-        // Get dynamic hierarchy levels for this tenant (excluding admin_travel)
+        // Get dynamic hierarchy levels for this tenant
         $hierarchyLevels = HierarchyLevel::where('tenant_id', $tenantId)
-            ->where('role_key', '!=', 'admin_travel')
+            ->whereNotIn('nama_level', ['Admin', 'Admin Travel', 'admin_travel'])
             ->orderBy('urutan')
             ->get();
 
