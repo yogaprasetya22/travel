@@ -20,6 +20,9 @@ import {
     Award,
     Target,
     Layers,
+    Calendar,
+    Plane,
+    Wallet,
 } from 'lucide-react';
 import {
     ResponsiveContainer,
@@ -40,23 +43,31 @@ import {
 interface DashboardStats {
     total_leads: number;
     closing_count: number;
+    total_omzet: number;
     logistics_ready_count: number;
     total_commission: number;
     paid_commission: number;
     ready_commission: number;
 }
 
-interface OmzetTenantItem {
-    tenant_id: number;
-    nama_travel: string;
-    omzet: number;
-    jamaah_count: number;
-}
-
 interface MonthlyTrendItem {
     month: string;
     omzet: number;
+    closing: number;
     leads: number;
+}
+
+interface OmzetPackageItem {
+    name: string;
+    omzet: number;
+    jamaah_count: number;
+    harga: number;
+}
+
+interface OmzetKloterItem {
+    kloter: string;
+    omzet: number;
+    jamaah_count: number;
 }
 
 interface PackageDistItem {
@@ -80,8 +91,9 @@ interface TopAgentItem {
 }
 
 interface DashboardAnalytics {
-    omzet_by_tenant: OmzetTenantItem[];
     monthly_trend: MonthlyTrendItem[];
+    omzet_by_package: OmzetPackageItem[];
+    omzet_by_kloter: OmzetKloterItem[];
     package_distribution: PackageDistItem[];
     crm_funnel: CrmFunnelItem[];
     top_agents: TopAgentItem[];
@@ -129,6 +141,11 @@ interface PendingPayment {
 }
 
 interface DashboardProps extends PageProps {
+    tenant: {
+        id: number;
+        nama_travel: string;
+        domain_atau_subdomain: string;
+    };
     stats: DashboardStats;
     analytics?: DashboardAnalytics;
     logisticsReadyList: LogisticsItem[];
@@ -138,10 +155,12 @@ interface DashboardProps extends PageProps {
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
 
 export default function Dashboard({
+    tenant,
     stats,
     analytics = {
-        omzet_by_tenant: [],
         monthly_trend: [],
+        omzet_by_package: [],
+        omzet_by_kloter: [],
         package_distribution: [],
         crm_funnel: [],
         top_agents: [],
@@ -153,21 +172,21 @@ export default function Dashboard({
     const isSuperAdmin = auth.user.role === 'super_admin_master';
     const isAgent = auth.user.role === 'agen';
 
-    // State to toggle between Omzet view and Jamaah count view for Super Admin
-    const [superAdminMetric, setSuperAdminMetric] = useState<'omzet' | 'jamaah'>('omzet');
+    // Omzet Dimension Tab: 'monthly' | 'package' | 'kloter'
+    const [omzetDimension, setOmzetDimension] = useState<'monthly' | 'package' | 'kloter'>('monthly');
 
     const totalPackageJamaah = (analytics.package_distribution || []).reduce((acc, p) => acc + p.value, 0);
 
     const CustomTooltip = ({ active, payload, label }: any) => {
         if (active && payload && payload.length) {
             return (
-                <div className="bg-popover border border-border p-3 rounded-xl shadow-xl text-xs flex flex-col gap-1">
+                <div className="bg-popover border border-border p-3 rounded-xl shadow-xl text-xs flex flex-col gap-1.5 backdrop-blur-md">
                     <p className="font-bold text-foreground">{label}</p>
                     {payload.map((entry: any, index: number) => (
-                        <p key={`item-${index}`} style={{ color: entry.color }} className="font-semibold">
+                        <p key={`item-${index}`} style={{ color: entry.color || entry.fill }} className="font-semibold">
                             {entry.name}: {entry.name.toLowerCase().includes('omzet') || entry.dataKey === 'omzet'
                                 ? `Rp ${Number(entry.value).toLocaleString('id-ID')}`
-                                : `${entry.value} Orang`}
+                                : `${Number(entry.value).toLocaleString('id-ID')} Orang`}
                         </p>
                     ))}
                 </div>
@@ -186,20 +205,19 @@ export default function Dashboard({
             {/* Header Greeting */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border/80 shadow-xs">
                 <div>
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex flex-wrap items-center gap-2.5">
                         <div className="h-8 w-1.5 rounded-full bg-primary" />
                         <h1 className="text-2xl font-bold tracking-tight text-foreground">
                             Selamat Datang, {auth.user.name}
                         </h1>
-                        {isSuperAdmin && (
-                            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
-                                Super Admin Master
-                            </span>
-                        )}
+                        <span className="text-xs font-bold px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center gap-1.5">
+                            <Building2 className="w-3.5 h-3.5" />
+                            <span>{tenant?.nama_travel || 'Travel Aktif'}</span>
+                        </span>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1 ml-4">
                         {isSuperAdmin
-                            ? 'Pusat komparasi omzet travel, analitik konversi CRM, serta pengawasan transaksi multi-tenant.'
+                            ? `Memantau ringkasan operasional dan analisis omzet untuk tenant aktif: ${tenant?.nama_travel}.`
                             : isAgent
                             ? 'Pantau perolehan prospek calon jamaah, status logistik koper, dan pencairan komisi Anda.'
                             : 'Ringkasan performa penjualan, pipeline CRM, verifikasi transaksi kas, dan ketersediaan logistik travel.'}
@@ -212,7 +230,7 @@ export default function Dashboard({
                             className="inline-flex items-center gap-2 px-4 py-2.5 bg-muted text-foreground font-semibold rounded-xl hover:bg-muted/80 transition-all text-xs border border-border shadow-xs"
                         >
                             <Building2 className="w-4 h-4 text-primary" />
-                            <span>Kelola Tenants</span>
+                            <span>Buka Tenants Management</span>
                         </Link>
                     )}
                     <Link
@@ -271,24 +289,24 @@ export default function Dashboard({
                     </div>
                 </div>
 
-                {/* 3. Logistics Ready */}
+                {/* 3. Total Omzet Kas Masuk */}
                 <div className="bg-card/70 border border-border/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
                     <div className="flex justify-between items-start">
                         <div>
                             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                Logistik Siap Diambil
+                                Total Omzet Kas Masuk
                             </span>
-                            <h3 className="text-3xl font-extrabold text-foreground mt-2">
-                                {stats.logistics_ready_count.toLocaleString('id-ID')}
+                            <h3 className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-2">
+                                Rp {Number(stats.total_omzet || 0).toLocaleString('id-ID')}
                             </h3>
                         </div>
-                        <div className="p-3 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                            <PackageCheck className="w-6 h-6" />
+                        <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                            <Wallet className="w-6 h-6" />
                         </div>
                     </div>
                     <div className="mt-4 pt-3 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">
-                        <span>Fase 3: Auto-deduct Stok</span>
-                        <span className="text-purple-600 dark:text-purple-400 font-semibold">Siap di Gudang</span>
+                        <span>{tenant?.nama_travel}</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Verified Kas</span>
                     </div>
                 </div>
 
@@ -316,90 +334,69 @@ export default function Dashboard({
                 </div>
             </div>
 
-            {/* CHARTS ROW 1: EXECUTIVE REVENUE & PACKAGE DISTRIBUTION */}
+            {/* CHARTS ROW 1: MULTI-DIMENSION OMZET ANALYTICS & PACKAGE DONUT */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Chart A: Multi-Tenant Omzet (Super Admin) OR Monthly Revenue Trend (Tenant) */}
+                {/* Chart A: Multi-Dimensional Omzet Analysis (Monthly / Package / Kloter) */}
                 <div className="lg:col-span-8 bg-card/70 backdrop-blur-md p-6 rounded-2xl border border-border/80 shadow-xs flex flex-col justify-between gap-4">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-border/60">
                         <div>
                             <div className="flex items-center gap-2">
                                 <TrendingUp className="w-5 h-5 text-primary" />
                                 <h3 className="font-bold text-base text-foreground">
-                                    {isSuperAdmin
-                                        ? 'Komparasi Performa & Omzet Antar-Tenant Travel'
-                                        : 'Tren Omzet & Pendaftaran Prospek (6 Bulan Terakhir)'}
+                                    Analisis Omzet &amp; Pendapatan Kas ({tenant?.nama_travel})
                                 </h3>
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                                {isSuperAdmin
-                                    ? 'Perbandingan akumulasi omzet pembayaran dan total jamaah di setiap travel.'
-                                    : 'Pertumbuhan pendapatan kas verified dan pendaftaran prospek baru setiap bulan.'}
+                                {omzetDimension === 'monthly' && 'Grafik tren omzet bulanan dan pendaftaran prospek dalam 6 bulan terakhir.'}
+                                {omzetDimension === 'package' && 'Perbandingan total omzet dan kontribusi penjualan per varian paket umroh.'}
+                                {omzetDimension === 'kloter' && 'Distribusi omzet pembayaran berdasarkan jadwal bulan keberangkatan kloter.'}
                             </p>
                         </div>
 
-                        {isSuperAdmin && (
-                            <div className="flex items-center gap-1 bg-muted p-1 rounded-xl border border-border text-xs">
-                                <button
-                                    type="button"
-                                    onClick={() => setSuperAdminMetric('omzet')}
-                                    className={`px-3 py-1 rounded-lg font-bold transition cursor-pointer ${
-                                        superAdminMetric === 'omzet'
-                                            ? 'bg-background text-foreground shadow-xs'
-                                            : 'text-muted-foreground hover:text-foreground'
-                                    }`}
-                                >
-                                    Omzet (Rp)
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setSuperAdminMetric('jamaah')}
-                                    className={`px-3 py-1 rounded-lg font-bold transition cursor-pointer ${
-                                        superAdminMetric === 'jamaah'
-                                            ? 'bg-background text-foreground shadow-xs'
-                                            : 'text-muted-foreground hover:text-foreground'
-                                    }`}
-                                >
-                                    Total Jamaah
-                                </button>
-                            </div>
-                        )}
+                        {/* Dimension Switcher Pills */}
+                        <div className="flex items-center gap-1 bg-muted p-1 rounded-xl border border-border text-xs shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => setOmzetDimension('monthly')}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition cursor-pointer ${
+                                    omzetDimension === 'monthly'
+                                        ? 'bg-background text-foreground shadow-xs'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                            >
+                                <Calendar className="w-3.5 h-3.5 text-primary" />
+                                <span>Tren Bulanan</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setOmzetDimension('package')}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition cursor-pointer ${
+                                    omzetDimension === 'package'
+                                        ? 'bg-background text-foreground shadow-xs'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                            >
+                                <Layers className="w-3.5 h-3.5 text-emerald-500" />
+                                <span>Per Paket</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setOmzetDimension('kloter')}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition cursor-pointer ${
+                                    omzetDimension === 'kloter'
+                                        ? 'bg-background text-foreground shadow-xs'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                            >
+                                <Plane className="w-3.5 h-3.5 text-purple-500" />
+                                <span>Per Kloter</span>
+                            </button>
+                        </div>
                     </div>
 
+                    {/* Chart Canvas */}
                     <div className="h-72 w-full pt-2">
-                        {isSuperAdmin ? (
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={analytics.omzet_by_tenant} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
-                                    <CartesianGrid strokeDasharray="3 3" opacity={0.15} vertical={false} />
-                                    <XAxis
-                                        dataKey="nama_travel"
-                                        stroke="currentColor"
-                                        className="text-[11px] text-muted-foreground"
-                                        tickLine={false}
-                                    />
-                                    <YAxis
-                                        stroke="currentColor"
-                                        className="text-[11px] text-muted-foreground"
-                                        tickLine={false}
-                                        tickFormatter={(val) =>
-                                            superAdminMetric === 'omzet'
-                                                ? val >= 1000000000
-                                                    ? `${(val / 1000000000).toFixed(1)} M`
-                                                    : val >= 1000000
-                                                    ? `${(val / 1000000).toFixed(0)} Jt`
-                                                    : val
-                                                : `${val}`
-                                        }
-                                    />
-                                    <Tooltip content={<CustomTooltip />} />
-                                    <Bar
-                                        dataKey={superAdminMetric === 'omzet' ? 'omzet' : 'jamaah_count'}
-                                        name={superAdminMetric === 'omzet' ? 'Total Omzet' : 'Total Jamaah'}
-                                        fill="var(--primary, #3b82f6)"
-                                        radius={[8, 8, 0, 0]}
-                                    />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        ) : (
+                        {omzetDimension === 'monthly' && (
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={analytics.monthly_trend} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
                                     <defs>
@@ -435,6 +432,72 @@ export default function Dashboard({
                                 </AreaChart>
                             </ResponsiveContainer>
                         )}
+
+                        {omzetDimension === 'package' && (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={analytics.omzet_by_package} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
+                                    <CartesianGrid strokeDasharray="3 3" opacity={0.15} vertical={false} />
+                                    <XAxis
+                                        dataKey="name"
+                                        stroke="currentColor"
+                                        className="text-[11px] text-muted-foreground"
+                                        tickLine={false}
+                                    />
+                                    <YAxis
+                                        stroke="currentColor"
+                                        className="text-[11px] text-muted-foreground"
+                                        tickLine={false}
+                                        tickFormatter={(val) =>
+                                            val >= 1000000000
+                                                ? `${(val / 1000000000).toFixed(1)} M`
+                                                : val >= 1000000
+                                                ? `${(val / 1000000).toFixed(0)} Jt`
+                                                : val
+                                        }
+                                    />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <Bar
+                                        dataKey="omzet"
+                                        name="Total Omzet Paket"
+                                        fill="#10b981"
+                                        radius={[8, 8, 0, 0]}
+                                    />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        )}
+
+                        {omzetDimension === 'kloter' && (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={analytics.omzet_by_kloter} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
+                                    <CartesianGrid strokeDasharray="3 3" opacity={0.15} vertical={false} />
+                                    <XAxis
+                                        dataKey="kloter"
+                                        stroke="currentColor"
+                                        className="text-[11px] text-muted-foreground"
+                                        tickLine={false}
+                                    />
+                                    <YAxis
+                                        stroke="currentColor"
+                                        className="text-[11px] text-muted-foreground"
+                                        tickLine={false}
+                                        tickFormatter={(val) =>
+                                            val >= 1000000000
+                                                ? `${(val / 1000000000).toFixed(1)} M`
+                                                : val >= 1000000
+                                                ? `${(val / 1000000).toFixed(0)} Jt`
+                                                : val
+                                        }
+                                    />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <Bar
+                                        dataKey="omzet"
+                                        name="Total Omzet Kloter"
+                                        fill="#8b5cf6"
+                                        radius={[8, 8, 0, 0]}
+                                    />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        )}
                     </div>
                 </div>
 
@@ -443,9 +506,9 @@ export default function Dashboard({
                     <div className="pb-3 border-b border-border/60">
                         <div className="flex items-center gap-2">
                             <PieChartIcon className="w-5 h-5 text-emerald-500" />
-                            <h3 className="font-bold text-base text-foreground">Distribusi Paket Umroh</h3>
+                            <h3 className="font-bold text-base text-foreground">Proporsi Peminat Paket</h3>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">Proporsi peminat berdasarkan varian paket.</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Sebaran pendaftaran jamaah per varian paket.</p>
                     </div>
 
                     <div className="h-48 w-full flex items-center justify-center relative">
@@ -472,8 +535,8 @@ export default function Dashboard({
                             <div className="text-xs text-muted-foreground text-center">Belum ada data paket.</div>
                         )}
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span className="text-xs text-muted-foreground font-semibold">Total</span>
-                            <span className="text-lg font-extrabold text-foreground">{totalPackageJamaah}</span>
+                            <span className="text-[11px] text-muted-foreground font-semibold">Total Jamaah</span>
+                            <span className="text-lg font-extrabold text-foreground">{totalPackageJamaah.toLocaleString('id-ID')}</span>
                         </div>
                     </div>
 
@@ -486,7 +549,7 @@ export default function Dashboard({
                                         <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
                                         <span className="text-foreground font-medium truncate">{p.name}</span>
                                     </div>
-                                    <span className="text-muted-foreground font-bold shrink-0">{p.value} ({percent}%)</span>
+                                    <span className="text-muted-foreground font-bold shrink-0">{p.value.toLocaleString('id-ID')} ({percent}%)</span>
                                 </div>
                             );
                         })}

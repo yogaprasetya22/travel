@@ -46,12 +46,22 @@ class TenantController extends Controller
 
         $tenants = $query->orderBy('nama_travel')->paginate($perPage)->withQueryString();
 
+        // Calculate verified omzet for each tenant in current page
+        $tenants->getCollection()->transform(function ($t) {
+            $t->total_omzet = (float) Pembayaran::withoutGlobalScope('tenant')
+                ->where('tenant_id', $t->id)
+                ->where('status_verifikasi', 'Verified')
+                ->sum('nominal');
+
+            return $t;
+        });
+
         // Platform-wide metrics
         $metrics = [
             'total_tenants' => Tenant::count(),
             'total_users' => User::whereNotNull('tenant_id')->count(),
-            'total_jamaah' => Jamaah::count(),
-            'total_omzet' => (float) Pembayaran::where('status_verifikasi', 'Verified')->sum('nominal'),
+            'total_jamaah' => Jamaah::withoutGlobalScope('tenant')->count(),
+            'total_omzet' => (float) Pembayaran::withoutGlobalScope('tenant')->where('status_verifikasi', 'Verified')->sum('nominal'),
         ];
 
         return Inertia::render('Tenants/Index', [

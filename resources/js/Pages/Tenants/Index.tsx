@@ -39,6 +39,7 @@ interface TenantItem {
     users_count: number;
     jamaah_count: number;
     paket_count: number;
+    total_omzet?: number;
     users?: TenantOwner[];
 }
 
@@ -363,6 +364,14 @@ export default function Index({ tenants, metrics, filters, activeTenantId }: Pro
                                         <div className="text-xs font-extrabold text-foreground">{t.paket_count || 0}</div>
                                         <div className="text-[10px] text-muted-foreground font-medium">Paket Umroh</div>
                                     </div>
+                                </div>
+
+                                {/* Total Omzet Travel Pill */}
+                                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl px-3 py-2 flex items-center justify-between">
+                                    <span className="text-[11px] font-semibold text-muted-foreground">Akumulasi Omzet:</span>
+                                    <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
+                                        Rp {(t.total_omzet || 0).toLocaleString('id-ID')}
+                                    </span>
                                 </div>
                             </div>
 
