@@ -7,6 +7,7 @@ use App\Models\CrmStage;
 use App\Models\Jamaah;
 use App\Models\Paket;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -14,15 +15,14 @@ use Inertia\Response;
 class ViewKanbanController extends Controller
 {
     /**
-     * Handle the incoming request with optimized server-side stage pagination and search.
+     * Handle the incoming request with initial stage data for Kanban Board.
      */
     public function __invoke(Request $request): Response
     {
         $user = auth()->user();
         $tenantId = $user->getActiveTenantId();
         $search = $request->input('search');
-        $stagePages = $request->input('stage_pages', []); // ['stage_1' => 1, 'stage_2' => 2]
-        $perPage = (int) $request->input('per_page', 5);
+        $perPage = (int) $request->input('per_page', 10);
 
         // Retrieve active stages for tenant
         $stages = CrmStage::where('tenant_id', $tenantId)
@@ -60,11 +60,8 @@ class ViewKanbanController extends Controller
             return $query;
         };
 
-        // Populate stages with lightweight paginated leads & fast aggregate stats
-        $stagesData = $stages->map(function ($stage) use ($buildScopedQuery, $stagePages, $perPage) {
-            $stageKey = "stage_{$stage->id}";
-            $currentPage = isset($stagePages[$stageKey]) ? (int) $stagePages[$stageKey] : 1;
-
+        // Populate stages with lightweight initial leads & fast aggregate stats
+        $stagesData = $stages->map(function ($stage) use ($buildScopedQuery, $perPage) {
             $stageQuery = $buildScopedQuery()->where('jamaah.crm_stage_id', $stage->id);
 
             // Fast DB aggregates without loading all models into memory
@@ -73,7 +70,7 @@ class ViewKanbanController extends Controller
                 ->join('paket', 'jamaah.paket_id', '=', 'paket.id')
                 ->sum('paket.harga');
 
-            // Paginated slice with only necessary relationships
+            // Paginated initial slice
             $paginatedLeads = (clone $stageQuery)
                 ->with([
                     'paket:id,nama_paket,harga',
@@ -93,7 +90,6 @@ class ViewKanbanController extends Controller
                     'created_at',
                 ])
                 ->orderBy('id', 'desc')
-                ->skip(($currentPage - 1) * $perPage)
                 ->take($perPage)
                 ->get();
 
@@ -109,8 +105,9 @@ class ViewKanbanController extends Controller
                 'is_active' => $stage->is_active,
                 'total_leads' => $totalCount,
                 'total_nominal' => (float) $totalNominal,
-                'current_page' => $currentPage,
+                'current_page' => 1,
                 'total_pages' => $totalPages,
+                'has_more' => $totalCount > $perPage,
                 'per_page' => $perPage,
                 'jamaah' => $paginatedLeads,
             ];
@@ -144,8 +141,80 @@ class ViewKanbanController extends Controller
             'filters' => [
                 'search' => $search ?? '',
                 'per_page' => $perPage,
-                'stage_pages' => $stagePages,
             ],
+        ]);
+    }
+
+    /**
+     * Fetch next page of leads for a specific CRM stage (used by column infinite scroll).
+     */
+    public function getStageLeads(Request $request, CrmStage $stage): JsonResponse
+    {
+        $user = auth()->user();
+        $tenantId = $user->getActiveTenantId();
+
+        if ($stage->tenant_id !== $tenantId) {
+            abort(403, 'Stage tidak ditemukan pada tenant ini.');
+        }
+
+        $search = $request->input('search');
+        $perPage = (int) $request->input('per_page', 10);
+        $page = (int) $request->input('page', 1);
+
+        $query = Jamaah::where('jamaah.tenant_id', $tenantId)
+            ->where('jamaah.crm_stage_id', $stage->id);
+
+        if ($user->role === 'agen') {
+            $query->where('jamaah.agen_id', $user->id);
+        } elseif ($user->role === 'admin_travel') {
+            $subordinateAgentIds = User::where('created_by', $user->id)
+                ->where('role', 'agen')
+                ->pluck('id')
+                ->toArray();
+            $query->whereIn('jamaah.agen_id', $subordinateAgentIds);
+        }
+
+        if (! empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('jamaah.nama_lengkap', 'ilike', "%{$search}%")
+                    ->orWhere('jamaah.no_hp', 'ilike', "%{$search}%")
+                    ->orWhere('jamaah.email', 'ilike', "%{$search}%")
+                    ->orWhereHas('paket', function ($pq) use ($search) {
+                        $pq->where('paket.nama_paket', 'ilike', "%{$search}%");
+                    })
+                    ->orWhereHas('agen', function ($aq) use ($search) {
+                        $aq->where('users.name', 'ilike', "%{$search}%");
+                    });
+            });
+        }
+
+        $paginator = $query->with([
+            'paket:id,nama_paket,harga',
+            'agen:id,name,email',
+        ])
+            ->select([
+                'id',
+                'tenant_id',
+                'agen_id',
+                'crm_stage_id',
+                'nama_lengkap',
+                'nik',
+                'no_hp',
+                'email',
+                'paket_id',
+                'catatan_admin',
+                'created_at',
+            ])
+            ->orderBy('id', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json([
+            'stage_id' => $stage->id,
+            'jamaah' => $paginator->items(),
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'has_more' => $paginator->hasMorePages(),
+            'total' => $paginator->total(),
         ]);
     }
 }

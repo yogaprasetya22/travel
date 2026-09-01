@@ -53,6 +53,7 @@ Route::middleware('auth')->group(function () {
 
     // CRM & Jamaah Lifecycle Routes
     Route::get('/crm', ViewKanbanController::class)->name('crm.index');
+    Route::get('/crm/stage/{stage}/leads', [ViewKanbanController::class, 'getStageLeads'])->name('crm.stage.leads');
     Route::post('/crm', StoreJamaahController::class)->name('crm.store');
     Route::put('/crm/jamaah/{jamaah}', UpdateJamaahController::class)->name('crm.jamaah.update');
     Route::patch('/crm/jamaah/{jamaah}/stage', UpdateStageController::class)->name('crm.update-stage');

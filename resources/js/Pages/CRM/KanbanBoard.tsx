@@ -37,6 +37,7 @@ interface KanbanStageItem extends CrmStage {
     current_page: number;
     total_pages: number;
     per_page: number;
+    has_more?: boolean;
     jamaah: (Jamaah & {
         paket: { id: number; nama_paket: string; harga: number };
         agen: { id: number; name: string; email?: string } | null;
@@ -62,9 +63,20 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
     const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
 
     const [stages, setStages] = useState(initialStages);
+    const [stagePages, setStagePages] = useState<Record<number, number>>({});
+    const [stageHasMore, setStageHasMore] = useState<Record<number, boolean>>({});
+    const [stageLoadingMore, setStageLoadingMore] = useState<Record<number, boolean>>({});
 
     React.useEffect(() => {
         setStages(initialStages);
+        const initialHasMore: Record<number, boolean> = {};
+        const initialPages: Record<number, number> = {};
+        initialStages.forEach((s) => {
+            initialHasMore[s.id] = Boolean(s.has_more ?? (s.total_leads > s.jamaah.length));
+            initialPages[s.id] = 1;
+        });
+        setStageHasMore(initialHasMore);
+        setStagePages(initialPages);
     }, [initialStages]);
 
     const [draggedLeadId, setDraggedLeadId] = useState<number | null>(null);
@@ -88,9 +100,7 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
         router.get(
             route('crm.index'),
             {
-                search: debouncedSearchQuery,
-                per_page: filters?.per_page || 5,
-                stage_pages: filters?.stage_pages || {},
+                search: debouncedSearchQuery || undefined,
             },
             {
                 preserveState: true,
@@ -100,44 +110,51 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
         );
     }, [debouncedSearchQuery]);
 
-    // Handle Server-Side Page change for specific stage column
-    const handleStagePageChange = (stageId: number, targetPage: number) => {
-        const stageKey = `stage_${stageId}`;
-        const newStagePages = {
-            ...(filters?.stage_pages || {}),
-            [stageKey]: targetPage,
-        };
+    // Load next page of leads for specific column on infinite scroll
+    const loadMoreStageLeads = async (stageId: number) => {
+        const hasMore = stageHasMore[stageId] ?? true;
+        const isLoading = stageLoadingMore[stageId] ?? false;
+        if (!hasMore || isLoading) return;
 
-        router.get(
-            route('crm.index'),
-            {
-                search: debouncedSearchQuery,
-                per_page: filters?.per_page || 10,
-                stage_pages: newStagePages,
-            },
-            {
-                preserveState: true,
-                preserveScroll: true,
-                replace: true,
-            }
-        );
+        setStageLoadingMore((prev) => ({ ...prev, [stageId]: true }));
+        const currentPage = stagePages[stageId] || 1;
+        const nextPage = currentPage + 1;
+
+        try {
+            const url = new URL(route('crm.stage.leads', stageId), window.location.origin);
+            url.searchParams.set('page', nextPage.toString());
+            url.searchParams.set('per_page', '10');
+            if (debouncedSearchQuery) url.searchParams.set('search', debouncedSearchQuery);
+
+            const res = await fetch(url.toString());
+            const data = await res.json();
+
+            setStages((prevStages) =>
+                prevStages.map((s) => {
+                    if (s.id === stageId) {
+                        return {
+                            ...s,
+                            jamaah: [...s.jamaah, ...(data.jamaah || [])],
+                        };
+                    }
+                    return s;
+                })
+            );
+
+            setStagePages((prev) => ({ ...prev, [stageId]: nextPage }));
+            setStageHasMore((prev) => ({ ...prev, [stageId]: Boolean(data.has_more) }));
+        } catch (err) {
+            console.error('Failed to load more leads for stage:', err);
+        } finally {
+            setStageLoadingMore((prev) => ({ ...prev, [stageId]: false }));
+        }
     };
 
-    // Handle Per-Page change across all columns
-    const handlePerPageChange = (newPerPage: number) => {
-        router.get(
-            route('crm.index'),
-            {
-                search: debouncedSearchQuery,
-                per_page: newPerPage,
-                stage_pages: {},
-            },
-            {
-                preserveState: true,
-                preserveScroll: true,
-                replace: true,
-            }
-        );
+    const handleColumnScroll = (e: React.UIEvent<HTMLDivElement>, stageId: number) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+        if (scrollHeight - scrollTop - clientHeight < 150) {
+            loadMoreStageLeads(stageId);
+        }
     };
 
     // Form registration hooks for adding manual leads
@@ -443,27 +460,6 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
                         </button>
                     </div>
 
-                    {/* Kanban Limit per Column Selector */}
-                    {viewMode === 'kanban' && (
-                        <div className="flex items-center gap-2 bg-muted/40 px-3 py-1 rounded-xl border border-border/70 shrink-0">
-                            <span className="text-xs text-muted-foreground font-medium">Tampil / Kolom:</span>
-                            {[5, 10, 15, 20].map((limit) => (
-                                <button
-                                    key={limit}
-                                    type="button"
-                                    onClick={() => handlePerPageChange(limit)}
-                                    className={`px-2.5 py-0.5 rounded text-xs font-bold transition cursor-pointer ${
-                                        (filters?.per_page || 10) === limit
-                                            ? 'bg-primary text-primary-foreground shadow-xs'
-                                            : 'text-muted-foreground hover:text-foreground'
-                                    }`}
-                                >
-                                    {limit}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-
                     {/* Live Search Input */}
                     <div className="relative flex-1 sm:w-64">
                         <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -494,7 +490,7 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
                 </div>
             </div>
 
-            {/* MODE 1: KANBAN BOARD */}
+            {/* MODE 1: KANBAN BOARD (INFINITE SCROLL) */}
             {viewMode === 'kanban' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full items-start">
                     {stages.map((stage, idx) => {
@@ -513,8 +509,8 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
                             'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
                         ];
 
-                        const currentPage = stage.current_page || 1;
-                        const totalPages = stage.total_pages || 1;
+                        const isColumnLoadingMore = stageLoadingMore[stage.id] ?? false;
+                        const columnHasMore = stageHasMore[stage.id] ?? (totalLeadsCount > stage.jamaah.length);
 
                         return (
                             <div
@@ -536,8 +532,11 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
                                     </span>
                                 </div>
 
-                                {/* Leads List */}
-                                <div className="flex flex-col gap-3 min-h-[100px]">
+                                {/* Scrollable Leads Container with Infinite Scroll */}
+                                <div
+                                    onScroll={(e) => handleColumnScroll(e, stage.id)}
+                                    className="flex flex-col gap-3 min-h-[120px] max-h-[calc(100vh-270px)] overflow-y-auto pr-1"
+                                >
                                     {stage.jamaah.map((lead) => (
                                         <div
                                             key={lead.id}
@@ -613,34 +612,21 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
                                             <span>Tidak ada data di tahap ini</span>
                                         </div>
                                     )}
-                                </div>
 
-                                {/* Column Pagination Footer */}
-                                {totalPages > 1 && (
-                                    <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs text-muted-foreground">
-                                        <span>
-                                            Hal {currentPage} dari {totalPages} ({totalLeadsCount} total)
-                                        </span>
-                                        <div className="flex items-center gap-1">
-                                            <button
-                                                type="button"
-                                                onClick={() => handleStagePageChange(stage.id, Math.max(1, currentPage - 1))}
-                                                disabled={currentPage <= 1}
-                                                className="px-2 py-1 rounded-md border border-border bg-card hover:bg-muted text-foreground disabled:opacity-30 disabled:cursor-not-allowed text-[11px] font-bold transition cursor-pointer"
-                                            >
-                                                &larr; Prev
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleStagePageChange(stage.id, Math.min(totalPages, currentPage + 1))}
-                                                disabled={currentPage >= totalPages}
-                                                className="px-2 py-1 rounded-md border border-border bg-card hover:bg-muted text-foreground disabled:opacity-30 disabled:cursor-not-allowed text-[11px] font-bold transition cursor-pointer"
-                                            >
-                                                Next &rarr;
-                                            </button>
+                                    {/* Column Infinite Scroll Loading Spinner */}
+                                    {isColumnLoadingMore && (
+                                        <div className="py-3 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                                            <div className="h-4 w-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                                            <span>Memuat prospek...</span>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+
+                                    {!isColumnLoadingMore && !columnHasMore && stage.jamaah.length > 0 && (
+                                        <div className="py-2 text-center text-[10px] text-muted-foreground/70">
+                                            {stage.jamaah.length} prospek termuat
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         );
                     })}
