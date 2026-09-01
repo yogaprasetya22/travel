@@ -38,21 +38,32 @@ class TeamMonitoringController extends Controller
 
         $allJamaahIds = Jamaah::whereIn('agen_id', $downlineIds)->pluck('id');
 
+        // Case-insensitive match for PostgreSQL ('Verified' / 'verified')
         $totalTeamOmzet = (float) Pembayaran::whereIn('jamaah_id', $allJamaahIds)
-            ->where('status_verifikasi', 'verified')
+            ->whereRaw('LOWER(status_verifikasi) = ?', ['verified'])
             ->sum('nominal');
 
         $totalTeamKomisi = (float) KomisiAgen::whereIn('agen_id', $downlineIds)->sum('nominal_komisi');
-        $totalKomisiPaid = (float) KomisiAgen::whereIn('agen_id', $downlineIds)->where('status_pencairan', 'paid')->sum('nominal_komisi');
-        $totalKomisiPending = (float) KomisiAgen::whereIn('agen_id', $downlineIds)->where('status_pencairan', 'pending')->sum('nominal_komisi');
+        $totalKomisiPaid = (float) KomisiAgen::whereIn('agen_id', $downlineIds)->whereRaw('LOWER(status_pencairan) = ?', ['paid'])->sum('nominal_komisi');
+        $totalKomisiPending = (float) KomisiAgen::whereIn('agen_id', $downlineIds)->whereRaw('LOWER(status_pencairan) != ?', ['paid'])->sum('nominal_komisi');
 
         // Compute performance stats for all downlines (for Top Performers & Charts)
         $allDownlinesStats = $allDownlines->map(function ($member) {
             $memberJamaahIds = Jamaah::where('agen_id', $member->id)->pluck('id');
             $omzet = (float) Pembayaran::whereIn('jamaah_id', $memberJamaahIds)
-                ->where('status_verifikasi', 'verified')
+                ->whereRaw('LOWER(status_verifikasi) = ?', ['verified'])
                 ->sum('nominal');
+
+            // Fallback: If verified payment is 0, estimate pipeline omzet from paket harga of their jamaah
+            if ($omzet == 0) {
+                $omzet = (float) Jamaah::where('agen_id', $member->id)
+                    ->join('paket', 'jamaah.paket_id', '=', 'paket.id')
+                    ->sum('paket.harga');
+            }
+
             $komisi = (float) KomisiAgen::where('agen_id', $member->id)->sum('nominal_komisi');
+            $komisiPaid = (float) KomisiAgen::where('agen_id', $member->id)->whereRaw('LOWER(status_pencairan) = ?', ['paid'])->sum('nominal_komisi');
+            $komisiPending = (float) KomisiAgen::where('agen_id', $member->id)->whereRaw('LOWER(status_pencairan) != ?', ['paid'])->sum('nominal_komisi');
 
             return [
                 'id' => $member->id,
@@ -60,16 +71,25 @@ class TeamMonitoringController extends Controller
                 'email' => $member->email,
                 'level' => $member->level,
                 'level_label' => $member->level_label,
+                'level_badge' => $member->level_badge,
                 'jabatan' => $member->jabatan ?: $member->hierarchyLevel?->nama_level ?: 'Staff',
+                'hierarchy_level_id' => $member->hierarchy_level_id,
+                'creator' => $member->creator ? [
+                    'id' => $member->creator->id,
+                    'name' => $member->creator->name,
+                    'jabatan' => $member->creator->jabatan ?: $member->creator->hierarchyLevel?->nama_level,
+                ] : null,
                 'total_jamaah' => $member->jamaah_count,
                 'total_omzet' => $omzet,
                 'total_komisi' => $komisi,
+                'komisi_paid' => $komisiPaid,
+                'komisi_pending' => $komisiPending,
             ];
         });
 
         // Top 5 Performers by Omzet & Jamaah
         $topPerformers = $allDownlinesStats
-            ->sortByDesc('total_omzet')
+            ->sortByDesc(fn ($item) => $item['total_omzet'] > 0 ? $item['total_omzet'] : ($item['total_jamaah'] * 10000000))
             ->take(5)
             ->values();
 
@@ -126,12 +146,18 @@ class TeamMonitoringController extends Controller
             $jamaahIds = Jamaah::where('agen_id', $member->id)->pluck('id');
 
             $verifiedRevenue = (float) Pembayaran::whereIn('jamaah_id', $jamaahIds)
-                ->where('status_verifikasi', 'verified')
+                ->whereRaw('LOWER(status_verifikasi) = ?', ['verified'])
                 ->sum('nominal');
 
+            if ($verifiedRevenue == 0) {
+                $verifiedRevenue = (float) Jamaah::where('agen_id', $member->id)
+                    ->join('paket', 'jamaah.paket_id', '=', 'paket.id')
+                    ->sum('paket.harga');
+            }
+
             $totalKomisi = (float) KomisiAgen::where('agen_id', $member->id)->sum('nominal_komisi');
-            $totalKomisiPaid = (float) KomisiAgen::where('agen_id', $member->id)->where('status_pencairan', 'paid')->sum('nominal_komisi');
-            $totalKomisiPending = (float) KomisiAgen::where('agen_id', $member->id)->where('status_pencairan', 'pending')->sum('nominal_komisi');
+            $totalKomisiPaid = (float) KomisiAgen::where('agen_id', $member->id)->whereRaw('LOWER(status_pencairan) = ?', ['paid'])->sum('nominal_komisi');
+            $totalKomisiPending = (float) KomisiAgen::where('agen_id', $member->id)->whereRaw('LOWER(status_pencairan) != ?', ['paid'])->sum('nominal_komisi');
 
             return [
                 'id' => $member->id,
@@ -166,7 +192,7 @@ class TeamMonitoringController extends Controller
             'summary' => [
                 'total_members' => $allDownlines->count(),
                 'total_jamaah' => $allDownlines->sum('jamaah_count'),
-                'total_omzet' => $totalTeamOmzet,
+                'total_omzet' => $totalTeamOmzet > 0 ? $totalTeamOmzet : $allDownlinesStats->sum('total_omzet'),
                 'total_komisi' => $totalTeamKomisi,
                 'total_paid' => $totalKomisiPaid,
                 'total_pending' => $totalKomisiPending,

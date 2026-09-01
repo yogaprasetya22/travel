@@ -281,7 +281,6 @@ export default function Monitoring({
     const barChartData = topPerformers.map((p) => ({
         ...p,
         shortName: p.name.length > 12 ? p.name.substring(0, 10) + '..' : p.name,
-        omzetJuta: p.total_omzet / 1_000_000,
     }));
 
     return (
@@ -414,7 +413,7 @@ export default function Monitoring({
                                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.06)" />
                                     <XAxis
                                         type="number"
-                                        tickFormatter={(val) => `Rp ${val} Jt`}
+                                        tickFormatter={(val) => formatCurrencyShort(val)}
                                         tick={{ fontSize: 10, fill: 'currentColor' }}
                                         className="text-muted-foreground"
                                     />
@@ -465,7 +464,7 @@ export default function Monitoring({
                                         }}
                                     />
                                     <Bar
-                                        dataKey="omzetJuta"
+                                        dataKey="total_omzet"
                                         radius={[0, 8, 8, 0]}
                                         cursor="pointer"
                                         onClick={(data) => handleOpenDrawer(data as unknown as TopPerformerItem)}
