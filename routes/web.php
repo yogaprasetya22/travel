@@ -17,23 +17,19 @@ use App\Http\Controllers\Keagenan\TeamMonitoringController;
 use App\Http\Controllers\Pembayaran\VerifyPembayaranController;
 use App\Http\Controllers\Pembayaran\ViewPaymentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicLandingController;
 use App\Http\Controllers\Settings\AppSettingsController;
 use App\Http\Controllers\Settings\MasterDataController;
 use App\Http\Controllers\Settings\MenuController;
 use App\Http\Controllers\Settings\UserHierarchyController;
 use App\Http\Controllers\TenantController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => false,
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+// Public Landing & Prospective Jamaah Registration Routes
+Route::get('/', [PublicLandingController::class, 'index'])->name('home');
+Route::get('/daftar', [PublicLandingController::class, 'registerForm'])->name('public.register');
+Route::post('/daftar', [PublicLandingController::class, 'registerSubmit'])->name('public.register.submit');
+Route::get('/daftar/sukses', [PublicLandingController::class, 'registerSuccess'])->name('public.register.success');
 
 Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])

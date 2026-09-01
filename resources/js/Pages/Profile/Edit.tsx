@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import PageLayout from '@/Components/Layouts/PageLayout';
 import { PageProps } from '@/Types';
 import { usePage } from '@inertiajs/react';
@@ -7,22 +8,37 @@ import UpdateProfileInformationForm from './Partials/UpdateProfileInformationFor
 import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
-import { Mail, Building2, BadgeCheck } from 'lucide-react';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Mail, Building2, BadgeCheck, Share2, Copy, Check, Sparkles } from 'lucide-react';
 
-export default function Edit({
-    mustVerifyEmail,
-    status,
-    protection,
-}: PageProps<{
+interface Props extends PageProps {
     mustVerifyEmail: boolean;
     status?: string;
     protection?: {
         isSoleOwner: boolean;
         isSoleSuperAdmin: boolean;
     };
-}>) {
+}
+
+export default function Edit({
+    mustVerifyEmail,
+    status,
+    protection,
+}: Props) {
     const { auth } = usePage<PageProps>().props;
     const user = auth.user;
+    const [copied, setCopied] = useState(false);
+
+    const referralUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/daftar?ref=${encodeURIComponent(user.email)}`
+        : '';
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(referralUrl);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2500);
+    };
 
     return (
         <PageLayout
@@ -68,6 +84,50 @@ export default function Edit({
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Unique Referral Link Card for Agents & Leaders */}
+            {user.level >= 1 && (
+                <Card className="bg-gradient-to-r from-primary/5 via-card to-primary/5 border border-primary/20 shadow-xs rounded-2xl p-5">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                                <Sparkles className="w-4 h-4 text-primary" />
+                                <span className="font-extrabold text-sm text-foreground">
+                                    Link Referral Pendaftaran Calon Jamaah Anda
+                                </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground max-w-xl">
+                                Bagikan link ini ke calon jamaah di WhatsApp / Medsos. Calon jamaah yang mendaftar melalui link ini akan otomatis ter-assign ke akun Anda dan komisi tercatat langsung.
+                            </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <Input
+                                readOnly
+                                value={referralUrl}
+                                className="text-xs h-9 font-mono rounded-xl bg-background max-w-xs"
+                            />
+                            <Button
+                                size="sm"
+                                onClick={handleCopy}
+                                className="text-xs font-bold rounded-xl h-9 gap-1.5 shrink-0"
+                            >
+                                {copied ? (
+                                    <>
+                                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                                        <span>Tersalin!</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Copy className="w-3.5 h-3.5" />
+                                        <span>Salin Link</span>
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </Card>
+            )}
 
             {/* Profile Forms with shadcn Components */}
             <div className="flex flex-col gap-6">
