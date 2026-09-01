@@ -20,9 +20,14 @@ export default function UpdateProfileInformation({
     const user = usePage().props.auth.user;
 
     const { data, setData, patch, errors, processing, recentlySuccessful, setError } =
-        useForm({
+        useForm<{
+            name: string;
+            email: string;
+            bio: string;
+        }>({
             name: user.name,
             email: user.email,
+            bio: user.bio || '',
         });
 
     const submit: FormEventHandler = (e) => {
@@ -49,14 +54,14 @@ export default function UpdateProfileInformation({
                             Informasi Profil Akun
                         </CardTitle>
                         <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                            Perbarui nama lengkap dan alamat email yang digunakan untuk login ke sistem.
+                            Perbarui nama lengkap, email, dan pesan komitmen profil publik Anda.
                         </CardDescription>
                     </div>
                 </div>
             </CardHeader>
 
             <CardContent className="p-0 pt-6">
-                <form onSubmit={submit} className="flex flex-col gap-4 max-w-xl">
+                <form onSubmit={submit} className="flex flex-col gap-4 w-full">
                     <div className="space-y-1.5">
                         <Label htmlFor="profile-name" className="text-xs font-semibold text-foreground">
                             Nama Lengkap
@@ -96,6 +101,26 @@ export default function UpdateProfileInformation({
                         </div>
                         {errors.email && (
                             <p className="text-xs text-destructive font-medium">{errors.email}</p>
+                        )}
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="profile-bio" className="text-xs font-semibold text-foreground">
+                                Komitmen / Bio Agen (Ditampilkan di Halaman Profil Publik)
+                            </Label>
+                            <span className="text-[10px] text-muted-foreground">Opsional</span>
+                        </div>
+                        <textarea
+                            id="profile-bio"
+                            rows={3}
+                            className="w-full text-xs rounded-xl p-3 bg-background border border-border focus:border-primary focus:outline-hidden focus:ring-2 focus:ring-primary/20 transition-all text-foreground placeholder:text-muted-foreground resize-y"
+                            placeholder="Saya berkomitmen untuk mendampingi setiap langkah Anda menuju Tanah Suci. Dari persiapan hingga kepulangan, kenyamanan dan kekhusyukan ibadah Anda adalah prioritas utama saya."
+                            value={data.bio}
+                            onChange={(e) => setData('bio', e.target.value)}
+                        />
+                        {errors.bio && (
+                            <p className="text-xs text-destructive font-medium">{errors.bio}</p>
                         )}
                     </div>
 

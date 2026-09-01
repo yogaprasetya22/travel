@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AgentProfileController;
 use App\Http\Controllers\CRM\CustomerController;
 use App\Http\Controllers\CRM\DepartureScheduleController;
 use App\Http\Controllers\CRM\GuestRegisterFormController;
@@ -12,7 +13,6 @@ use App\Http\Controllers\CRM\ViewKanbanController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Inventaris\InventarisController;
 use App\Http\Controllers\Keagenan\MitraAgenController;
-use App\Http\Controllers\AgentProfileController;
 use App\Http\Controllers\Keagenan\PembagianKomisiController;
 use App\Http\Controllers\Keagenan\TeamMonitoringController;
 use App\Http\Controllers\Pembayaran\VerifyPembayaranController;

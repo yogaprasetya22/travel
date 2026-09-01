@@ -45,7 +45,7 @@ export default function Edit({
             title="Pengaturan Profil Akun"
             breadcrumbParent="Pengaturan Travel"
             breadcrumbPage="Profil Akun"
-            contentClass="p-6 md:p-8 flex flex-col gap-6 w-full max-w-5xl"
+            contentClass="p-6 md:p-8 flex flex-col gap-6 w-full max-w-4xl mx-auto"
         >
             {/* User Profile Banner with shadcn Card & Avatar */}
             <Card className="bg-card/60 backdrop-blur-md border border-border/80 shadow-xs">

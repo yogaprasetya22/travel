@@ -37,6 +37,7 @@ interface Agent {
     name: string;
     email: string;
     created_at: string;
+    referral_code?: string;
     jamaah_count?: number;
     total_komisi?: number;
 }
@@ -311,7 +312,14 @@ export default function Agents({ agents, metrics, filters }: Props) {
                                                 {agent.name.substring(0, 2).toUpperCase()}
                                             </div>
                                             <div>
-                                                <div className="text-foreground font-bold">{agent.name}</div>
+                                                <div className="text-foreground font-bold flex items-center gap-2">
+                                                    {agent.name}
+                                                    {agent.referral_code && (
+                                                        <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-[9px] font-extrabold tracking-wider text-primary">
+                                                            {agent.referral_code}
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <div className="text-[10px] text-muted-foreground font-medium">Mitra Agen</div>
                                             </div>
                                         </div>

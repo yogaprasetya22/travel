@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
@@ -32,7 +33,7 @@ use Illuminate\Support\Carbon;
  * @property-read Tenant|null $tenant
  * @property-read HierarchyLevel|null $hierarchyLevel
  */
-#[Fillable(['name', 'email', 'password', 'tenant_id', 'hierarchy_level_id', 'role', 'jabatan', 'created_by'])]
+#[Fillable(['name', 'email', 'password', 'tenant_id', 'hierarchy_level_id', 'role', 'jabatan', 'bio', 'created_by'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -57,7 +58,7 @@ class User extends Authenticatable
     {
         static::creating(function ($user) {
             if (empty($user->referral_code)) {
-                $user->referral_code = 'AG-' . strtoupper(\Illuminate\Support\Str::random(6));
+                $user->referral_code = 'AG-'.strtoupper(Str::random(6));
             }
         });
     }

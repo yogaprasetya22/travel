@@ -67,7 +67,7 @@ class TenantController extends Controller
         $appUrl = env('APP_URL', 'http://localhost:8000');
         $host = parse_url($appUrl, PHP_URL_HOST) ?? 'localhost';
         $port = parse_url($appUrl, PHP_URL_PORT);
-        $domainSuffix = '.' . $host . ($port ? ':' . $port : '');
+        $domainSuffix = '.'.$host.($port ? ':'.$port : '');
 
         return Inertia::render('Tenants/Index', [
             'tenants' => $tenants,
@@ -98,6 +98,7 @@ class TenantController extends Controller
             'owner_name' => ['required', 'string', 'max:255'],
             'owner_email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'owner_password' => ['required', 'string', 'min:6'],
+            'theme_name' => ['nullable', 'string', 'max:50'],
         ]);
 
         DB::transaction(function () use ($validated, $user) {
@@ -106,6 +107,7 @@ class TenantController extends Controller
                 'nama_travel' => $validated['nama_travel'],
                 'domain_atau_subdomain' => strtolower(preg_replace('/[^a-zA-Z0-9.-]/', '', $validated['domain_atau_subdomain'])),
                 'logo' => $validated['logo'] ?? null,
+                'theme_name' => $validated['theme_name'] ?? 'coffee',
             ]);
 
             // 2. Create Default Hierarchy Levels
@@ -187,12 +189,14 @@ class TenantController extends Controller
             'nama_travel' => ['required', 'string', 'max:255'],
             'domain_atau_subdomain' => ['required', 'string', 'max:100', Rule::unique('tenants', 'domain_atau_subdomain')->ignore($tenant->id)],
             'logo' => ['nullable', 'string', 'max:255'],
+            'theme_name' => ['nullable', 'string', 'max:50'],
         ]);
 
         $tenant->update([
             'nama_travel' => $validated['nama_travel'],
             'domain_atau_subdomain' => strtolower(preg_replace('/[^a-zA-Z0-9.-]/', '', $validated['domain_atau_subdomain'])),
             'logo' => $validated['logo'] ?? $tenant->logo,
+            'theme_name' => $validated['theme_name'] ?? $tenant->theme_name,
         ]);
 
         return redirect()->back()->with('success', "Informasi tenant {$tenant->nama_travel} berhasil diperbarui.");

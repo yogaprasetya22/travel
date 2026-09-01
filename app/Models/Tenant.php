@@ -25,6 +25,7 @@ class Tenant extends Model
         'nama_travel',
         'domain_atau_subdomain',
         'logo',
+        'theme_name',
     ];
 
     public function users(): HasMany

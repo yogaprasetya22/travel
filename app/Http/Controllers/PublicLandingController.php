@@ -26,8 +26,9 @@ class PublicLandingController extends Controller
 
         $host = $request->getHost();
         $subdomain = explode('.', $host)[0];
-        
+
         $tenant = Tenant::where('domain_atau_subdomain', $subdomain)->first();
+
         return $tenant ?: Tenant::first();
     }
 
@@ -74,7 +75,7 @@ class PublicLandingController extends Controller
                 ->where(function ($q) use ($ref) {
                     $q->where('referral_code', $ref)
                         ->orWhere('email', $ref)
-                        ->orWhere('id', (int)$ref)
+                        ->orWhere('id', (int) $ref)
                         ->orWhere('name', 'ilike', "%{$ref}%");
                 })
                 ->first();

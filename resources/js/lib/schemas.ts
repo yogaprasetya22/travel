@@ -35,6 +35,7 @@ export const resetPasswordSchema = z.object({
 export const updateProfileSchema = z.object({
     name: z.string().min(2, 'Nama minimal 2 karakter.'),
     email: z.email({ error: 'Alamat email tidak valid.' }),
+    bio: z.string().max(1000, 'Bio maksimal 1000 karakter.').optional().nullable(),
 });
 
 export const updatePasswordSchema = z.object({

@@ -87,7 +87,7 @@ export function NavUser({
                         <DropdownMenuGroup>
                             <DropdownMenuItem
                                 render={
-                                    <Link href={route("settings.app.index")} className="w-full flex items-center gap-1.5 cursor-pointer" />
+                                    <Link href={route("profile.edit")} className="w-full flex items-center gap-1.5 cursor-pointer" />
                                 }
                             >
                                 <BadgeCheck className="w-4 h-4" />

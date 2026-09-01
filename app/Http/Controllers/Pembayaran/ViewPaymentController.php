@@ -22,7 +22,7 @@ class ViewPaymentController extends Controller
         $payments = Pembayaran::with(['jamaah.paket', 'rekeningTenant', 'verifiedBy'])
             ->when($search, function ($query, $search) {
                 $query->whereHas('jamaah', function ($q) use ($search) {
-                    $q->where('nama_lengkap', 'ilike', '%' . $search . '%');
+                    $q->where('nama_lengkap', 'ilike', '%'.$search.'%');
                 });
             })
             ->orderByDesc('created_at')

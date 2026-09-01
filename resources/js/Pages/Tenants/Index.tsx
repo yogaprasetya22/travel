@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import PageLayout from '@/Components/Layouts/PageLayout';
 import { PageProps } from '@/Types';
+import { useTheme } from '@/Components/ThemeProvider';
 import {
     Building2,
     Users,
@@ -35,6 +36,7 @@ interface TenantItem {
     nama_travel: string;
     domain_atau_subdomain: string;
     logo?: string | null;
+    theme_name?: string | null;
     created_at?: string;
     users_count: number;
     jamaah_count: number;
@@ -76,6 +78,8 @@ interface Props extends PageProps {
 
 export default function Index({ tenants, metrics, filters, activeTenantId, domainSuffix = '.hajjflow.com' }: Props) {
     const [searchQuery, setSearchQuery] = useState(filters.search || '');
+    const { themes } = useTheme();
+    const themeList = Object.values(themes || {});
     
     // Modal states
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -91,6 +95,7 @@ export default function Index({ tenants, metrics, filters, activeTenantId, domai
         owner_name: '',
         owner_email: '',
         owner_password: '',
+        theme_name: 'coffee',
     });
     const [createErrors, setCreateErrors] = useState<Record<string, string>>({});
     const [isSubmittingCreate, setIsSubmittingCreate] = useState(false);
@@ -99,6 +104,7 @@ export default function Index({ tenants, metrics, filters, activeTenantId, domai
     const [editForm, setEditForm] = useState({
         nama_travel: '',
         domain_atau_subdomain: '',
+        theme_name: '',
     });
     const [editErrors, setEditErrors] = useState<Record<string, string>>({});
     const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
@@ -129,6 +135,7 @@ export default function Index({ tenants, metrics, filters, activeTenantId, domai
                     owner_name: '',
                     owner_email: '',
                     owner_password: '',
+                    theme_name: 'coffee',
                 });
                 setIsSubmittingCreate(false);
             },
@@ -144,6 +151,7 @@ export default function Index({ tenants, metrics, filters, activeTenantId, domai
         setEditForm({
             nama_travel: tenant.nama_travel,
             domain_atau_subdomain: tenant.domain_atau_subdomain,
+            theme_name: tenant.theme_name || 'coffee',
         });
         setEditErrors({});
         setIsEditOpen(true);
@@ -319,6 +327,9 @@ export default function Index({ tenants, metrics, filters, activeTenantId, domai
                                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
                                                 <Globe className="w-3.5 h-3.5 text-primary" />
                                                 <span className="font-medium text-foreground font-mono">{t.domain_atau_subdomain}{domainSuffix}</span>
+                                                <div className="flex gap-1 ml-2">
+                                                    <span className="text-[10px] font-bold bg-muted px-2 py-0.5 rounded border border-border capitalize text-muted-foreground">Tema: {t.theme_name || 'coffee'}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -552,6 +563,39 @@ export default function Index({ tenants, metrics, filters, activeTenantId, domai
                                         <p className="text-[11px] text-rose-500 mt-1 font-medium">{createErrors.owner_password}</p>
                                     )}
                                 </div>
+
+                                <div className="md:col-span-2 pt-3 border-t border-border/70">
+                                    <div className="text-xs font-bold text-foreground mb-1 flex items-center gap-1.5">
+                                        <Sparkles className="w-4 h-4 text-purple-500" />
+                                        <span>Konfigurasi Tema Publik</span>
+                                    </div>
+                                    <p className="text-[11px] text-muted-foreground mb-3">Warna utama dan latar belakang untuk halaman Welcome dan Pendaftaran (publik).</p>
+                                </div>
+
+
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-bold text-foreground mb-1.5">Pilih Tema Publik DaisyUI</label>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-48 overflow-y-auto p-2 border border-border rounded-xl bg-muted/20">
+                                        {themeList.map((t) => {
+                                            const bgStyle = t.variables['--background'] ? `hsl(${t.variables['--background']})` : (t.type === 'dark' ? '#0f172a' : '#ffffff');
+                                            const fgStyle = t.variables['--foreground'] ? `hsl(${t.variables['--foreground']})` : (t.type === 'dark' ? '#ffffff' : '#0f172a');
+                                            const isSelected = createForm.theme_name === t.name;
+                                            return (
+                                                <button
+                                                    key={t.name}
+                                                    type="button"
+                                                    onClick={() => setCreateForm({ ...createForm, theme_name: t.name })}
+                                                    className={`p-2 rounded-xl border text-left text-[10px] font-bold capitalize transition-all flex items-center justify-between gap-1 ${isSelected ? 'border-primary ring-1 ring-primary/30 shadow-xs' : 'border-border hover:border-foreground/30'}`}
+                                                    style={{ backgroundColor: bgStyle, color: fgStyle }}
+                                                >
+                                                    {t.name}
+                                                    {isSelected && <Check className="w-3 h-3" />}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
                             </div>
 
                             <div className="flex items-center justify-end gap-3 pt-5 border-t border-border/80">
@@ -634,6 +678,40 @@ export default function Index({ tenants, metrics, filters, activeTenantId, domai
                                 {editErrors.domain_atau_subdomain && (
                                     <p className="text-[11px] text-rose-500 mt-1 font-medium">{editErrors.domain_atau_subdomain}</p>
                                 )}
+                            </div>
+
+                            <div className="pt-2 border-t border-border/70">
+                                <div className="text-xs font-bold text-foreground mb-1 flex items-center gap-1.5">
+                                    <Sparkles className="w-4 h-4 text-purple-500" />
+                                    <span>Konfigurasi Tema Publik</span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-bold text-foreground mb-1.5">Pilih Tema Publik DaisyUI</label>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-48 overflow-y-auto p-2 border border-border rounded-xl bg-muted/20">
+                                        {themeList.map((t) => {
+                                            const bgStyle = t.variables['--background'] ? `hsl(${t.variables['--background']})` : (t.type === 'dark' ? '#0f172a' : '#ffffff');
+                                            const fgStyle = t.variables['--foreground'] ? `hsl(${t.variables['--foreground']})` : (t.type === 'dark' ? '#ffffff' : '#0f172a');
+                                            const isSelected = editForm.theme_name === t.name;
+                                            return (
+                                                <button
+                                                    key={t.name}
+                                                    type="button"
+                                                    onClick={() => setEditForm({ ...editForm, theme_name: t.name })}
+                                                    className={`p-2 rounded-xl border text-left text-[10px] font-bold capitalize transition-all flex items-center justify-between gap-1 ${isSelected ? 'border-primary ring-1 ring-primary/30 shadow-xs' : 'border-border hover:border-foreground/30'}`}
+                                                    style={{ backgroundColor: bgStyle, color: fgStyle }}
+                                                >
+                                                    {t.name}
+                                                    {isSelected && <Check className="w-3 h-3" />}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
                             </div>
 
                             <div className="flex items-center justify-end gap-3 pt-5 border-t border-border/80">

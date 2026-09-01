@@ -16,6 +16,7 @@ export interface User {
     email_verified_at?: string;
     role: string;
     jabatan?: string | null;
+    bio?: string | null;
     level: number;
     level_label?: string;
     level_badge?: string;
