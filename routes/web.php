@@ -91,6 +91,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings/packages', [MasterDataController::class, 'index'])->name('settings.packages.index');
     Route::get('/settings/menus', [MenuController::class, 'index'])->name('settings.menus.index');
     Route::put('/settings/menus/{menu}', [MenuController::class, 'update'])->name('settings.menus.update');
+    Route::post('/settings/menus/batch', [MenuController::class, 'batchUpdate'])->name('settings.menus.batch');
 
     // Agency & Commission Routes
     Route::get('/agents', [MitraAgenController::class, 'index'])->name('keagenan.agents.index');

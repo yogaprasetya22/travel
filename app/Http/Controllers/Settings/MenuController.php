@@ -81,7 +81,6 @@ class MenuController extends Controller
             'roles.*' => 'string|max:100',
         ]);
 
-        // Keep super_admin_master if it was already there (platform-wide)
         $newRoles = $validated['roles'];
         if (in_array('super_admin_master', $menu->roles ?? [])) {
             if (! in_array('super_admin_master', $newRoles)) {
@@ -94,5 +93,43 @@ class MenuController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Akses menu berhasil diperbarui.');
+    }
+
+    /**
+     * Batch update allowed roles for multiple menu items.
+     */
+    public function batchUpdate(Request $request): RedirectResponse
+    {
+        $currentUser = $request->user();
+        if (! in_array($currentUser->role, ['owner_travel', 'super_admin_master'])) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $validated = $request->validate([
+            'updates' => 'required|array',
+            'updates.*.id' => 'required|exists:menus,id',
+            'updates.*.roles' => 'present|array',
+            'updates.*.roles.*' => 'string|max:100',
+        ]);
+
+        foreach ($validated['updates'] as $item) {
+            $menu = Menu::find($item['id']);
+            if (! $menu) {
+                continue;
+            }
+
+            $newRoles = $item['roles'];
+            if (in_array('super_admin_master', $menu->roles ?? [])) {
+                if (! in_array('super_admin_master', $newRoles)) {
+                    $newRoles[] = 'super_admin_master';
+                }
+            }
+
+            $menu->update([
+                'roles' => array_values(array_unique($newRoles)),
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Semua perubahan hak akses berhasil disimpan.');
     }
 }

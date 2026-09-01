@@ -91,15 +91,22 @@ class HandleInertiaRequests extends Middleware
                     }
                 }
 
+                $allMatchingRoles = [];
+                foreach ($userRoles as $role) {
+                    $allMatchingRoles[] = $role;
+                    $allMatchingRoles[] = $role.':view';
+                    $allMatchingRoles[] = $role.':full';
+                }
+
                 return Menu::whereNull('parent_id')
-                    ->where(function ($q) use ($userRoles) {
-                        foreach ($userRoles as $role) {
+                    ->where(function ($q) use ($allMatchingRoles) {
+                        foreach ($allMatchingRoles as $role) {
                             $q->orWhereJsonContains('roles', $role);
                         }
                     })
-                    ->with(['children' => function ($query) use ($userRoles) {
-                        $query->where(function ($q) use ($userRoles) {
-                            foreach ($userRoles as $role) {
+                    ->with(['children' => function ($query) use ($allMatchingRoles) {
+                        $query->where(function ($q) use ($allMatchingRoles) {
+                            foreach ($allMatchingRoles as $role) {
                                 $q->orWhereJsonContains('roles', $role);
                             }
                         })->orderBy('urutan');
