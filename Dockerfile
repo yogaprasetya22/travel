@@ -1,16 +1,16 @@
 # ─────────────────────────────────────────
-# Stage 1: Node builder (Vite assets)
+# Stage 1: Node/Bun builder (Vite assets)
 # ─────────────────────────────────────────
-FROM node:22-alpine AS node-builder
+FROM oven/bun:1 AS node-builder
 
 WORKDIR /app
 
-# Install deps only when lockfile changes
-COPY package.json bun.lock* package-lock.json* ./
-RUN npm ci --legacy-peer-deps
+# Install deps using bun (uses bun.lock)
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
 COPY . .
-RUN npm run build
+RUN bun run build
 
 # ─────────────────────────────────────────
 # Stage 2: PHP/Composer builder
