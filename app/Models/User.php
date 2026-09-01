@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\HierarchyRank;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -16,14 +16,21 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property int|null $tenant_id
+ * @property int|null $hierarchy_level_id
  * @property string $name
  * @property string $email
  * @property string $password
  * @property string $role
+ * @property string|null $jabatan
+ * @property int|null $created_by
  * @property Carbon|null $email_verified_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read int $level
+ * @property-read string $level_label
+ * @property-read string $level_badge
  * @property-read Tenant|null $tenant
+ * @property-read HierarchyLevel|null $hierarchyLevel
  */
 #[Fillable(['name', 'email', 'password', 'tenant_id', 'hierarchy_level_id', 'role', 'jabatan', 'created_by'])]
 #[Hidden(['password', 'remember_token'])]
@@ -31,6 +38,124 @@ class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = [
+        'level',
+        'level_label',
+        'level_badge',
+    ];
+
+    /**
+     * Accessor for Integer Hierarchy Level (Rank 0 = Super Admin, 1 = Owner, 2 = Supervisor, 3 = Team Leader, 4 = Staff/Agen).
+     */
+    public function getLevelAttribute(): int
+    {
+        if ($this->role === 'super_admin_master') {
+            return HierarchyRank::SUPER_ADMIN->value; // 0
+        }
+
+        if ($this->hierarchy_level_id && $this->relationLoaded('hierarchyLevel') && $this->hierarchyLevel) {
+            return (int) $this->hierarchyLevel->urutan;
+        }
+
+        if ($this->hierarchy_level_id) {
+            $lvl = HierarchyLevel::find($this->hierarchy_level_id);
+            if ($lvl) {
+                return (int) $lvl->urutan;
+            }
+        }
+
+        // Fallback mapping based on legacy role
+        return match ($this->role) {
+            'owner_travel' => HierarchyRank::OWNER->value,
+            'admin_travel' => match ($this->jabatan) {
+                'Team Leader' => HierarchyRank::TEAM_LEADER->value,
+                default => HierarchyRank::SUPERVISOR->value,
+            },
+            default => HierarchyRank::STAFF_AGEN->value,
+        };
+    }
+
+    /**
+     * Accessor for Human-Readable Level Label.
+     */
+    public function getLevelLabelAttribute(): string
+    {
+        if ($this->level === 0) {
+            return 'Level 0 (Super Admin Master)';
+        }
+
+        $jabatanName = $this->jabatan ?: $this->hierarchyLevel?->nama_level;
+        if (! $jabatanName) {
+            $jabatanName = HierarchyRank::fromLevel($this->level)->label();
+        }
+
+        return "Level {$this->level} ({$jabatanName})";
+    }
+
+    /**
+     * Accessor for Level Badge Styling.
+     */
+    public function getLevelBadgeAttribute(): string
+    {
+        return HierarchyRank::fromLevel($this->level)->badgeClass();
+    }
+
+    /**
+     * Check if user is Super Admin Master (Level 0).
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->level === HierarchyRank::SUPER_ADMIN->value;
+    }
+
+    /**
+     * Check if user is Travel Owner (Level 1).
+     */
+    public function isOwner(): bool
+    {
+        return $this->level === HierarchyRank::OWNER->value;
+    }
+
+    /**
+     * Cumulative hierarchical check: Returns true if user's level rank is at least the given rank.
+     * (e.g. Level 0 and Level 1 are both at least Level 2 Supervisor).
+     */
+    public function isAtLeast(int|HierarchyRank $rank): bool
+    {
+        $targetRank = $rank instanceof HierarchyRank ? $rank->value : $rank;
+
+        return $this->level <= $targetRank;
+    }
+
+    /**
+     * Check if user has administrative rights to manage the tenant.
+     */
+    public function canManageTenant(): bool
+    {
+        return $this->level <= HierarchyRank::OWNER->value;
+    }
+
+    /**
+     * Hierarchical user management check: User can only manage/edit subordinates (higher level integer).
+     */
+    public function canManageUser(self $targetUser): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        if ($this->tenant_id !== $targetUser->tenant_id) {
+            return false;
+        }
+
+        return $this->level < $targetUser->level;
+    }
 
     /**
      * Get active tenant ID for current user (handles super admin active session).

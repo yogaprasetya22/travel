@@ -44,9 +44,9 @@ export default function Edit({
                         <div>
                             <div className="flex flex-wrap items-center gap-2">
                                 <h1 className="text-xl font-bold tracking-tight text-foreground">{user.name}</h1>
-                                <Badge variant="secondary" className="gap-1 font-bold text-[11px] bg-primary/10 text-primary border border-primary/20">
+                                <Badge variant="secondary" className="gap-1 font-extrabold text-[11px] bg-primary/10 text-primary border border-primary/20">
                                     <BadgeCheck className="w-3.5 h-3.5" />
-                                    <span className="capitalize">{user.role?.replace(/_/g, ' ') || 'Pengguna'}</span>
+                                    <span>{user.level_label || (user.level === 0 ? 'Level 0 (Super Admin Master)' : `Level ${user.level}`)}</span>
                                 </Badge>
                             </div>
                             <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-1.5">

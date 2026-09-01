@@ -70,44 +70,41 @@ class HandleInertiaRequests extends Middleware
                         ->get();
                 }
 
-                $userRoles = [$user->role];
-                if ($user->jabatan) {
-                    $userRoles[] = strtolower(str_replace(' ', '_', $user->jabatan));
-                }
+                $userLevelKeys = [
+                    'level_'.$user->level,
+                    'level_'.$user->level.':view',
+                    'level_'.$user->level.':full',
+                ];
+
                 if ($user->hierarchy_level_id) {
-                    $userRoles[] = 'level_'.$user->hierarchy_level_id;
-                }
-                if ($user->role === 'owner_travel') {
-                    $userRoles[] = 'owner';
-                }
-                if ($user->role === 'agen') {
-                    $userRoles[] = 'staff';
-                }
-                if (in_array($user->role, ['admin_travel'])) {
-                    if ($user->jabatan === 'Supervisor') {
-                        $userRoles[] = 'supervisor';
-                    } elseif ($user->jabatan === 'Team Leader') {
-                        $userRoles[] = 'team_leader';
-                    }
+                    $userLevelKeys[] = 'level_'.$user->hierarchy_level_id;
+                    $userLevelKeys[] = 'level_'.$user->hierarchy_level_id.':view';
+                    $userLevelKeys[] = 'level_'.$user->hierarchy_level_id.':full';
                 }
 
-                $allMatchingRoles = [];
-                foreach ($userRoles as $role) {
-                    $allMatchingRoles[] = $role;
-                    $allMatchingRoles[] = $role.':view';
-                    $allMatchingRoles[] = $role.':full';
+                if ($user->jabatan) {
+                    $jKey = strtolower(str_replace(' ', '_', $user->jabatan));
+                    $userLevelKeys[] = $jKey;
+                    $userLevelKeys[] = $jKey.':view';
+                    $userLevelKeys[] = $jKey.':full';
+                }
+
+                if ($user->role) {
+                    $userLevelKeys[] = $user->role;
+                    $userLevelKeys[] = $user->role.':view';
+                    $userLevelKeys[] = $user->role.':full';
                 }
 
                 return Menu::whereNull('parent_id')
-                    ->where(function ($q) use ($allMatchingRoles) {
-                        foreach ($allMatchingRoles as $role) {
-                            $q->orWhereJsonContains('roles', $role);
+                    ->where(function ($q) use ($userLevelKeys) {
+                        foreach ($userLevelKeys as $key) {
+                            $q->orWhereJsonContains('roles', $key);
                         }
                     })
-                    ->with(['children' => function ($query) use ($allMatchingRoles) {
-                        $query->where(function ($q) use ($allMatchingRoles) {
-                            foreach ($allMatchingRoles as $role) {
-                                $q->orWhereJsonContains('roles', $role);
+                    ->with(['children' => function ($query) use ($userLevelKeys) {
+                        $query->where(function ($q) use ($userLevelKeys) {
+                            foreach ($userLevelKeys as $key) {
+                                $q->orWhereJsonContains('roles', $key);
                             }
                         })->orderBy('urutan');
                     }])

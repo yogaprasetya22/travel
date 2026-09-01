@@ -10,10 +10,15 @@ export interface Tenant {
 export interface User {
     id: number;
     tenant_id?: number | null;
+    hierarchy_level_id?: number | null;
     name: string;
     email: string;
     email_verified_at?: string;
-    role: 'super_admin_master' | 'owner_travel' | 'admin_travel' | 'agen';
+    role: string;
+    jabatan?: string | null;
+    level: number;
+    level_label?: string;
+    level_badge?: string;
     tenant?: Tenant | null;
 }
 

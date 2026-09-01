@@ -49,9 +49,11 @@ class MenuController extends Controller
 
             return [
                 'id' => $lvl->id,
+                'level_number' => (int) $lvl->urutan,
                 'name' => $lvl->nama_level,
                 'role_key' => $lvl->role_key,
                 'key' => $key,
+                'rank_key' => 'level_'.$lvl->urutan,
                 'level_key' => 'level_'.$lvl->id,
             ];
         });

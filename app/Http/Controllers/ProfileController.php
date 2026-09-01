@@ -23,14 +23,17 @@ class ProfileController extends Controller
         $user = $request->user();
 
         $isSoleOwner = false;
-        if ($user->role === 'owner_travel') {
+        if ($user->isOwner()) {
             $isSoleOwner = User::where('tenant_id', $user->tenant_id)
-                ->where('role', 'owner_travel')
+                ->where(function ($q) {
+                    $q->where('role', 'owner_travel')
+                        ->orWhereHas('hierarchyLevel', fn ($h) => $h->where('urutan', 1));
+                })
                 ->count() <= 1;
         }
 
         $isSoleSuperAdmin = false;
-        if ($user->role === 'super_admin_master') {
+        if ($user->isSuperAdmin()) {
             $isSoleSuperAdmin = User::where('role', 'super_admin_master')->count() <= 1;
         }
 
@@ -71,8 +74,8 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        // 1. Protection for Super Admin Master
-        if ($user->role === 'super_admin_master') {
+        // 1. Protection for Super Admin Master (Level 0)
+        if ($user->isSuperAdmin()) {
             $superAdminCount = User::where('role', 'super_admin_master')->count();
             if ($superAdminCount <= 1) {
                 throw ValidationException::withMessages([
@@ -81,10 +84,13 @@ class ProfileController extends Controller
             }
         }
 
-        // 2. Protection for Travel Owner
-        if ($user->role === 'owner_travel') {
+        // 2. Protection for Travel Owner (Level 1)
+        if ($user->isOwner()) {
             $ownerCount = User::where('tenant_id', $user->tenant_id)
-                ->where('role', 'owner_travel')
+                ->where(function ($q) {
+                    $q->where('role', 'owner_travel')
+                        ->orWhereHas('hierarchyLevel', fn ($h) => $h->where('urutan', 1));
+                })
                 ->count();
 
             if ($ownerCount <= 1) {

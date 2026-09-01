@@ -34,9 +34,11 @@ interface DBMenu {
 
 interface LevelItem {
     id: number
+    level_number?: number
     name: string
     role_key: string
     key: string
+    rank_key?: string
     level_key: string
 }
 
@@ -70,12 +72,15 @@ export default function Menus({
     // Helper: Determine access level for a specific level on a menu
     const getAccessLevel = (menu: DBMenu, level: LevelItem): AccessLevel => {
         const roles = menu.roles || []
-        const viewKeys = [`${level.key}:view`, `${level.level_key}:view`]
+        const rankKey = level.rank_key || `level_${level.level_number || level.id}`
+        const viewKeys = [`${level.key}:view`, `${level.level_key}:view`, `${rankKey}:view`]
         const fullKeys = [
             level.key,
             level.level_key,
+            rankKey,
             `${level.key}:full`,
             `${level.level_key}:full`,
+            `${rankKey}:full`,
         ]
 
         if (fullKeys.some((k) => roles.includes(k))) {
@@ -93,21 +98,25 @@ export default function Menus({
         level: LevelItem,
         newAccess: AccessLevel
     ) => {
+        const rankKey = level.rank_key || `level_${level.level_number || level.id}`
         let updatedRoles = (menu.roles || []).filter((r) => {
             return (
                 r !== level.key &&
                 r !== level.level_key &&
+                r !== rankKey &&
                 r !== `${level.key}:view` &&
                 r !== `${level.level_key}:view` &&
+                r !== `${rankKey}:view` &&
                 r !== `${level.key}:full` &&
-                r !== `${level.level_key}:full`
+                r !== `${level.level_key}:full` &&
+                r !== `${rankKey}:full`
             )
         })
 
         if (newAccess === "full") {
-            updatedRoles.push(level.key, level.level_key)
+            updatedRoles.push(level.key, level.level_key, rankKey)
         } else if (newAccess === "view") {
-            updatedRoles.push(`${level.key}:view`, `${level.level_key}:view`)
+            updatedRoles.push(`${level.key}:view`, `${level.level_key}:view`, `${rankKey}:view`)
         }
 
         router.put(
@@ -121,6 +130,7 @@ export default function Menus({
 
     // Bulk set access for an entire role/level column
     const handleBulkRoleAccess = (level: LevelItem, newAccess: AccessLevel) => {
+        const rankKey = level.rank_key || `level_${level.level_number || level.id}`
         const allMenusList: DBMenu[] = []
         menus.forEach((m) => {
             allMenusList.push(m)
@@ -134,17 +144,20 @@ export default function Menus({
                 return (
                     r !== level.key &&
                     r !== level.level_key &&
+                    r !== rankKey &&
                     r !== `${level.key}:view` &&
                     r !== `${level.level_key}:view` &&
+                    r !== `${rankKey}:view` &&
                     r !== `${level.key}:full` &&
-                    r !== `${level.level_key}:full`
+                    r !== `${level.level_key}:full` &&
+                    r !== `${rankKey}:full`
                 )
             })
 
             if (newAccess === "full") {
-                updatedRoles.push(level.key, level.level_key)
+                updatedRoles.push(level.key, level.level_key, rankKey)
             } else if (newAccess === "view") {
-                updatedRoles.push(`${level.key}:view`, `${level.level_key}:view`)
+                updatedRoles.push(`${level.key}:view`, `${level.level_key}:view`, `${rankKey}:view`)
             }
 
             return {
@@ -322,15 +335,23 @@ export default function Menus({
                                     >
                                         <div className="flex flex-col items-center gap-1.5">
                                             <div className="flex items-center gap-1.5">
+                                                <Badge
+                                                    variant="secondary"
+                                                    className={`text-[10px] px-2 py-0.5 font-extrabold tracking-tight border ${
+                                                        level.level_number === 1
+                                                            ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                                                            : level.level_number === 2
+                                                            ? "bg-sky-500/10 text-sky-600 border-sky-500/20"
+                                                            : level.level_number === 3
+                                                            ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                                            : "bg-purple-500/10 text-purple-600 border-purple-500/20"
+                                                    }`}
+                                                >
+                                                    Level {level.level_number || level.id}
+                                                </Badge>
                                                 <span className="font-extrabold text-xs text-foreground">
                                                     {level.name}
                                                 </span>
-                                                <Badge
-                                                    variant="secondary"
-                                                    className="text-[9px] px-1.5 py-0 uppercase font-bold tracking-tight bg-primary/10 text-primary border-primary/20"
-                                                >
-                                                    {level.role_key}
-                                                </Badge>
                                             </div>
 
                                             {/* Column Bulk Quick Presets */}
