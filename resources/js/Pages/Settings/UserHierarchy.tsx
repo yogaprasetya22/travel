@@ -487,10 +487,21 @@ export default function UserHierarchy({
                 </div>
             </div>
 
-            {/* MODE 1: FULL-WIDTH STEPPED CANVAS CONTAINER */}
+            {/* MODE 1: FULL-WIDTH STEPPED CANVAS CONTAINER WITH DIAGONAL STRIPED PATTERN */}
             {viewMode === 'canvas' && (
-                <div className="w-full bg-card/70 backdrop-blur-md border border-border/80 rounded-3xl p-6 sm:p-10 shadow-xs min-h-[600px] overflow-x-auto">
-                    <div className="flex flex-col gap-1 min-w-[700px]">
+                <div 
+                    className="w-full bg-card/60 backdrop-blur-md border border-border/80 rounded-3xl p-6 sm:p-10 shadow-xs min-h-[600px] overflow-x-auto relative"
+                    style={{
+                        backgroundImage: `repeating-linear-gradient(
+                            45deg,
+                            hsl(var(--border) / 0.45) 0,
+                            hsl(var(--border) / 0.45) 1.5px,
+                            transparent 0,
+                            transparent 18px
+                        )`,
+                    }}
+                >
+                    <div className="flex flex-col gap-1 min-w-[700px] relative z-10">
                         {HIERARCHY_TREE.map((rootNode) => renderTreeNode(rootNode, 0))}
                     </div>
                 </div>
