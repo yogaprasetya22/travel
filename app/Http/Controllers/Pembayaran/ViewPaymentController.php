@@ -17,7 +17,14 @@ class ViewPaymentController extends Controller
     {
         $perPage = (int) $request->input('per_page', 15);
 
+        $search = $request->input('search');
+
         $payments = Pembayaran::with(['jamaah.paket', 'rekeningTenant', 'verifiedBy'])
+            ->when($search, function ($query, $search) {
+                $query->whereHas('jamaah', function ($q) use ($search) {
+                    $q->where('nama_lengkap', 'ilike', '%' . $search . '%');
+                });
+            })
             ->orderByDesc('created_at')
             ->paginate($perPage)
             ->withQueryString();

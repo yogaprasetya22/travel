@@ -4,6 +4,13 @@ import { Pembayaran } from '@/Types';
 import PageLayout from '@/Components/Layouts/PageLayout';
 import DataTablePagination, { PaginatedData } from '@/Components/DataTablePagination';
 import PerPageSelector from '@/Components/PerPageSelector';
+
+declare global {
+    interface Window {
+        searchTimeout: any;
+    }
+}
+
 import {
     Sheet,
     SheetContent,
@@ -47,8 +54,22 @@ export default function VerifyPayment({ payments }: VerifyPaymentProps) {
             {/* Payments Table Card */}
             <div className="bg-card border border-border/80 rounded-2xl overflow-hidden shadow-xs">
                 <div className="px-6 py-4 border-b border-border/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-muted/30">
-                    <h3 className="font-bold text-foreground">Incoming Transfers ({payments.total || paymentList.length})</h3>
-                    <PerPageSelector value={payments.per_page} />
+                    <h3 className="font-bold text-foreground flex-none">Incoming Transfers ({payments.total || paymentList.length})</h3>
+                    <div className="flex w-full sm:w-auto items-center gap-2">
+                        <input
+                            type="text"
+                            placeholder="Cari jamaah..."
+                            className="bg-background text-sm rounded-lg border border-border px-3 py-1.5 w-full sm:w-64 focus:ring-1 focus:ring-primary outline-none"
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                clearTimeout(window.searchTimeout);
+                                window.searchTimeout = setTimeout(() => {
+                                    router.get(route('payment.index'), { search: val }, { preserveState: true, preserveScroll: true, replace: true });
+                                }, 300);
+                            }}
+                        />
+                        <PerPageSelector value={payments.per_page} />
+                    </div>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-sm">
