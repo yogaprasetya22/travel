@@ -85,13 +85,6 @@ export function NavUser({
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                            <DropdownMenuItem>
-                                <Sparkles />
-                                Upgrade to Pro
-                            </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
                             <DropdownMenuItem
                                 render={
                                     <Link href={route("settings.app.index")} className="w-full flex items-center gap-1.5 cursor-pointer" />

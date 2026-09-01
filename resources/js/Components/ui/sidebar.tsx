@@ -243,11 +243,11 @@ function Sidebar({
       >
         <motion.div
           key={state}
-          initial={{ opacity: 0.8, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-          data-sidebar="sidebar"
-          data-slot="sidebar-inner"
+          // initial={{ opacity: 0.8, scale: 0.97 }}
+          // animate={{ opacity: 1, scale: 1 }}
+          // transition={{ duration: 0.2, ease: "easeOut" }}
+          // data-sidebar="sidebar"
+          // data-slot="sidebar-inner"
           className="flex size-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1 group-data-[variant=floating]:ring-sidebar-border"
         >
           {children}
