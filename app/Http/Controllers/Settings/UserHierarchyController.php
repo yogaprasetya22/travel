@@ -23,8 +23,14 @@ class UserHierarchyController extends Controller
 
         // Get users according to role scope
         if ($currentUser->role === 'super_admin_master') {
-            $users = User::with(['creator', 'tenant'])->get();
+            $selectedTenantId = $request->query('tenant_id');
             $tenants = Tenant::all();
+
+            $query = User::with(['creator', 'tenant']);
+            if ($selectedTenantId) {
+                $query->where('tenant_id', $selectedTenantId);
+            }
+            $users = $query->get();
         } else {
             $users = User::where('tenant_id', $currentUser->tenant_id)
                 ->with(['creator'])
@@ -47,12 +53,9 @@ class UserHierarchyController extends Controller
         $currentUser = $request->user();
 
         // Determine which roles current user is permitted to create
-        // Super Admin Master -> Owner Travel
-        // Owner Travel -> Admin Travel & Agen
-        // Admin Travel -> Agen
         $allowedTargetRoles = [];
         if ($currentUser->role === 'super_admin_master') {
-            $allowedTargetRoles = ['owner_travel'];
+            $allowedTargetRoles = ['owner_travel', 'admin_travel', 'agen'];
         } elseif ($currentUser->role === 'owner_travel') {
             $allowedTargetRoles = ['admin_travel', 'agen'];
         } elseif ($currentUser->role === 'admin_travel') {
@@ -114,6 +117,14 @@ class UserHierarchyController extends Controller
 
         if (isset($validated['jabatan'])) {
             $updateData['jabatan'] = $validated['jabatan'];
+            // Sync role if jabatan is changed
+            if ($validated['jabatan'] === 'Owner') {
+                $updateData['role'] = 'owner_travel';
+            } elseif (in_array($validated['jabatan'], ['Supervisor', 'Team Leader'])) {
+                $updateData['role'] = 'admin_travel';
+            } elseif ($validated['jabatan'] === 'Staff') {
+                $updateData['role'] = 'agen';
+            }
         }
 
         if (! empty($validated['password'])) {
@@ -123,5 +134,32 @@ class UserHierarchyController extends Controller
         $user->update($updateData);
 
         return redirect()->back()->with('success', 'Data akun pengguna berhasil diperbarui.');
+    }
+
+    /**
+     * Delete an existing user from hierarchy.
+     */
+    public function destroy(Request $request, User $user): RedirectResponse
+    {
+        $currentUser = $request->user();
+
+        // Check if current user has permission to delete this user
+        if ($currentUser->role !== 'super_admin_master' && $user->tenant_id !== $currentUser->tenant_id) {
+            abort(403, 'Aksi tidak diizinkan.');
+        }
+
+        // Prevent self deletion
+        if ($user->id === $currentUser->id) {
+            return redirect()->back()->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
+        }
+
+        // Prevent deleting Owner unless Super Admin Master
+        if ($user->role === 'owner_travel' && $currentUser->role !== 'super_admin_master') {
+            return redirect()->back()->with('error', 'Akun Owner Travel tidak dapat dihapus oleh pengguna tenant.');
+        }
+
+        $user->delete();
+
+        return redirect()->back()->with('success', 'Pengguna berhasil dihapus dari struktur hierarki.');
     }
 }

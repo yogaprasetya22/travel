@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm, usePage, router } from '@inertiajs/react';
 import { PageProps } from '@/Types';
 import PageLayout from '@/Components/Layouts/PageLayout';
 import TextInput from '@/Components/TextInput';
@@ -19,6 +19,7 @@ import {
     ChevronDown,
     Plus,
     Edit2,
+    Trash2,
     Search,
     Check,
     Users,
@@ -324,6 +325,17 @@ export default function UserHierarchy({
         });
     };
 
+    const handleDeleteUser = (user: HierarchyUser) => {
+        if (window.confirm(`Apakah Anda yakin ingin menghapus akun "${user.name}" (${user.jabatan || user.role})?`)) {
+            router.delete(route('settings.users.destroy', user.id), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    if (editingUser?.id === user.id) setEditingUser(null);
+                },
+            });
+        }
+    };
+
     // Render tree node with exact stepped lines in Canvas mode
     const renderTreeNode = (node: RoleNode, depth = 0) => {
         const isExpanded = !!expandedNodeIds[node.id];
@@ -429,6 +441,31 @@ export default function UserHierarchy({
 
                 {/* Mode Switcher & Controls */}
                 <div className="flex items-center gap-4 flex-wrap">
+                    {/* Super Admin Master: Tenant Filter */}
+                    {currentUserRole === 'super_admin_master' && tenants.length > 1 && (
+                        <div className="flex items-center gap-2 bg-muted/60 px-3 py-1.5 rounded-xl border border-border/80 text-xs">
+                            <Building className="w-3.5 h-3.5 text-primary" />
+                            <span className="font-semibold text-muted-foreground">Filter Tenant:</span>
+                            <select
+                                defaultValue=""
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    router.get(
+                                        route('settings.users.index'),
+                                        { tenant_id: val || undefined },
+                                        { preserveState: true }
+                                    );
+                                }}
+                                className="bg-background border border-border rounded-lg px-2.5 py-1 text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            >
+                                <option value="">Semua Tenant Travel ({tenants.length})</option>
+                                {tenants.map((t) => (
+                                    <option key={t.id} value={t.id}>{t.nama_travel}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
                     {/* View Mode Toggle Buttons */}
                     <div className="flex items-center bg-muted/60 p-1 rounded-xl border border-border/80">
                         <button
@@ -601,13 +638,22 @@ export default function UserHierarchy({
                                                     )}
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
-                                                    <button
-                                                        onClick={() => handleOpenEditUser(u)}
-                                                        className="p-1.5 rounded-lg border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition cursor-pointer"
-                                                        title="Edit User"
-                                                    >
-                                                        <Edit2 className="w-3.5 h-3.5" />
-                                                    </button>
+                                                    <div className="flex items-center justify-center gap-1.5">
+                                                        <button
+                                                            onClick={() => handleOpenEditUser(u)}
+                                                            className="p-1.5 rounded-lg border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition cursor-pointer shadow-2xs"
+                                                            title="Edit User"
+                                                        >
+                                                            <Edit2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteUser(u)}
+                                                            className="p-1.5 rounded-lg border border-red-500/20 bg-red-500/5 hover:bg-red-500/15 text-red-600 dark:text-red-400 transition cursor-pointer shadow-2xs"
+                                                            title="Hapus User"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );
@@ -706,13 +752,22 @@ export default function UserHierarchy({
                                             </div>
                                         )}
                                     </div>
-                                    <button
-                                        onClick={() => handleOpenEditUser(u)}
-                                        className="p-2 rounded-xl border border-border bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition cursor-pointer shrink-0"
-                                        title="Edit Akun"
-                                    >
-                                        <Edit2 className="w-4 h-4" />
-                                    </button>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                        <button
+                                            onClick={() => handleOpenEditUser(u)}
+                                            className="p-2 rounded-xl border border-border bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition cursor-pointer shadow-2xs"
+                                            title="Edit Akun"
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteUser(u)}
+                                            className="p-2 rounded-xl border border-red-500/20 bg-red-500/5 hover:bg-red-500/15 text-red-600 dark:text-red-400 transition cursor-pointer shadow-2xs"
+                                            title="Hapus Akun"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
 
@@ -743,7 +798,24 @@ export default function UserHierarchy({
                         <SheetTitle>Tambah Pengguna: {createForm.data.jabatan}</SheetTitle>
                         <SheetDescription>Daftarkan akun pengguna baru ke dalam struktur organisasi.</SheetDescription>
                     </SheetHeader>
-                    <form onSubmit={handleStoreSubmit} className="flex flex-col gap-5 p-4 flex-1">
+                    <form onSubmit={handleStoreSubmit} className="flex flex-col gap-5 p-4 flex-1 overflow-y-auto">
+                        {currentUserRole === 'super_admin_master' && tenants.length > 0 && (
+                            <div>
+                                <InputLabel htmlFor="tenant_id" value="Pilih Tenant Travel *" />
+                                <select
+                                    id="tenant_id"
+                                    value={createForm.data.tenant_id}
+                                    onChange={(e) => createForm.setData('tenant_id', e.target.value)}
+                                    className="mt-1 block w-full bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                    required
+                                >
+                                    {tenants.map((t) => (
+                                        <option key={t.id} value={t.id.toString()}>{t.nama_travel}</option>
+                                    ))}
+                                </select>
+                                <InputError message={createForm.errors.tenant_id} className="mt-2" />
+                            </div>
+                        )}
                         <div>
                             <InputLabel htmlFor="name" value="Nama Lengkap" />
                             <TextInput

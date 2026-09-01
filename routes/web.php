@@ -63,6 +63,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings/users', [UserHierarchyController::class, 'index'])->name('settings.users.index');
     Route::post('/settings/users', [UserHierarchyController::class, 'store'])->name('settings.users.store');
     Route::put('/settings/users/{user}', [UserHierarchyController::class, 'update'])->name('settings.users.update');
+    Route::delete('/settings/users/{user}', [UserHierarchyController::class, 'destroy'])->name('settings.users.destroy');
     Route::get('/settings/master', [MasterDataController::class, 'index'])->name('settings.master.index');
     Route::post('/settings/master/stage', [MasterDataController::class, 'storeStage'])->name('settings.master.store-stage');
     Route::post('/settings/master/package', [MasterDataController::class, 'storePackage'])->name('settings.master.store-package');
