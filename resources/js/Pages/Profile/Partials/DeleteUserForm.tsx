@@ -56,24 +56,28 @@ export default function DeleteUserForm({
     };
 
     return (
-        <Card className={`border-destructive/30 bg-destructive/5 backdrop-blur-md shadow-xs ${className}`}>
-            <CardHeader className="pb-4 border-b border-destructive/20">
-                <div className="flex items-center gap-2">
-                    <AlertTriangle className="w-5 h-5 text-destructive" />
-                    <CardTitle className="text-base font-bold text-destructive">
-                        Zona Bahaya: Hapus Akun
-                    </CardTitle>
+        <Card className={`border-destructive/30 bg-destructive/5 backdrop-blur-md rounded-2xl p-6 shadow-xs ${className}`}>
+            <CardHeader className="p-0 pb-4 border-b border-destructive/20">
+                <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-xl bg-destructive/10 text-destructive">
+                        <AlertTriangle className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <CardTitle className="text-base font-bold text-destructive">
+                            Zona Bahaya: Hapus Akun
+                        </CardTitle>
+                        <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                            Setelah akun Anda dihapus, semua riwayat akses dan data personal Anda akan dihapus permanen dari sistem.
+                        </CardDescription>
+                    </div>
                 </div>
-                <CardDescription className="text-xs text-muted-foreground ml-7">
-                    Setelah akun Anda dihapus, semua riwayat akses dan data personal Anda akan dihapus permanen dari sistem.
-                </CardDescription>
             </CardHeader>
 
-            <CardContent className="pt-6">
+            <CardContent className="p-0 pt-6">
                 <Button
                     variant="destructive"
                     onClick={confirmUserDeletion}
-                    className="gap-2 rounded-xl text-xs font-bold shadow-xs"
+                    className="gap-2 rounded-xl text-xs font-bold shadow-xs px-5 h-9"
                 >
                     <Trash2 className="w-4 h-4" />
                     <span>Hapus Akun Saya</span>
@@ -104,7 +108,7 @@ export default function DeleteUserForm({
                                         ref={passwordInput}
                                         value={data.password}
                                         onChange={(e) => setData('password', e.target.value)}
-                                        className="pl-10 text-xs rounded-xl"
+                                        className="pl-10 text-xs rounded-xl h-10 bg-background"
                                         placeholder="Masukkan password untuk konfirmasi"
                                         autoFocus
                                     />
@@ -119,7 +123,7 @@ export default function DeleteUserForm({
                                     type="button"
                                     variant="outline"
                                     onClick={closeModal}
-                                    className="rounded-xl text-xs"
+                                    className="rounded-xl text-xs h-9"
                                 >
                                     Batal
                                 </Button>
@@ -127,7 +131,7 @@ export default function DeleteUserForm({
                                     type="submit"
                                     variant="destructive"
                                     disabled={processing}
-                                    className="gap-2 rounded-xl text-xs font-bold"
+                                    className="gap-2 rounded-xl text-xs font-bold h-9"
                                 >
                                     {processing ? (
                                         <>

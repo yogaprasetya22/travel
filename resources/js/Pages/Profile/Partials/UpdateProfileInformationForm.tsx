@@ -4,7 +4,7 @@ import { updateProfileSchema, zodErrors } from '@/lib/schemas';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Button } from '@/Components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/Components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/Components/ui/card';
 import { Transition } from '@headlessui/react';
 import { User, Mail, CheckCircle2, Save, Loader2 } from 'lucide-react';
 
@@ -38,23 +38,27 @@ export default function UpdateProfileInformation({
     };
 
     return (
-        <Card className={`backdrop-blur-md shadow-xs ${className}`}>
-            <CardHeader className="pb-4 border-b border-border/60">
-                <div className="flex items-center gap-2">
-                    <User className="w-5 h-5 text-primary" />
-                    <CardTitle className="text-base font-bold text-foreground">
-                        Informasi Profil Akun
-                    </CardTitle>
+        <Card className={`bg-card/70 backdrop-blur-md border border-border/80 rounded-2xl p-6 shadow-xs ${className}`}>
+            <CardHeader className="p-0 pb-4 border-b border-border/60">
+                <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                        <User className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <CardTitle className="text-base font-bold text-foreground">
+                            Informasi Profil Akun
+                        </CardTitle>
+                        <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                            Perbarui nama lengkap dan alamat email yang digunakan untuk login ke sistem.
+                        </CardDescription>
+                    </div>
                 </div>
-                <CardDescription className="text-xs text-muted-foreground ml-7">
-                    Perbarui nama lengkap dan alamat email yang digunakan untuk login ke sistem.
-                </CardDescription>
             </CardHeader>
 
-            <form onSubmit={submit}>
-                <CardContent className="pt-6 space-y-4 max-w-xl">
+            <CardContent className="p-0 pt-6">
+                <form onSubmit={submit} className="flex flex-col gap-4 max-w-xl">
                     <div className="space-y-1.5">
-                        <Label htmlFor="profile-name" className="text-xs font-semibold">
+                        <Label htmlFor="profile-name" className="text-xs font-semibold text-foreground">
                             Nama Lengkap
                         </Label>
                         <div className="relative">
@@ -62,7 +66,7 @@ export default function UpdateProfileInformation({
                             <Input
                                 id="profile-name"
                                 type="text"
-                                className="pl-10 text-xs rounded-xl"
+                                className="pl-10 text-xs rounded-xl h-10 bg-background"
                                 value={data.name}
                                 onChange={(e) => setData('name', e.target.value)}
                                 required
@@ -75,7 +79,7 @@ export default function UpdateProfileInformation({
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label htmlFor="profile-email" className="text-xs font-semibold">
+                        <Label htmlFor="profile-email" className="text-xs font-semibold text-foreground">
                             Alamat Email
                         </Label>
                         <div className="relative">
@@ -83,7 +87,7 @@ export default function UpdateProfileInformation({
                             <Input
                                 id="profile-email"
                                 type="email"
-                                className="pl-10 text-xs rounded-xl"
+                                className="pl-10 text-xs rounded-xl h-10 bg-background"
                                 value={data.email}
                                 onChange={(e) => setData('email', e.target.value)}
                                 required
@@ -116,11 +120,9 @@ export default function UpdateProfileInformation({
                             )}
                         </div>
                     )}
-                </CardContent>
 
-                <CardFooter className="pt-2 pb-6 border-t border-border/40 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <Button type="submit" disabled={processing} className="gap-2 rounded-xl text-xs font-bold shadow-xs">
+                    <div className="flex items-center gap-3 pt-2">
+                        <Button type="submit" disabled={processing} className="gap-2 rounded-xl text-xs font-bold shadow-xs px-5 h-9">
                             {processing ? (
                                 <>
                                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -147,8 +149,8 @@ export default function UpdateProfileInformation({
                             </p>
                         </Transition>
                     </div>
-                </CardFooter>
-            </form>
+                </form>
+            </CardContent>
         </Card>
     );
 }
