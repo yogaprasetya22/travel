@@ -4,7 +4,10 @@ import { usePage } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
-import { User, ShieldCheck, Mail, Building2, Crown, BadgeCheck } from 'lucide-react';
+import { Card, CardContent } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
+import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
+import { Mail, Building2, BadgeCheck } from 'lucide-react';
 
 export default function Edit({
     mustVerifyEmail,
@@ -20,58 +23,57 @@ export default function Edit({
             breadcrumbPage="Profil Akun"
             contentClass="p-6 md:p-8 flex flex-col gap-6 w-full max-w-5xl"
         >
-            {/* User Profile Banner Card */}
-            <div className="bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-extrabold text-2xl border border-primary/20 shrink-0">
-                        {user.name.substring(0, 2).toUpperCase()}
-                    </div>
-                    <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                            <h1 className="text-xl font-bold tracking-tight text-foreground">{user.name}</h1>
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-                                <BadgeCheck className="w-3.5 h-3.5" />
-                                <span className="capitalize">{user.role?.replace(/_/g, ' ') || 'Pengguna'}</span>
-                            </span>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-1">
-                            <div className="flex items-center gap-1">
-                                <Mail className="w-3.5 h-3.5" />
-                                <span>{user.email}</span>
-                            </div>
-                            {user.tenant && (
-                                <>
-                                    <span>•</span>
-                                    <div className="flex items-center gap-1">
-                                        <Building2 className="w-3.5 h-3.5 text-primary" />
-                                        <span>{user.tenant.nama_travel}</span>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {/* User Profile Banner with shadcn Card & Avatar */}
+            <Card className="bg-card/60 backdrop-blur-md border border-border/80 shadow-xs">
+                <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <Avatar className="h-16 w-16 rounded-2xl border border-primary/20 bg-primary/10">
+                            <AvatarFallback className="rounded-2xl bg-primary/10 text-primary font-extrabold text-2xl">
+                                {user.name.substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                        </Avatar>
 
-            {/* Form Section Cards */}
+                        <div>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <h1 className="text-xl font-bold tracking-tight text-foreground">{user.name}</h1>
+                                <Badge variant="secondary" className="gap-1 font-bold text-[11px] bg-primary/10 text-primary border border-primary/20">
+                                    <BadgeCheck className="w-3.5 h-3.5" />
+                                    <span className="capitalize">{user.role?.replace(/_/g, ' ') || 'Pengguna'}</span>
+                                </Badge>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-1.5">
+                                <div className="flex items-center gap-1">
+                                    <Mail className="w-3.5 h-3.5" />
+                                    <span>{user.email}</span>
+                                </div>
+                                {user.tenant && (
+                                    <>
+                                        <span>•</span>
+                                        <div className="flex items-center gap-1">
+                                            <Building2 className="w-3.5 h-3.5 text-primary" />
+                                            <span>{user.tenant.nama_travel}</span>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Profile Forms with shadcn Components */}
             <div className="flex flex-col gap-6">
-                {/* 1. Profile Information */}
-                <div className="bg-card/70 backdrop-blur-md border border-border/80 rounded-2xl p-6 shadow-xs">
-                    <UpdateProfileInformationForm
-                        mustVerifyEmail={mustVerifyEmail}
-                        status={status}
-                    />
-                </div>
+                {/* 1. Informasi Profil */}
+                <UpdateProfileInformationForm
+                    mustVerifyEmail={mustVerifyEmail}
+                    status={status}
+                />
 
                 {/* 2. Update Password */}
-                <div className="bg-card/70 backdrop-blur-md border border-border/80 rounded-2xl p-6 shadow-xs">
-                    <UpdatePasswordForm />
-                </div>
+                <UpdatePasswordForm />
 
                 {/* 3. Delete Account */}
-                <div className="bg-card/70 backdrop-blur-md border border-destructive/20 rounded-2xl p-6 shadow-xs bg-destructive/5">
-                    <DeleteUserForm />
-                </div>
+                <DeleteUserForm />
             </div>
         </PageLayout>
     );
