@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Keagenan;
 
 use App\Http\Controllers\Controller;
+use App\Models\Pembayaran;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -155,7 +156,7 @@ class MitraAgenController extends Controller
     }
 
     /**
-     * Get list of jamaah / customers registered under the given agent (for quick-view drawer).
+     * Get list of jamaah / customers registered under the given agent with pagination for infinite scroll.
      */
     public function getJamaah(Request $request, User $agent): JsonResponse
     {
@@ -170,6 +171,16 @@ class MitraAgenController extends Controller
         }
 
         $search = $request->input('search');
+        $perPage = (int) $request->input('per_page', 15);
+
+        // Overall stats for this agent
+        $totalAgentJamaah = $agent->jamaah()->count();
+        $totalAgentOmzet = (float) Pembayaran::where('tenant_id', $tenantId)
+            ->where('status_verifikasi', 'Verified')
+            ->whereHas('jamaah', function ($q) use ($agent) {
+                $q->where('agen_id', $agent->id);
+            })
+            ->sum('nominal');
 
         $query = $agent->jamaah()
             ->with(['paket', 'crmStage', 'pembayaran' => function ($q) {
@@ -184,7 +195,9 @@ class MitraAgenController extends Controller
             });
         }
 
-        $jamaahList = $query->latest()->get()->map(function ($j) {
+        $paginator = $query->latest()->paginate($perPage);
+
+        $jamaahList = collect($paginator->items())->map(function ($j) {
             $totalPaid = (float) $j->pembayaran->sum('nominal');
             $hargaPaket = (float) ($j->paket?->harga ?? 0);
             $sisaTagihan = max(0, $hargaPaket - $totalPaid);
@@ -211,10 +224,14 @@ class MitraAgenController extends Controller
                 'id' => $agent->id,
                 'name' => $agent->name,
                 'email' => $agent->email,
-                'total_jamaah' => $jamaahList->count(),
-                'total_omzet' => $jamaahList->sum('total_paid'),
+                'total_jamaah' => $totalAgentJamaah,
+                'total_omzet' => $totalAgentOmzet,
             ],
             'jamaah' => $jamaahList,
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'has_more' => $paginator->hasMorePages(),
+            'total' => $paginator->total(),
         ]);
     }
 }

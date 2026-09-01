@@ -28,7 +28,9 @@ import {
     Loader2,
     Wallet,
     Package,
+    X,
 } from 'lucide-react';
+import { useDebounce } from '@/hooks/use-debounce';
 
 interface Agent {
     id: number;
@@ -74,14 +76,24 @@ export default function Agents({ agents, metrics, filters }: Props) {
     const [selectedAgent, setSelectedAgent] = React.useState<Agent | null>(null);
     const [searchQuery, setSearchQuery] = React.useState(filters?.search || '');
 
-    // State for Jamaah Drawer Data
+    // State for Infinite Scroll in Jamaah Drawer
     const [jamaahList, setJamaahList] = React.useState<AgentJamaahItem[]>([]);
     const [drawerSearch, setDrawerSearch] = React.useState('');
-    const [isLoadingJamaah, setIsLoadingJamaah] = React.useState(false);
+    const debouncedDrawerSearch = useDebounce(drawerSearch, 350);
+
+    const [currentPage, setCurrentPage] = React.useState(1);
+    const [hasMore, setHasMore] = React.useState(false);
+    const [totalJamaahCount, setTotalJamaahCount] = React.useState(0);
+    const [isLoadingInitial, setIsLoadingInitial] = React.useState(false);
+    const [isLoadingMore, setIsLoadingMore] = React.useState(false);
+
     const [drawerAgentStats, setDrawerAgentStats] = React.useState<{
         total_jamaah: number;
         total_omzet: number;
     } | null>(null);
+
+    const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+    const sentinelRef = React.useRef<HTMLDivElement>(null);
 
     const agentList = agents.data || [];
 
@@ -97,17 +109,23 @@ export default function Agents({ agents, metrics, filters }: Props) {
         );
     };
 
-    // Open Jamaah Quick-View Drawer
-    const openJamaahDrawer = async (agent: Agent) => {
-        setSelectedAgent(agent);
-        setIsJamaahDrawerOpen(true);
-        setIsLoadingJamaah(true);
-        setDrawerSearch('');
+    // Fetch initial page 1 for the drawer
+    const fetchDrawerJamaahPage1 = async (agentId: number, search: string = '') => {
+        setIsLoadingInitial(true);
+        setCurrentPage(1);
 
         try {
-            const response = await fetch(route('keagenan.agents.jamaah', agent.id));
+            const url = new URL(route('keagenan.agents.jamaah', agentId), window.location.origin);
+            url.searchParams.set('page', '1');
+            url.searchParams.set('per_page', '15');
+            if (search) url.searchParams.set('search', search);
+
+            const response = await fetch(url.toString());
             const json = await response.json();
+
             setJamaahList(json.jamaah || []);
+            setHasMore(Boolean(json.has_more));
+            setTotalJamaahCount(json.total || 0);
             setDrawerAgentStats({
                 total_jamaah: json.agent?.total_jamaah || 0,
                 total_omzet: json.agent?.total_omzet || 0,
@@ -115,21 +133,58 @@ export default function Agents({ agents, metrics, filters }: Props) {
         } catch (error) {
             console.error('Failed to fetch agent customers:', error);
         } finally {
-            setIsLoadingJamaah(false);
+            setIsLoadingInitial(false);
         }
     };
 
-    // Filter jamaah in drawer locally
-    const filteredDrawerJamaah = jamaahList.filter((j) => {
-        if (!drawerSearch) return true;
-        const q = drawerSearch.toLowerCase();
-        return (
-            j.nama_lengkap.toLowerCase().includes(q) ||
-            j.no_hp.includes(q) ||
-            j.nama_paket.toLowerCase().includes(q) ||
-            (j.nik && j.nik.includes(q))
-        );
-    });
+    // Fetch next page for infinite scroll
+    const fetchNextPage = async () => {
+        if (!selectedAgent || !hasMore || isLoadingMore || isLoadingInitial) return;
+
+        setIsLoadingMore(true);
+        const nextPage = currentPage + 1;
+
+        try {
+            const url = new URL(route('keagenan.agents.jamaah', selectedAgent.id), window.location.origin);
+            url.searchParams.set('page', nextPage.toString());
+            url.searchParams.set('per_page', '15');
+            if (debouncedDrawerSearch) url.searchParams.set('search', debouncedDrawerSearch);
+
+            const response = await fetch(url.toString());
+            const json = await response.json();
+
+            setJamaahList((prev) => [...prev, ...(json.jamaah || [])]);
+            setCurrentPage(nextPage);
+            setHasMore(Boolean(json.has_more));
+        } catch (error) {
+            console.error('Failed to load more customers:', error);
+        } finally {
+            setIsLoadingMore(false);
+        }
+    };
+
+    // Open Jamaah Quick-View Drawer
+    const openJamaahDrawer = (agent: Agent) => {
+        setSelectedAgent(agent);
+        setDrawerSearch('');
+        setJamaahList([]);
+        setIsJamaahDrawerOpen(true);
+        fetchDrawerJamaahPage1(agent.id, '');
+    };
+
+    // Watch drawer search input with debounce
+    React.useEffect(() => {
+        if (!isJamaahDrawerOpen || !selectedAgent) return;
+        fetchDrawerJamaahPage1(selectedAgent.id, debouncedDrawerSearch);
+    }, [debouncedDrawerSearch]);
+
+    // Infinite Scroll onScroll trigger
+    const handleDrawerScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+        if (scrollHeight - scrollTop - clientHeight < 120) {
+            fetchNextPage();
+        }
+    };
 
     const handleCreateSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -330,7 +385,7 @@ export default function Agents({ agents, metrics, filters }: Props) {
                 </div>
             </div>
 
-            {/* DRAWER: RINCIAN NASABAH JAMAAH PER AGENT (SLIDE-OVER) */}
+            {/* DRAWER: RINCIAN NASABAH JAMAAH PER AGENT (INFINITE SCROLL) */}
             <Sheet open={isJamaahDrawerOpen} onOpenChange={(open) => { setIsJamaahDrawerOpen(open); if (!open) setSelectedAgent(null); }}>
                 <SheetContent side="right" className="w-full sm:max-w-2xl flex flex-col p-0 gap-0">
                     {/* Drawer Header */}
@@ -363,9 +418,9 @@ export default function Agents({ agents, metrics, filters }: Props) {
                         <div className="grid grid-cols-2 gap-3 pt-1">
                             <div className="bg-background/80 rounded-xl p-3 border border-border flex items-center justify-between">
                                 <div className="flex flex-col">
-                                    <span className="text-[11px] font-semibold text-muted-foreground">Total Nasabah Jamaah</span>
+                                    <span className="text-[11px] font-semibold text-muted-foreground">Total Nasabah Terdaftar</span>
                                     <span className="text-base font-extrabold text-foreground mt-0.5">
-                                        {drawerAgentStats?.total_jamaah ?? jamaahList.length} Orang
+                                        {drawerAgentStats?.total_jamaah ?? 0} Orang
                                     </span>
                                 </div>
                                 <div className="p-2 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400">
@@ -394,21 +449,34 @@ export default function Agents({ agents, metrics, filters }: Props) {
                                 placeholder="Cari nama jamaah, no HP, atau paket..."
                                 value={drawerSearch}
                                 onChange={(e) => setDrawerSearch(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground"
+                                className="w-full pl-9 pr-8 py-2 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground"
                             />
+                            {drawerSearch && (
+                                <button
+                                    type="button"
+                                    onClick={() => setDrawerSearch('')}
+                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                >
+                                    <X className="w-3.5 h-3.5" />
+                                </button>
+                            )}
                         </div>
                     </div>
 
-                    {/* Drawer Body: Jamaah List */}
-                    <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-3">
-                        {isLoadingJamaah && (
+                    {/* Drawer Body: Infinite Scroll Container */}
+                    <div
+                        ref={scrollContainerRef}
+                        onScroll={handleDrawerScroll}
+                        className="flex-1 overflow-y-auto p-6 flex flex-col gap-3"
+                    >
+                        {isLoadingInitial && (
                             <div className="py-20 flex flex-col items-center justify-center gap-3 text-muted-foreground">
                                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
                                 <span className="text-xs font-semibold">Memuat data nasabah agen...</span>
                             </div>
                         )}
 
-                        {!isLoadingJamaah && filteredDrawerJamaah.map((j) => (
+                        {!isLoadingInitial && jamaahList.map((j) => (
                             <div
                                 key={j.id}
                                 className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs flex flex-col gap-3 hover:border-primary/40 transition-all"
@@ -479,16 +547,35 @@ export default function Agents({ agents, metrics, filters }: Props) {
                             </div>
                         ))}
 
-                        {!isLoadingJamaah && filteredDrawerJamaah.length === 0 && (
+                        {/* Infinite Scroll Loading Spinner */}
+                        {isLoadingMore && (
+                            <div className="py-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                                <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                <span>Memuat lebih banyak nasabah...</span>
+                            </div>
+                        )}
+
+                        {!isLoadingInitial && !hasMore && jamaahList.length > 0 && (
+                            <div className="py-4 text-center text-[11px] text-muted-foreground">
+                                Menampilkan semua {jamaahList.length} nasabah jamaah binaan.
+                            </div>
+                        )}
+
+                        {!isLoadingInitial && jamaahList.length === 0 && (
                             <div className="py-16 text-center text-xs text-muted-foreground flex flex-col items-center gap-2">
                                 <Users className="w-8 h-8 opacity-40" />
                                 <span>{drawerSearch ? 'Tidak ada nasabah yang sesuai dengan pencarian.' : 'Belum ada nasabah jamaah yang terdaftar melalui agen ini.'}</span>
                             </div>
                         )}
+
+                        <div ref={sentinelRef} className="h-2" />
                     </div>
 
                     {/* Drawer Footer */}
-                    <div className="p-4 border-t border-border bg-muted/20 flex justify-end">
+                    <div className="p-4 border-t border-border bg-muted/20 flex justify-between items-center text-xs text-muted-foreground">
+                        <span>
+                            Memuat {jamaahList.length} dari {totalJamaahCount} data
+                        </span>
                         <button
                             type="button"
                             onClick={() => setIsJamaahDrawerOpen(false)}
