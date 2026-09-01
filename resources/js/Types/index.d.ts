@@ -155,5 +155,7 @@ export type PageProps<
 > = T & {
     auth: {
         user: User;
+        active_tenant?: Tenant | null;
+        tenants?: Tenant[];
     };
 };

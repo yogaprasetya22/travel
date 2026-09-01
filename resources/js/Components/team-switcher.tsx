@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { ChevronsUpDown, Plus } from "lucide-react"
+import { router } from "@inertiajs/react"
+import { ChevronsUpDown, Building2, Command, Check, Plus } from "lucide-react"
 
 import {
     DropdownMenu,
@@ -10,30 +11,42 @@ import {
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
-    DropdownMenuShortcut,
     DropdownMenuTrigger,
 } from "@/Components/ui/dropdown-menu"
 import {
     SidebarMenu,
-    SidebarMenuButton,
     SidebarMenuItem,
     useSidebar,
 } from "@/Components/ui/sidebar"
+import { Tenant, User } from "@/Types"
 
-export function TeamSwitcher({
-    teams,
-}: {
-    teams: {
-        name: string
-        logo: React.ElementType
-        plan: string
-    }[]
-}) {
+interface TeamSwitcherProps {
+    user: User
+    activeTenant?: Tenant | null
+    tenants?: Tenant[]
+}
+
+export function TeamSwitcher({ user, activeTenant, tenants = [] }: TeamSwitcherProps) {
     const { isMobile } = useSidebar()
-    const [activeTeam, setActiveTeam] = React.useState(teams[0])
+    const isSuperAdmin = user.role === "super_admin_master"
 
-    if (!activeTeam) {
-        return null
+    const displayName = isSuperAdmin
+        ? (activeTenant?.nama_travel || "Platform Master")
+        : (user.tenant?.nama_travel || "Travel Agency")
+
+    const displaySub = isSuperAdmin
+        ? (activeTenant ? (activeTenant.domain_atau_subdomain || "SaaS Tenant") : "Global SaaS Master")
+        : (user.tenant?.domain_atau_subdomain || "SaaS Tenant")
+
+    const handleSwitchTenant = (tenantId: number) => {
+        if (!isSuperAdmin) return
+        router.post(
+            route("tenants.switch"),
+            { tenant_id: tenantId },
+            {
+                preserveScroll: true,
+            }
+        )
     }
 
     return (
@@ -43,47 +56,72 @@ export function TeamSwitcher({
                     <DropdownMenuTrigger
                         className="peer/menu-button group/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm ring-sidebar-ring outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground h-12 text-sm leading-tight data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                     >
-                        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                            <activeTeam.logo className="size-4" />
+                        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground font-bold shrink-0">
+                            {isSuperAdmin ? (
+                                <Building2 className="size-4" />
+                            ) : (
+                                <Building2 className="size-4" />
+                            )}
                         </div>
                         <div className="grid flex-1 text-left text-sm leading-tight">
-                            <span className="truncate font-medium">{activeTeam.name}</span>
-                            <span className="truncate text-xs">{activeTeam.plan}</span>
+                            <span className="truncate font-bold text-foreground">{displayName}</span>
+                            <span className="truncate text-xs text-muted-foreground">{displaySub}</span>
                         </div>
-                        <ChevronsUpDown className="ml-auto" />
+                        {isSuperAdmin && tenants.length > 0 && (
+                            <ChevronsUpDown className="ml-auto size-4 text-muted-foreground" />
+                        )}
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-                        align="start"
-                        side={isMobile ? "bottom" : "right"}
-                        sideOffset={4}
-                    >
-                        <DropdownMenuGroup>
-                            <DropdownMenuLabel className="text-xs text-muted-foreground">
-                                Teams
-                            </DropdownMenuLabel>
-                        </DropdownMenuGroup>
-                        {teams.map((team, index) => (
+                    {isSuperAdmin && (
+                        <DropdownMenuContent
+                            className="w-(--radix-dropdown-menu-trigger-width) min-w-64 rounded-xl shadow-lg border border-border/80"
+                            align="start"
+                            side={isMobile ? "bottom" : "right"}
+                            sideOffset={4}
+                        >
+                            <DropdownMenuGroup>
+                                <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1.5">
+                                    Pilih Tenant / Travel
+                                </DropdownMenuLabel>
+                            </DropdownMenuGroup>
+                            {tenants.map((t) => {
+                                const isActive = activeTenant?.id === t.id
+                                return (
+                                    <DropdownMenuItem
+                                        key={t.id}
+                                        onClick={() => handleSwitchTenant(t.id)}
+                                        className={`gap-3 p-2.5 rounded-lg cursor-pointer transition ${
+                                            isActive
+                                                ? "bg-primary/10 text-primary font-bold"
+                                                : "hover:bg-muted text-foreground"
+                                        }`}
+                                    >
+                                        <div className="flex size-7 items-center justify-center rounded-md border border-border bg-card shrink-0">
+                                            <Building2 className="size-3.5 text-primary" />
+                                        </div>
+                                        <div className="flex flex-col flex-1 min-w-0">
+                                            <span className="truncate text-xs font-bold leading-tight">{t.nama_travel}</span>
+                                            <span className="truncate text-[10px] text-muted-foreground leading-tight">
+                                                {t.domain_atau_subdomain || "Tenant Active"}
+                                            </span>
+                                        </div>
+                                        {isActive && (
+                                            <Check className="size-4 text-primary ml-auto shrink-0" />
+                                        )}
+                                    </DropdownMenuItem>
+                                )
+                            })}
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem
-                                key={team.name}
-                                onClick={() => setActiveTeam(team)}
-                                className="gap-2 p-2"
+                                onClick={() => router.get(route("tenants.index"))}
+                                className="gap-2 p-2 cursor-pointer text-muted-foreground hover:text-foreground text-xs"
                             >
-                                <div className="flex size-6 items-center justify-center rounded-md border">
-                                    <team.logo className="size-3.5 shrink-0" />
+                                <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
+                                    <Plus className="size-3.5" />
                                 </div>
-                                {team.name}
-                                <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
+                                <span className="font-semibold">Kelola Seluruh Tenant</span>
                             </DropdownMenuItem>
-                        ))}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="gap-2 p-2">
-                            <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
-                                <Plus className="size-4" />
-                            </div>
-                            <div className="font-medium text-muted-foreground">Add team</div>
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
+                        </DropdownMenuContent>
+                    )}
                 </DropdownMenu>
             </SidebarMenuItem>
         </SidebarMenu>

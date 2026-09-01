@@ -105,7 +105,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return (
         <Sidebar collapsible="icon" {...props}>
             <SidebarHeader>
-                <TeamSwitcher teams={teams} />
+                <TeamSwitcher
+                    user={user}
+                    activeTenant={auth.active_tenant}
+                    tenants={auth.tenants}
+                />
             </SidebarHeader>
             <SidebarContent>
                 <NavMain items={navMain} />

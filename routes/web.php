@@ -20,6 +20,7 @@ use App\Http\Controllers\Settings\AppSettingsController;
 use App\Http\Controllers\Settings\MasterDataController;
 use App\Http\Controllers\Settings\MenuController;
 use App\Http\Controllers\Settings\UserHierarchyController;
+use App\Http\Controllers\TenantController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -41,6 +42,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Tenant Switcher (Super Admin)
+    Route::post('/tenants/switch', [TenantController::class, 'switchTenant'])->name('tenants.switch');
 
     // CRM & Jamaah Lifecycle Routes
     Route::get('/crm', ViewKanbanController::class)->name('crm.index');

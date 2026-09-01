@@ -31,6 +31,15 @@ class TenantDetection
             $tenant = auth()->user()->tenant;
         }
 
+        if (! $tenant && auth()->check() && auth()->user()->role === 'super_admin_master') {
+            if ($request->hasSession() && $request->session()->has('tenant_id')) {
+                $tenant = Tenant::find($request->session()->get('tenant_id'));
+            }
+            if (! $tenant) {
+                $tenant = Tenant::first();
+            }
+        }
+
         if ($tenant) {
             app()->instance('tenant', $tenant);
 

@@ -34,6 +34,27 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user() ? $request->user()->load('tenant') : null,
+                'active_tenant' => function () use ($request) {
+                    $user = $request->user();
+                    if (! $user) {
+                        return null;
+                    }
+                    if ($user->role === 'super_admin_master') {
+                        $tenantId = $request->session()->get('tenant_id', Tenant::first()?->id);
+
+                        return Tenant::find($tenantId) ?? Tenant::first();
+                    }
+
+                    return $user->tenant;
+                },
+                'tenants' => function () use ($request) {
+                    $user = $request->user();
+                    if (! $user || $user->role !== 'super_admin_master') {
+                        return [];
+                    }
+
+                    return Tenant::orderBy('nama_travel')->get(['id', 'nama_travel', 'domain_atau_subdomain', 'logo']);
+                },
             ],
             'menus' => function () use ($request) {
                 $user = $request->user();
