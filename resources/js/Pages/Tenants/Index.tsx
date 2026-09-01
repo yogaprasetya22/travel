@@ -71,9 +71,10 @@ interface Props extends PageProps {
         per_page: number;
     };
     activeTenantId: number;
+    domainSuffix?: string;
 }
 
-export default function Index({ tenants, metrics, filters, activeTenantId }: Props) {
+export default function Index({ tenants, metrics, filters, activeTenantId, domainSuffix = '.hajjflow.com' }: Props) {
     const [searchQuery, setSearchQuery] = useState(filters.search || '');
     
     // Modal states
@@ -317,7 +318,7 @@ export default function Index({ tenants, metrics, filters, activeTenantId }: Pro
                                             </h3>
                                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
                                                 <Globe className="w-3.5 h-3.5 text-primary" />
-                                                <span className="font-medium text-foreground font-mono">{t.domain_atau_subdomain}.hajjflow.com</span>
+                                                <span className="font-medium text-foreground font-mono">{t.domain_atau_subdomain}{domainSuffix}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -485,7 +486,7 @@ export default function Index({ tenants, metrics, filters, activeTenantId }: Pro
                                             className="w-full px-4 py-2.5 text-xs bg-background border-none focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground font-mono"
                                         />
                                         <span className="bg-muted px-4 py-2.5 text-xs text-muted-foreground font-mono font-bold border-l border-border shrink-0">
-                                            .hajjflow.com
+                                            {domainSuffix}
                                         </span>
                                     </div>
                                     {createErrors.domain_atau_subdomain && (
@@ -627,7 +628,7 @@ export default function Index({ tenants, metrics, filters, activeTenantId }: Pro
                                         className="w-full px-4 py-2.5 text-xs bg-background border-none focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground font-mono"
                                     />
                                     <span className="bg-muted px-4 py-2.5 text-xs text-muted-foreground font-mono font-bold border-l border-border shrink-0">
-                                        .hajjflow.com
+                                        {domainSuffix}
                                     </span>
                                 </div>
                                 {editErrors.domain_atau_subdomain && (

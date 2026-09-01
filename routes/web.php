@@ -12,6 +12,7 @@ use App\Http\Controllers\CRM\ViewKanbanController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Inventaris\InventarisController;
 use App\Http\Controllers\Keagenan\MitraAgenController;
+use App\Http\Controllers\AgentProfileController;
 use App\Http\Controllers\Keagenan\PembagianKomisiController;
 use App\Http\Controllers\Keagenan\TeamMonitoringController;
 use App\Http\Controllers\Pembayaran\VerifyPembayaranController;
@@ -30,6 +31,8 @@ Route::get('/', [PublicLandingController::class, 'index'])->name('home');
 Route::get('/daftar', [PublicLandingController::class, 'registerForm'])->name('public.register');
 Route::post('/daftar', [PublicLandingController::class, 'registerSubmit'])->name('public.register.submit');
 Route::get('/daftar/sukses', [PublicLandingController::class, 'registerSuccess'])->name('public.register.success');
+
+Route::get('/agen/{referral_code}', [AgentProfileController::class, 'show'])->name('public.agent.profile');
 
 Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])

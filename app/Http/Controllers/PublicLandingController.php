@@ -18,12 +18,25 @@ use Inertia\Response;
 
 class PublicLandingController extends Controller
 {
+    private function resolveTenant(Request $request)
+    {
+        if (app()->bound('tenant')) {
+            return app('tenant');
+        }
+
+        $host = $request->getHost();
+        $subdomain = explode('.', $host)[0];
+        
+        $tenant = Tenant::where('domain_atau_subdomain', $subdomain)->first();
+        return $tenant ?: Tenant::first();
+    }
+
     /**
      * Display the public landing page with coffee theme.
      */
     public function index(Request $request): Response
     {
-        $tenant = app()->bound('tenant') ? app('tenant') : Tenant::first();
+        $tenant = $this->resolveTenant($request);
         $tenantId = $tenant?->id ?? 1;
 
         $packages = Paket::where('tenant_id', $tenantId)
@@ -49,7 +62,7 @@ class PublicLandingController extends Controller
      */
     public function registerForm(Request $request): Response
     {
-        $tenant = app()->bound('tenant') ? app('tenant') : Tenant::first();
+        $tenant = $this->resolveTenant($request);
         $tenantId = $tenant?->id ?? 1;
 
         // Detect Agent Referral from query string (?ref=... or ?agent_id=...)
@@ -57,16 +70,14 @@ class PublicLandingController extends Controller
         $referralAgent = null;
 
         if ($ref) {
-            if (is_numeric($ref)) {
-                $referralAgent = User::where('tenant_id', $tenantId)->find((int) $ref);
-            } else {
-                $referralAgent = User::where('tenant_id', $tenantId)
-                    ->where(function ($q) use ($ref) {
-                        $q->where('email', $ref)
-                            ->orWhere('name', 'ilike', "%{$ref}%");
-                    })
-                    ->first();
-            }
+            $referralAgent = User::where('tenant_id', $tenantId)
+                ->where(function ($q) use ($ref) {
+                    $q->where('referral_code', $ref)
+                        ->orWhere('email', $ref)
+                        ->orWhere('id', (int)$ref)
+                        ->orWhere('name', 'ilike', "%{$ref}%");
+                })
+                ->first();
         }
 
         $packages = Paket::where('tenant_id', $tenantId)->orderBy('harga')->get();
@@ -93,7 +104,7 @@ class PublicLandingController extends Controller
      */
     public function registerSubmit(Request $request): RedirectResponse
     {
-        $tenant = app()->bound('tenant') ? app('tenant') : Tenant::first();
+        $tenant = $this->resolveTenant($request);
         $tenantId = $tenant?->id ?? 1;
 
         $validated = $request->validate([
@@ -173,7 +184,7 @@ class PublicLandingController extends Controller
      */
     public function registerSuccess(Request $request): Response
     {
-        $tenant = app()->bound('tenant') ? app('tenant') : Tenant::first();
+        $tenant = $this->resolveTenant($request);
         $tenantId = $tenant?->id ?? 1;
 
         $bookingId = $request->query('booking_id');

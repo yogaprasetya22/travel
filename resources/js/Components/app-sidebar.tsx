@@ -74,25 +74,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ]
     }, [user])
 
+    const currentUrl = usePage().url;
+
     // 2. Map database menus to sidebar format
     const navMain = React.useMemo(() => {
         return (menus || []).map((menu) => {
             const hasActiveChild = (menu.children || []).some(
-                (child) => child.url === window.location.pathname
+                (child) => child.url === currentUrl
             )
             return {
                 title: menu.title,
                 url: menu.url,
                 icon: menu.icon ? (iconMap[menu.icon] as any) : undefined,
-                isActive: menu.url === window.location.pathname || hasActiveChild,
+                isActive: menu.url === currentUrl || hasActiveChild,
                 items: (menu.children || []).map((child) => ({
                     title: child.title,
                     url: child.url,
-                    isActive: child.url === window.location.pathname,
+                    isActive: child.url === currentUrl,
                 })),
             }
         })
-    }, [menus])
+    }, [menus, currentUrl])
 
     const userData = React.useMemo(() => {
         return {

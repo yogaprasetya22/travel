@@ -151,7 +151,7 @@ class MenuSeeder extends Seeder
 
         Menu::create([
             'parent_id' => $settingsMenu->id,
-            'title' => 'Struktur Tim & Jabatan',
+            'title' => 'Manajemen Pengguna',
             'url' => '/settings/users',
             'roles' => ['super_admin_master', 'owner_travel'],
             'urutan' => 1,

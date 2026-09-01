@@ -97,7 +97,7 @@ export default function UserHierarchy({
     const { auth } = usePage<PageProps>().props;
 
     // View mode: 'canvas' | 'table'
-    const [viewMode, setViewMode] = useState<'canvas' | 'table'>('canvas');
+    const [viewMode, setViewMode] = useState<'canvas' | 'table'>('table');
 
     // Track collapsed/expanded node IDs in Canvas mode
     const [expandedNodeIds, setExpandedNodeIds] = useState<Record<number, boolean>>(() => {

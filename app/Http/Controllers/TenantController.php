@@ -64,6 +64,11 @@ class TenantController extends Controller
             'total_omzet' => (float) Pembayaran::withoutGlobalScope('tenant')->where('status_verifikasi', 'Verified')->sum('nominal'),
         ];
 
+        $appUrl = env('APP_URL', 'http://localhost:8000');
+        $host = parse_url($appUrl, PHP_URL_HOST) ?? 'localhost';
+        $port = parse_url($appUrl, PHP_URL_PORT);
+        $domainSuffix = '.' . $host . ($port ? ':' . $port : '');
+
         return Inertia::render('Tenants/Index', [
             'tenants' => $tenants,
             'metrics' => $metrics,
@@ -72,6 +77,7 @@ class TenantController extends Controller
                 'per_page' => $perPage,
             ],
             'activeTenantId' => (int) $request->session()->get('tenant_id', Tenant::first()?->id ?? 1),
+            'domainSuffix' => $domainSuffix,
         ]);
     }
 

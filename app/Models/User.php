@@ -51,6 +51,18 @@ class User extends Authenticatable
     ];
 
     /**
+     * Boot the model.
+     */
+    protected static function booted()
+    {
+        static::creating(function ($user) {
+            if (empty($user->referral_code)) {
+                $user->referral_code = 'AG-' . strtoupper(\Illuminate\Support\Str::random(6));
+            }
+        });
+    }
+
+    /**
      * Accessor for Integer Hierarchy Level (Rank 0 = Super Admin, 1 = Owner, 2 = Supervisor, 3 = Team Leader, 4 = Staff/Agen).
      */
     public function getLevelAttribute(): int
