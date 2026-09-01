@@ -12,7 +12,15 @@ import { Mail, Building2, BadgeCheck } from 'lucide-react';
 export default function Edit({
     mustVerifyEmail,
     status,
-}: PageProps<{ mustVerifyEmail: boolean; status?: string }>) {
+    protection,
+}: PageProps<{
+    mustVerifyEmail: boolean;
+    status?: string;
+    protection?: {
+        isSoleOwner: boolean;
+        isSoleSuperAdmin: boolean;
+    };
+}>) {
     const { auth } = usePage<PageProps>().props;
     const user = auth.user;
 
@@ -72,8 +80,8 @@ export default function Edit({
                 {/* 2. Update Password */}
                 <UpdatePasswordForm />
 
-                {/* 3. Delete Account */}
-                <DeleteUserForm />
+                {/* 3. Delete Account with Protection */}
+                <DeleteUserForm protection={protection} />
             </div>
         </PageLayout>
     );

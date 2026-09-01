@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,9 +20,27 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $user = $request->user();
+
+        $isSoleOwner = false;
+        if ($user->role === 'owner_travel') {
+            $isSoleOwner = User::where('tenant_id', $user->tenant_id)
+                ->where('role', 'owner_travel')
+                ->count() <= 1;
+        }
+
+        $isSoleSuperAdmin = false;
+        if ($user->role === 'super_admin_master') {
+            $isSoleSuperAdmin = User::where('role', 'super_admin_master')->count() <= 1;
+        }
+
         return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
+            'protection' => [
+                'isSoleOwner' => $isSoleOwner,
+                'isSoleSuperAdmin' => $isSoleSuperAdmin,
+            ],
         ]);
     }
 
@@ -41,7 +61,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Delete the user's account.
+     * Delete the user's account with sole owner & super admin protection.
      */
     public function destroy(Request $request): RedirectResponse
     {
@@ -50,6 +70,29 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        // 1. Protection for Super Admin Master
+        if ($user->role === 'super_admin_master') {
+            $superAdminCount = User::where('role', 'super_admin_master')->count();
+            if ($superAdminCount <= 1) {
+                throw ValidationException::withMessages([
+                    'password' => 'Akun Super Admin Master terakhir tidak dapat dihapus untuk menjaga kelangsungan akses platform.',
+                ]);
+            }
+        }
+
+        // 2. Protection for Travel Owner
+        if ($user->role === 'owner_travel') {
+            $ownerCount = User::where('tenant_id', $user->tenant_id)
+                ->where('role', 'owner_travel')
+                ->count();
+
+            if ($ownerCount <= 1) {
+                throw ValidationException::withMessages([
+                    'password' => 'Anda adalah satu-satunya Owner pada travel ini. Harap tunjuk atau angkat akun Owner pengganti terlebih dahulu sebelum menghapus akun ini.',
+                ]);
+            }
+        }
 
         Auth::logout();
 
