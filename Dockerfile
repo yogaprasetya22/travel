@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Install deps only when lockfile changes
 COPY package.json bun.lock* package-lock.json* ./
-RUN npm ci --ignore-scripts
+RUN npm ci --legacy-peer-deps
 
 COPY . .
 RUN npm run build
