@@ -9,6 +9,7 @@ use App\Models\Paket;
 use App\Models\RekeningTenant;
 use App\Models\Tenant;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -192,18 +193,21 @@ class TenantDatasetSeeder extends Seeder
             }
             $agentIds = array_map(fn ($a) => $a->id, $agents);
 
-            // 6. Bulk Seed 10,000 Jamaah & Relational Transactions per Tenant
-            $totalRecords = 10000;
+            // 6. Bulk Seed Realistic Jamaah & Relational Transactions per Tenant
+            // Tenant 1 has ~6,500 records, Tenant 2 has ~9,500 records to create distinct comparative chart bars
+            $totalRecords = ($tIndex === 0) ? 6500 : 9500;
             $chunkSize = 1000;
             $batches = ceil($totalRecords / $chunkSize);
 
-            $this->command->info("Generating {$totalRecords} relational records in {$batches} chunks...");
+            $this->command->info("Generating {$totalRecords} relational records in {$batches} chunks for Tenant ".($tIndex + 1).'...');
 
-            $now = now();
-            $firstNames = ['Ahmad', 'Bambang', 'Chandra', 'Dewi', 'Eko', 'Fitri', 'Gita', 'Hadi', 'Indra', 'Joko', 'Kartika', 'Lestari', 'Muhammad', 'Nur', 'Oki', 'Putri', 'Rahmat', 'Siti', 'Tri', 'Umar', 'Wahyu', 'Yuliana', 'Zainal'];
-            $lastNames = ['Pratama', 'Hidayat', 'Saputra', 'Wijaya', 'Kusuma', 'Santoso', 'Gunawan', 'Permana', 'Nugroho', 'Wibowo', 'Siregar', 'Lubis', 'Harahap', 'Nasution', 'Batubara', 'Tanjung', 'Pasaribu', 'Hutagalung'];
+            $firstNames = ['Ahmad', 'Bambang', 'Chandra', 'Dewi', 'Eko', 'Fitri', 'Gita', 'Hadi', 'Indra', 'Joko', 'Kartika', 'Lestari', 'Muhammad', 'Nur', 'Oki', 'Putri', 'Rahmat', 'Siti', 'Tri', 'Umar', 'Wahyu', 'Yuliana', 'Zainal', 'Farhan', 'Anisa', 'Rizky', 'Ridwan', 'Aulia', 'Faisal', 'Nabila'];
+            $lastNames = ['Pratama', 'Hidayat', 'Saputra', 'Wijaya', 'Kusuma', 'Santoso', 'Gunawan', 'Permana', 'Nugroho', 'Wibowo', 'Siregar', 'Lubis', 'Harahap', 'Nasution', 'Batubara', 'Tanjung', 'Pasaribu', 'Hutagalung', 'Al-Habsyi', 'Assegaf'];
             $fnCount = count($firstNames);
             $lnCount = count($lastNames);
+
+            // Agent performance weighting (agent 1 and 2 are superstar closers)
+            $numAgents = count($agentIds);
 
             for ($b = 0; $b < $batches; $b++) {
                 $jamaahRows = [];
@@ -211,30 +215,58 @@ class TenantDatasetSeeder extends Seeder
 
                 for ($i = 0; $i < $currentChunk; $i++) {
                     $recordIndex = ($b * $chunkSize) + $i + 1;
-                    $fn = $firstNames[($recordIndex + $i) % $fnCount];
-                    $ln = $lastNames[($recordIndex * 3 + $i) % $lnCount];
+                    $fn = $firstNames[($recordIndex + ($i * 7)) % $fnCount];
+                    $ln = $lastNames[($recordIndex * 5 + $i) % $lnCount];
                     $fullName = "{$fn} {$ln} {$recordIndex}";
 
-                    $randVal = $i % 10;
-                    if ($randVal < 3) {
-                        $stageId = $stage1->id;
-                    } elseif ($randVal < 5) {
-                        $stageId = $stage2->id;
-                    } elseif ($randVal < 7) {
-                        $stageId = $stage3->id;
+                    // Random created_at distributed across the last 6 months (0 to 175 days ago)
+                    $daysAgo = rand(0, 175);
+                    $createdAt = now()->subDays($daysAgo)->subHours(rand(1, 23))->subMinutes(rand(1, 59));
+
+                    // Realistic weighted Stage distribution
+                    $stageRand = rand(1, 100);
+                    if ($stageRand <= 38) {
+                        $stageId = $stage1->id; // New Leads
+                    } elseif ($stageRand <= 62) {
+                        $stageId = $stage2->id; // Follow Up
+                    } elseif ($stageRand <= 76) {
+                        $stageId = $stage3->id; // Negosiasi
                     } else {
-                        $stageId = $stage4->id;
+                        $stageId = $stage4->id; // Closing
                     }
 
-                    $selectedPkg = $packagesList[$i % 4];
-                    $assignedAgentId = ($i % 6 !== 0) ? $agentIds[$i % count($agentIds)] : null;
+                    // Weighted Package distribution (Reguler 45%, VIP 30%, Plus 18%, Haji 7%)
+                    $pkgRand = rand(1, 100);
+                    if ($pkgRand <= 45) {
+                        $selectedPkg = $packagesList[0];
+                    } elseif ($pkgRand <= 75) {
+                        $selectedPkg = $packagesList[1];
+                    } elseif ($pkgRand <= 93) {
+                        $selectedPkg = $packagesList[2];
+                    } else {
+                        $selectedPkg = $packagesList[3];
+                    }
+
+                    // Weighted agent allocation: superstar agents get more leads and closings
+                    $agentRoll = rand(1, 100);
+                    if ($agentRoll <= 30 && isset($agentIds[0])) {
+                        $assignedAgentId = $agentIds[0];
+                    } elseif ($agentRoll <= 55 && isset($agentIds[1])) {
+                        $assignedAgentId = $agentIds[1];
+                    } elseif ($agentRoll <= 72 && isset($agentIds[2])) {
+                        $assignedAgentId = $agentIds[2];
+                    } elseif ($agentRoll <= 88) {
+                        $assignedAgentId = $agentIds[rand(3, max(3, $numAgents - 1))];
+                    } else {
+                        $assignedAgentId = null; // Direct organic web leads
+                    }
 
                     $nik = '32'.str_pad((string) ($tenant->id * 10000000000000 + $recordIndex), 14, '0', STR_PAD_LEFT);
                     $phone = '08'.str_pad((string) (1200000000 + $recordIndex), 10, '0', STR_PAD_LEFT);
                     $email = "jamaah{$recordIndex}.t{$tenant->id}@mailtest.id";
-                    $passport = ($stageId === $stage4->id) ? 'A'.str_pad((string) $recordIndex, 8, '0', STR_PAD_LEFT) : null;
-                    $depDate = ($stageId === $stage4->id) ? date('Y-m-d', strtotime('+ '.(($i % 90) + 15).' days')) : null;
-                    $logStatus = ($stageId === $stage4->id) ? (($i % 2 === 0) ? 'Handed_Over' : 'Ready_to_Pickup') : 'Pending';
+                    $passport = ($stageId === $stage4->id) ? 'A'.str_pad((string) ($tenant->id * 1000000 + $recordIndex), 8, '0', STR_PAD_LEFT) : null;
+                    $depDate = ($stageId === $stage4->id) ? date('Y-m-d', strtotime('+ '.(rand(15, 120)).' days')) : null;
+                    $logStatus = ($stageId === $stage4->id) ? ((rand(1, 10) > 4) ? 'Handed_Over' : 'Ready_to_Pickup') : 'Pending';
 
                     $jamaahRows[] = [
                         'tenant_id' => $tenant->id,
@@ -247,11 +279,11 @@ class TenantDatasetSeeder extends Seeder
                         'email' => $email,
                         'paket_id' => $selectedPkg['id'],
                         'tanggal_keberangkatan' => $depDate,
-                        'catatan_admin' => "Pendaftaran paket {$selectedPkg['id']} prospek no #{$recordIndex}",
+                        'catatan_admin' => "Pendaftaran paket {$selectedPkg['id']} prospek #{$recordIndex}",
                         'status_logistik' => $logStatus,
-                        'tanggal_serah_terima_logistik' => ($logStatus === 'Handed_Over') ? $now : null,
-                        'created_at' => $now,
-                        'updated_at' => $now,
+                        'tanggal_serah_terima_logistik' => ($logStatus === 'Handed_Over') ? $createdAt->copy()->addDays(rand(2, 10)) : null,
+                        'created_at' => $createdAt,
+                        'updated_at' => $createdAt,
                     ];
                 }
 
@@ -261,7 +293,7 @@ class TenantDatasetSeeder extends Seeder
                     ->where('tenant_id', $tenant->id)
                     ->orderBy('id', 'desc')
                     ->limit($currentChunk)
-                    ->get(['id', 'crm_stage_id', 'paket_id', 'agen_id'])
+                    ->get(['id', 'crm_stage_id', 'paket_id', 'agen_id', 'created_at'])
                     ->reverse();
 
                 $pembayaranRows = [];
@@ -274,9 +306,18 @@ class TenantDatasetSeeder extends Seeder
 
                     if ($isClosing || $isNegotiation) {
                         $isVerified = $isClosing;
-                        $pkgInfo = $packagesList[$jItem->paket_id % 4] ?? $packagesList[0];
-                        $nominal = $isClosing ? $pkgInfo['harga'] : 5000000;
+                        $pkgInfo = null;
+                        foreach ($packagesList as $p) {
+                            if ($p['id'] === $jItem->paket_id) {
+                                $pkgInfo = $p;
+                                break;
+                            }
+                        }
+                        $pkgInfo = $pkgInfo ?? $packagesList[0];
+
+                        $nominal = $isClosing ? $pkgInfo['harga'] : (rand(3, 10) * 1000000);
                         $payType = $isClosing ? 'Lunas' : 'DP';
+                        $txDate = Carbon::parse($jItem->created_at);
 
                         $pembayaranRows[] = [
                             'tenant_id' => $tenant->id,
@@ -287,8 +328,8 @@ class TenantDatasetSeeder extends Seeder
                             'bukti_transfer' => 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&auto=format&fit=crop&q=80',
                             'status_verifikasi' => $isVerified ? 'Verified' : 'Pending',
                             'verified_by' => $isVerified ? $owner->id : null,
-                            'created_at' => $now,
-                            'updated_at' => $now,
+                            'created_at' => $txDate,
+                            'updated_at' => $txDate,
                         ];
 
                         if ($isVerified && $jItem->agen_id) {
@@ -297,9 +338,9 @@ class TenantDatasetSeeder extends Seeder
                                 'agen_id' => $jItem->agen_id,
                                 'jamaah_id' => $jItem->id,
                                 'nominal_komisi' => $pkgInfo['komisi'],
-                                'status_pencairan' => ($jItem->id % 2 === 0) ? 'Paid' : 'Ready_to_Pay',
-                                'created_at' => $now,
-                                'updated_at' => $now,
+                                'status_pencairan' => (rand(1, 10) > 4) ? 'Paid' : 'Ready_to_Pay',
+                                'created_at' => $txDate,
+                                'updated_at' => $txDate,
                             ];
 
                             $transaksiRows[] = [
@@ -308,8 +349,8 @@ class TenantDatasetSeeder extends Seeder
                                 'jamaah_id' => $jItem->id,
                                 'qty' => 1,
                                 'tipe' => 'OUT',
-                                'created_at' => $now,
-                                'updated_at' => $now,
+                                'created_at' => $txDate,
+                                'updated_at' => $txDate,
                             ];
                         }
                     }
