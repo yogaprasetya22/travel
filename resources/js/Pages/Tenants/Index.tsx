@@ -414,36 +414,39 @@ export default function Index({ tenants, metrics, filters, activeTenantId }: Pro
 
             {/* MODAL 1: ONBOARD TRAVEL BARU */}
             {isCreateOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-                    <div className="w-full max-w-lg bg-card border border-border rounded-2xl shadow-xl overflow-hidden animate-in fade-in-0 zoom-in-95">
-                        <div className="p-6 border-b border-border/80 flex justify-between items-start">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/50 backdrop-blur-sm overflow-y-auto">
+                    <div className="w-full max-w-3xl bg-card border border-border rounded-3xl shadow-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 my-8">
+                        <div className="p-6 md:p-8 border-b border-border/80 flex justify-between items-start bg-muted/20">
                             <div>
-                                <h2 className="text-lg font-bold text-foreground">Onboard Tenant Travel Baru</h2>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                    Daftarkan travel agensi baru ke dalam ekosistem SaaS HajjFlow.
+                                <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                                    <Building2 className="w-5 h-5 text-primary" />
+                                    <span>Onboard Tenant Travel Baru</span>
+                                </h2>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Daftarkan travel agensi baru ke dalam ekosistem SaaS HajjFlow dengan konfigurasi instan.
                                 </p>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setIsCreateOpen(false)}
-                                className="text-muted-foreground hover:text-foreground p-1 rounded-lg text-xs"
+                                className="text-muted-foreground hover:text-foreground p-1.5 rounded-xl hover:bg-muted transition text-sm cursor-pointer"
                             >
                                 ✕
                             </button>
                         </div>
 
-                        <form onSubmit={handleCreateSubmit} className="p-6 flex flex-col gap-4">
+                        <form onSubmit={handleCreateSubmit} className="p-6 md:p-8 flex flex-col gap-6">
                             {/* Alert Scaffold Info */}
-                            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-primary/10 border border-primary/20 text-xs text-foreground">
-                                <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                                <div>
-                                    <span className="font-bold">Auto-Scaffold Sistem:</span> Sistem akan otomatis membuatkan struktur jabatan hierarki standar (*Owner, Supervisor, Staff*), 5 tahapan CRM Pipeline, dan akun Owner pertama.
+                            <div className="flex items-start gap-3 p-4 rounded-2xl bg-primary/10 border border-primary/20 text-xs text-foreground">
+                                <Sparkles className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                                <div className="leading-relaxed">
+                                    <strong className="text-primary font-bold">Auto-Scaffold Sistem Otomatis:</strong> Saat travel dibuat, sistem akan langsung men-generate struktur jabatan hierarki (*Owner, Supervisor, Staff*), 5 tahapan CRM Leads, dan akun Owner pertama yang langsung dapat digunakan untuk login.
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="sm:col-span-2">
-                                    <label className="block text-xs font-semibold text-foreground mb-1">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-bold text-foreground mb-1.5">
                                         Nama Travel Agensi <span className="text-rose-500">*</span>
                                     </label>
                                     <input
@@ -452,44 +455,45 @@ export default function Index({ tenants, metrics, filters, activeTenantId }: Pro
                                         placeholder="Contoh: PT Barokah Madinah Wisata"
                                         value={createForm.nama_travel}
                                         onChange={(e) => setCreateForm({ ...createForm, nama_travel: e.target.value })}
-                                        className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground"
+                                        className="w-full px-4 py-2.5 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground shadow-2xs"
                                     />
                                     {createErrors.nama_travel && (
-                                        <p className="text-[11px] text-rose-500 mt-1">{createErrors.nama_travel}</p>
+                                        <p className="text-[11px] text-rose-500 mt-1 font-medium">{createErrors.nama_travel}</p>
                                     )}
                                 </div>
 
-                                <div className="sm:col-span-2">
-                                    <label className="block text-xs font-semibold text-foreground mb-1">
-                                        Subdomain / Slug <span className="text-rose-500">*</span>
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-bold text-foreground mb-1.5">
+                                        Subdomain / Slug Travel <span className="text-rose-500">*</span>
                                     </label>
-                                    <div className="flex items-center">
+                                    <div className="flex items-center shadow-2xs rounded-xl overflow-hidden border border-border">
                                         <input
                                             type="text"
                                             required
                                             placeholder="barokah"
                                             value={createForm.domain_atau_subdomain}
                                             onChange={(e) => setCreateForm({ ...createForm, domain_atau_subdomain: e.target.value })}
-                                            className="w-full px-3 py-2 text-xs bg-background border border-border rounded-l-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground font-mono"
+                                            className="w-full px-4 py-2.5 text-xs bg-background border-none focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground font-mono"
                                         />
-                                        <span className="bg-muted border border-l-0 border-border px-3 py-2 text-xs text-muted-foreground rounded-r-xl font-mono">
+                                        <span className="bg-muted px-4 py-2.5 text-xs text-muted-foreground font-mono font-bold border-l border-border shrink-0">
                                             .hajjflow.com
                                         </span>
                                     </div>
                                     {createErrors.domain_atau_subdomain && (
-                                        <p className="text-[11px] text-rose-500 mt-1">{createErrors.domain_atau_subdomain}</p>
+                                        <p className="text-[11px] text-rose-500 mt-1 font-medium">{createErrors.domain_atau_subdomain}</p>
                                     )}
                                 </div>
 
-                                <div className="sm:col-span-2 pt-2 border-t border-border/60">
-                                    <div className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5">
-                                        <Crown className="w-3.5 h-3.5 text-amber-500" />
-                                        <span>Informasi Akun Owner Pertama</span>
+                                <div className="md:col-span-2 pt-3 border-t border-border/70">
+                                    <div className="text-xs font-bold text-foreground mb-1 flex items-center gap-1.5">
+                                        <Crown className="w-4 h-4 text-amber-500" />
+                                        <span>Informasi Kredensial Akun Owner Pertama</span>
                                     </div>
+                                    <p className="text-[11px] text-muted-foreground mb-3">Akun pimpinan utama untuk login dan mengelola operasional travel ini.</p>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-semibold text-foreground mb-1">
+                                    <label className="block text-xs font-bold text-foreground mb-1.5">
                                         Nama Lengkap Owner <span className="text-rose-500">*</span>
                                     </label>
                                     <input
@@ -498,15 +502,15 @@ export default function Index({ tenants, metrics, filters, activeTenantId }: Pro
                                         placeholder="H. Fulan Abdullah"
                                         value={createForm.owner_name}
                                         onChange={(e) => setCreateForm({ ...createForm, owner_name: e.target.value })}
-                                        className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground"
+                                        className="w-full px-4 py-2.5 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground shadow-2xs"
                                     />
                                     {createErrors.owner_name && (
-                                        <p className="text-[11px] text-rose-500 mt-1">{createErrors.owner_name}</p>
+                                        <p className="text-[11px] text-rose-500 mt-1 font-medium">{createErrors.owner_name}</p>
                                     )}
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-semibold text-foreground mb-1">
+                                    <label className="block text-xs font-bold text-foreground mb-1.5">
                                         Email Login Owner <span className="text-rose-500">*</span>
                                     </label>
                                     <input
@@ -515,15 +519,15 @@ export default function Index({ tenants, metrics, filters, activeTenantId }: Pro
                                         placeholder="owner@barokah.com"
                                         value={createForm.owner_email}
                                         onChange={(e) => setCreateForm({ ...createForm, owner_email: e.target.value })}
-                                        className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground"
+                                        className="w-full px-4 py-2.5 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground shadow-2xs"
                                     />
                                     {createErrors.owner_email && (
-                                        <p className="text-[11px] text-rose-500 mt-1">{createErrors.owner_email}</p>
+                                        <p className="text-[11px] text-rose-500 mt-1 font-medium">{createErrors.owner_email}</p>
                                     )}
                                 </div>
 
-                                <div className="sm:col-span-2">
-                                    <label className="block text-xs font-semibold text-foreground mb-1">
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-bold text-foreground mb-1.5">
                                         Password Default Owner <span className="text-rose-500">*</span>
                                     </label>
                                     <input
@@ -532,26 +536,26 @@ export default function Index({ tenants, metrics, filters, activeTenantId }: Pro
                                         placeholder="Minimal 6 karakter"
                                         value={createForm.owner_password}
                                         onChange={(e) => setCreateForm({ ...createForm, owner_password: e.target.value })}
-                                        className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground"
+                                        className="w-full px-4 py-2.5 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground shadow-2xs"
                                     />
                                     {createErrors.owner_password && (
-                                        <p className="text-[11px] text-rose-500 mt-1">{createErrors.owner_password}</p>
+                                        <p className="text-[11px] text-rose-500 mt-1 font-medium">{createErrors.owner_password}</p>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-border/80">
+                            <div className="flex items-center justify-end gap-3 pt-5 border-t border-border/80">
                                 <button
                                     type="button"
                                     onClick={() => setIsCreateOpen(false)}
-                                    className="px-4 py-2 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground transition cursor-pointer"
+                                    className="px-5 py-2.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground transition cursor-pointer"
                                 >
                                     Batal
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSubmittingCreate}
-                                    className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:bg-primary/90 disabled:opacity-50 transition cursor-pointer"
+                                    className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:bg-primary/90 disabled:opacity-50 transition cursor-pointer"
                                 >
                                     {isSubmittingCreate ? 'Menyimpan...' : 'Onboard & Buat Tenant'}
                                 </button>
@@ -563,27 +567,30 @@ export default function Index({ tenants, metrics, filters, activeTenantId }: Pro
 
             {/* MODAL 2: EDIT TENANT */}
             {isEditOpen && selectedTenant && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-                    <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-xl overflow-hidden animate-in fade-in-0 zoom-in-95">
-                        <div className="p-6 border-b border-border/80 flex justify-between items-start">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/50 backdrop-blur-sm overflow-y-auto">
+                    <div className="w-full max-w-xl bg-card border border-border rounded-3xl shadow-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 my-8">
+                        <div className="p-6 md:p-7 border-b border-border/80 flex justify-between items-start bg-muted/20">
                             <div>
-                                <h2 className="text-lg font-bold text-foreground">Edit Informasi Tenant</h2>
-                                <p className="text-xs text-muted-foreground mt-0.5">
+                                <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                                    <Edit2 className="w-5 h-5 text-primary" />
+                                    <span>Edit Informasi Tenant</span>
+                                </h2>
+                                <p className="text-xs text-muted-foreground mt-1">
                                     Perbarui nama agensi atau subdomain travel.
                                 </p>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setIsEditOpen(false)}
-                                className="text-muted-foreground hover:text-foreground p-1 rounded-lg text-xs"
+                                className="text-muted-foreground hover:text-foreground p-1.5 rounded-xl hover:bg-muted transition text-sm cursor-pointer"
                             >
                                 ✕
                             </button>
                         </div>
 
-                        <form onSubmit={handleEditSubmit} className="p-6 flex flex-col gap-4">
+                        <form onSubmit={handleEditSubmit} className="p-6 md:p-7 flex flex-col gap-5">
                             <div>
-                                <label className="block text-xs font-semibold text-foreground mb-1">
+                                <label className="block text-xs font-bold text-foreground mb-1.5">
                                     Nama Travel Agensi <span className="text-rose-500">*</span>
                                 </label>
                                 <input
@@ -591,46 +598,46 @@ export default function Index({ tenants, metrics, filters, activeTenantId }: Pro
                                     required
                                     value={editForm.nama_travel}
                                     onChange={(e) => setEditForm({ ...editForm, nama_travel: e.target.value })}
-                                    className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground"
+                                    className="w-full px-4 py-2.5 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground shadow-2xs"
                                 />
                                 {editErrors.nama_travel && (
-                                    <p className="text-[11px] text-rose-500 mt-1">{editErrors.nama_travel}</p>
+                                    <p className="text-[11px] text-rose-500 mt-1 font-medium">{editErrors.nama_travel}</p>
                                 )}
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-foreground mb-1">
+                                <label className="block text-xs font-bold text-foreground mb-1.5">
                                     Subdomain / Slug <span className="text-rose-500">*</span>
                                 </label>
-                                <div className="flex items-center">
+                                <div className="flex items-center shadow-2xs rounded-xl overflow-hidden border border-border">
                                     <input
                                         type="text"
                                         required
                                         value={editForm.domain_atau_subdomain}
                                         onChange={(e) => setEditForm({ ...editForm, domain_atau_subdomain: e.target.value })}
-                                        className="w-full px-3 py-2 text-xs bg-background border border-border rounded-l-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground font-mono"
+                                        className="w-full px-4 py-2.5 text-xs bg-background border-none focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground font-mono"
                                     />
-                                    <span className="bg-muted border border-l-0 border-border px-3 py-2 text-xs text-muted-foreground rounded-r-xl font-mono">
+                                    <span className="bg-muted px-4 py-2.5 text-xs text-muted-foreground font-mono font-bold border-l border-border shrink-0">
                                         .hajjflow.com
                                     </span>
                                 </div>
                                 {editErrors.domain_atau_subdomain && (
-                                    <p className="text-[11px] text-rose-500 mt-1">{editErrors.domain_atau_subdomain}</p>
+                                    <p className="text-[11px] text-rose-500 mt-1 font-medium">{editErrors.domain_atau_subdomain}</p>
                                 )}
                             </div>
 
-                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-border/80">
+                            <div className="flex items-center justify-end gap-3 pt-5 border-t border-border/80">
                                 <button
                                     type="button"
                                     onClick={() => setIsEditOpen(false)}
-                                    className="px-4 py-2 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground transition cursor-pointer"
+                                    className="px-5 py-2.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground transition cursor-pointer"
                                 >
                                     Batal
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSubmittingEdit}
-                                    className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:bg-primary/90 disabled:opacity-50 transition cursor-pointer"
+                                    className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:bg-primary/90 disabled:opacity-50 transition cursor-pointer"
                                 >
                                     {isSubmittingEdit ? 'Menyimpan...' : 'Simpan Perubahan'}
                                 </button>
@@ -642,25 +649,25 @@ export default function Index({ tenants, metrics, filters, activeTenantId }: Pro
 
             {/* MODAL 3: DELETE CONFIRMATION */}
             {isDeleteOpen && selectedTenant && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-                    <div className="w-full max-w-sm bg-card border border-border rounded-2xl shadow-xl overflow-hidden animate-in fade-in-0 zoom-in-95">
-                        <div className="p-6 flex flex-col items-center text-center gap-3">
-                            <div className="h-12 w-12 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-                                <AlertCircle className="w-6 h-6" />
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/50 backdrop-blur-sm overflow-y-auto">
+                    <div className="w-full max-w-lg bg-card border border-border rounded-3xl shadow-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 my-8">
+                        <div className="p-6 md:p-7 flex flex-col items-center text-center gap-4">
+                            <div className="h-14 w-14 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center border border-rose-500/20">
+                                <AlertCircle className="w-7 h-7" />
                             </div>
                             <div>
-                                <h3 className="text-base font-bold text-foreground">Hapus Tenant Travel?</h3>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    Apakah Anda yakin ingin menghapus <strong className="text-foreground">{selectedTenant.nama_travel}</strong>? Seluruh data operasional travel ini akan dibersihkan dari sistem.
+                                <h3 className="text-lg font-bold text-foreground">Hapus Tenant Travel?</h3>
+                                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                                    Apakah Anda yakin ingin menghapus <strong className="text-foreground">{selectedTenant.nama_travel}</strong>? Seluruh data operasional, inventaris, dan akun jamaah travel ini akan dibersihkan dari sistem.
                                 </p>
                             </div>
                         </div>
 
-                        <div className="p-4 bg-muted/40 border-t border-border/80 flex items-center justify-end gap-2">
+                        <div className="p-5 bg-muted/30 border-t border-border/80 flex items-center justify-end gap-3">
                             <button
                                 type="button"
                                 onClick={() => setIsDeleteOpen(false)}
-                                className="px-4 py-2 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground transition cursor-pointer"
+                                className="px-5 py-2.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground transition cursor-pointer"
                             >
                                 Batal
                             </button>
@@ -668,7 +675,7 @@ export default function Index({ tenants, metrics, filters, activeTenantId }: Pro
                                 type="button"
                                 disabled={isSubmittingDelete}
                                 onClick={handleDeleteSubmit}
-                                className="px-4 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold shadow-xs hover:bg-rose-700 disabled:opacity-50 transition cursor-pointer"
+                                className="px-5 py-2.5 rounded-xl bg-rose-600 text-white text-xs font-bold shadow-xs hover:bg-rose-700 disabled:opacity-50 transition cursor-pointer"
                             >
                                 {isSubmittingDelete ? 'Menghapus...' : 'Ya, Hapus Tenant'}
                             </button>
