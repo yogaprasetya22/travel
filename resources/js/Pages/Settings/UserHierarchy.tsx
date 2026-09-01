@@ -306,12 +306,18 @@ export default function UserHierarchy({
     const handleOpenCreateLevel = (parentLevel?: HierarchyLevelItem) => {
         setLevelModalMode('create');
         setEditingLevel(null);
-        setSelectedParentLevelId(parentLevel ? parentLevel.id : null);
+        
+        // Find default parent if none provided (Owner for tenant owner)
+        const defaultParent = parentLevel
+            ? parentLevel
+            : (allLevels.find((l) => l.role_key === 'owner_travel' || l.nama_level === 'Owner') || allLevels[0]);
+
+        setSelectedParentLevelId(defaultParent ? defaultParent.id : null);
         levelForm.reset();
         levelForm.setData({
             nama_level: '',
-            parent_id: parentLevel ? parentLevel.id.toString() : '',
-            role_key: parentLevel?.role_key === 'owner_travel' ? 'admin_travel' : 'agen',
+            parent_id: defaultParent ? defaultParent.id.toString() : '',
+            role_key: defaultParent?.role_key === 'owner_travel' ? 'admin_travel' : 'agen',
             deskripsi: '',
             wewenang_note: '',
             tenant_id: selectedTenantId.toString(),
@@ -1207,17 +1213,28 @@ export default function UserHierarchy({
 
                         {levelModalMode === 'create' && (
                             <div>
-                                <InputLabel htmlFor="parent_id" value="Atasan Langsung (Parent Level)" />
+                                <InputLabel htmlFor="parent_id" value="Atasan Langsung (Parent Level) *" />
                                 <select
                                     id="parent_id"
                                     value={levelForm.data.parent_id}
-                                    onChange={(e) => levelForm.setData('parent_id', e.target.value)}
+                                    onChange={(e) => {
+                                        const pid = e.target.value;
+                                        const parentObj = allLevels.find((l) => l.id.toString() === pid);
+                                        levelForm.setData((data) => ({
+                                            ...data,
+                                            parent_id: pid,
+                                            role_key: parentObj?.role_key === 'owner_travel' ? 'admin_travel' : 'agen',
+                                        }));
+                                    }}
                                     className="mt-1 block w-full bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                    required={currentUserRole !== 'super_admin_master'}
                                 >
-                                    <option value="">Level Tertinggi (Root / Tanpa Atasan)</option>
+                                    {currentUserRole === 'super_admin_master' && (
+                                        <option value="">Level Tertinggi (Root / Tanpa Atasan)</option>
+                                    )}
                                     {allLevels.map((lvl) => (
                                         <option key={lvl.id} value={lvl.id.toString()}>
-                                            {lvl.nama_level}
+                                            {lvl.nama_level} {lvl.role_key === 'owner_travel' ? '(Pimpinan Tertinggi)' : ''}
                                         </option>
                                     ))}
                                 </select>
@@ -1236,7 +1253,9 @@ export default function UserHierarchy({
                             >
                                 <option value="agen">Agen (Direct Sales / Mitra Lapangan)</option>
                                 <option value="admin_travel">Admin Travel (Pengawas Tim / Operasional)</option>
-                                <option value="owner_travel">Owner Travel (Pimpinan Penuh)</option>
+                                {currentUserRole === 'super_admin_master' && (
+                                    <option value="owner_travel">Owner Travel (Pimpinan Penuh)</option>
+                                )}
                             </select>
                             <InputError message={levelForm.errors.role_key} className="mt-2" />
                         </div>

@@ -170,20 +170,25 @@ class UserHierarchyController extends Controller
     {
         $currentUser = $request->user();
 
+        $allowedRoleKeys = $currentUser->role === 'super_admin_master'
+            ? ['owner_travel', 'admin_travel', 'agen']
+            : ['admin_travel', 'agen'];
+
+        $targetTenantId = ($currentUser->role === 'super_admin_master' && ! empty($request->input('tenant_id')))
+            ? (int) $request->input('tenant_id')
+            : $currentUser->tenant_id;
+
         $validated = $request->validate([
             'nama_level' => ['required', 'string', 'max:100'],
-            'parent_id' => ['nullable', 'exists:hierarchy_levels,id'],
-            'role_key' => ['required', 'string', Rule::in(['owner_travel', 'admin_travel', 'agen'])],
+            'parent_id' => [
+                $currentUser->role === 'super_admin_master' ? 'nullable' : 'required',
+                'exists:hierarchy_levels,id',
+            ],
+            'role_key' => ['required', 'string', Rule::in($allowedRoleKeys)],
             'deskripsi' => ['nullable', 'string', 'max:255'],
             'wewenang_note' => ['nullable', 'string', 'max:1000'],
-            'tenant_id' => [
-                $currentUser->role === 'super_admin_master' ? 'nullable' : 'nullable',
-            ],
+            'tenant_id' => ['nullable'],
         ]);
-
-        $targetTenantId = ($currentUser->role === 'super_admin_master' && ! empty($validated['tenant_id']))
-            ? (int) $validated['tenant_id']
-            : $currentUser->tenant_id;
 
         $maxUrutan = HierarchyLevel::where('tenant_id', $targetTenantId)->max('urutan') ?? 0;
 
@@ -211,9 +216,13 @@ class UserHierarchyController extends Controller
             abort(403, 'Aksi tidak diizinkan.');
         }
 
+        $allowedRoleKeys = $currentUser->role === 'super_admin_master'
+            ? ['owner_travel', 'admin_travel', 'agen']
+            : ($level->role_key === 'owner_travel' ? ['owner_travel'] : ['admin_travel', 'agen']);
+
         $validated = $request->validate([
             'nama_level' => ['required', 'string', 'max:100'],
-            'role_key' => ['required', 'string', Rule::in(['owner_travel', 'admin_travel', 'agen'])],
+            'role_key' => ['required', 'string', Rule::in($allowedRoleKeys)],
             'deskripsi' => ['nullable', 'string', 'max:255'],
             'wewenang_note' => ['nullable', 'string', 'max:1000'],
         ]);
