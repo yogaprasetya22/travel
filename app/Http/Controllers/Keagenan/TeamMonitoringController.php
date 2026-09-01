@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\HierarchyLevel;
 use App\Models\Jamaah;
 use App\Models\KomisiAgen;
-use App\Models\OverrideKomisiAgen;
 use App\Models\Pembayaran;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -37,14 +36,13 @@ class TeamMonitoringController extends Controller
                 $jamaahIds = Jamaah::where('agen_id', $member->id)->pluck('id');
 
                 $verifiedRevenue = (float) Pembayaran::whereIn('jamaah_id', $jamaahIds)
-                    ->where('status', 'verified')
+                    ->where('status_verifikasi', 'verified')
                     ->sum('nominal');
 
-                // Total commission & overrides
-                $totalKomisiDirect = (float) KomisiAgen::where('agen_id', $member->id)->sum('nominal_komisi');
-                $totalOverride = (float) OverrideKomisiAgen::where('agen_id', $member->id)->sum('nominal_override');
-                $totalKomisiPaid = (float) KomisiAgen::where('agen_id', $member->id)->where('status', 'paid')->sum('nominal_komisi');
-                $totalKomisiPending = (float) KomisiAgen::where('agen_id', $member->id)->where('status', 'pending')->sum('nominal_komisi');
+                // Total commission from KomisiAgen
+                $totalKomisi = (float) KomisiAgen::where('agen_id', $member->id)->sum('nominal_komisi');
+                $totalKomisiPaid = (float) KomisiAgen::where('agen_id', $member->id)->where('status_pencairan', 'paid')->sum('nominal_komisi');
+                $totalKomisiPending = (float) KomisiAgen::where('agen_id', $member->id)->where('status_pencairan', 'pending')->sum('nominal_komisi');
 
                 return [
                     'id' => $member->id,
@@ -62,10 +60,9 @@ class TeamMonitoringController extends Controller
                     ] : null,
                     'total_jamaah' => $member->jamaah_count,
                     'total_omzet' => $verifiedRevenue,
-                    'total_komisi' => $totalKomisiDirect + $totalOverride,
+                    'total_komisi' => $totalKomisi,
                     'komisi_paid' => $totalKomisiPaid,
                     'komisi_pending' => $totalKomisiPending,
-                    'override_komisi' => $totalOverride,
                 ];
             })
             ->sortBy('level')
