@@ -18,8 +18,7 @@ import {
     BadgeCheck,
 } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent } from '@/Components/ui/card';
-import { Input } from '@/Components/ui/input';
+import { Card } from '@/Components/ui/card';
 import { Label } from '@/Components/ui/label';
 import { Badge } from '@/Components/ui/badge';
 import InputError from '@/Components/InputError';
@@ -85,7 +84,8 @@ export default function Register({
         post(route('public.register.submit'));
     };
 
-    const selectedPaket = packages.find((p) => p.id.toString() === data.paket_id);
+    const inputClasses =
+        'w-full rounded-xl border border-[#D7CCC8] !bg-white !text-[#2C1A14] !placeholder-[#A1887F] text-xs h-10 px-3.5 py-2 shadow-2xs focus:border-[#6F4E37] focus:outline-hidden focus:ring-2 focus:ring-[#6F4E37]/25 transition-all font-medium';
 
     return (
         <div className="min-h-screen bg-[#FAF7F2] text-[#2C1A14] selection:bg-[#6F4E37] selection:text-white py-10 px-4 sm:px-6 lg:px-8 font-sans">
@@ -103,7 +103,7 @@ export default function Register({
                     </Link>
 
                     <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-xl bg-[#4A2E20] text-white flex items-center justify-center font-black text-sm">
+                        <div className="w-9 h-9 rounded-xl bg-[#4A2E20] text-white flex items-center justify-center font-black text-sm shadow-xs">
                             🕌
                         </div>
                         <span className="font-extrabold text-sm text-[#2C1A14]">{travelName}</span>
@@ -193,13 +193,13 @@ export default function Register({
                                     <Label htmlFor="nama_lengkap" className="text-xs font-bold text-[#5D4037]">
                                         Nama Lengkap (Sesuai KTP / Paspor) <span className="text-red-500">*</span>
                                     </Label>
-                                    <Input
+                                    <input
                                         id="nama_lengkap"
                                         type="text"
                                         placeholder="Contoh: H. Ahmad Subardjo"
                                         value={data.nama_lengkap}
                                         onChange={(e) => setData('nama_lengkap', e.target.value)}
-                                        className="rounded-xl border-[#D7CCC8] text-xs h-10 focus:border-[#6F4E37] focus:ring-[#6F4E37]/20"
+                                        className={inputClasses}
                                         required
                                     />
                                     <InputError message={errors.nama_lengkap} />
@@ -209,13 +209,13 @@ export default function Register({
                                     <Label htmlFor="no_hp" className="text-xs font-bold text-[#5D4037]">
                                         Nomor WhatsApp Aktif <span className="text-red-500">*</span>
                                     </Label>
-                                    <Input
+                                    <input
                                         id="no_hp"
                                         type="text"
                                         placeholder="081234567890"
                                         value={data.no_hp}
                                         onChange={(e) => setData('no_hp', e.target.value)}
-                                        className="rounded-xl border-[#D7CCC8] text-xs h-10 focus:border-[#6F4E37] focus:ring-[#6F4E37]/20"
+                                        className={inputClasses}
                                         required
                                     />
                                     <InputError message={errors.no_hp} />
@@ -225,13 +225,13 @@ export default function Register({
                                     <Label htmlFor="email" className="text-xs font-bold text-[#5D4037]">
                                         Alamat Email
                                     </Label>
-                                    <Input
+                                    <input
                                         id="email"
                                         type="email"
                                         placeholder="nama@email.com"
                                         value={data.email}
                                         onChange={(e) => setData('email', e.target.value)}
-                                        className="rounded-xl border-[#D7CCC8] text-xs h-10 focus:border-[#6F4E37] focus:ring-[#6F4E37]/20"
+                                        className={inputClasses}
                                     />
                                     <InputError message={errors.email} />
                                 </div>
@@ -240,13 +240,13 @@ export default function Register({
                                     <Label htmlFor="nik" className="text-xs font-bold text-[#5D4037]">
                                         Nomor NIK KTP (Opsional)
                                     </Label>
-                                    <Input
+                                    <input
                                         id="nik"
                                         type="text"
                                         placeholder="16 digit nomor KTP"
                                         value={data.nik}
                                         onChange={(e) => setData('nik', e.target.value)}
-                                        className="rounded-xl border-[#D7CCC8] text-xs h-10 focus:border-[#6F4E37] focus:ring-[#6F4E37]/20"
+                                        className={inputClasses}
                                     />
                                     <InputError message={errors.nik} />
                                 </div>
@@ -255,13 +255,13 @@ export default function Register({
                                     <Label htmlFor="nomor_paspor" className="text-xs font-bold text-[#5D4037]">
                                         Nomor Paspor (Jika Sudah Ada)
                                     </Label>
-                                    <Input
+                                    <input
                                         id="nomor_paspor"
                                         type="text"
                                         placeholder="Contoh: A12345678"
                                         value={data.nomor_paspor}
                                         onChange={(e) => setData('nomor_paspor', e.target.value)}
-                                        className="rounded-xl border-[#D7CCC8] text-xs h-10 focus:border-[#6F4E37] focus:ring-[#6F4E37]/20"
+                                        className={inputClasses}
                                     />
                                     <InputError message={errors.nomor_paspor} />
                                 </div>
@@ -284,13 +284,13 @@ export default function Register({
                                     <Label htmlFor="nominal_dp" className="text-xs font-bold text-[#5D4037]">
                                         Nominal Rencana DP (Rp)
                                     </Label>
-                                    <Input
+                                    <input
                                         id="nominal_dp"
                                         type="number"
                                         placeholder="Contoh: 5000000"
                                         value={data.nominal_dp}
                                         onChange={(e) => setData('nominal_dp', e.target.value)}
-                                        className="rounded-xl border-[#D7CCC8] text-xs h-10 focus:border-[#6F4E37] focus:ring-[#6F4E37]/20"
+                                        className={inputClasses}
                                     />
                                 </div>
 
@@ -302,7 +302,7 @@ export default function Register({
                                         id="rekening_tenant_id"
                                         value={data.rekening_tenant_id}
                                         onChange={(e) => setData('rekening_tenant_id', e.target.value)}
-                                        className="rounded-xl border border-[#D7CCC8] bg-white text-xs h-10 px-3 text-[#2C1A14] font-medium focus:border-[#6F4E37] focus:outline-hidden focus:ring-2 focus:ring-[#6F4E37]/20"
+                                        className={inputClasses}
                                     >
                                         {banks.map((b) => (
                                             <option key={b.id} value={b.id.toString()}>
@@ -322,7 +322,7 @@ export default function Register({
                                         placeholder="Tuliskan permintaan khusus (misal: gabung kamar bersama keluarga, kursi roda, dll)"
                                         value={data.catatan}
                                         onChange={(e) => setData('catatan', e.target.value)}
-                                        className="rounded-xl border border-[#D7CCC8] text-xs p-3 focus:border-[#6F4E37] focus:outline-hidden focus:ring-2 focus:ring-[#6F4E37]/20 font-medium"
+                                        className="w-full rounded-xl border border-[#D7CCC8] !bg-white !text-[#2C1A14] !placeholder-[#A1887F] text-xs p-3.5 focus:border-[#6F4E37] focus:outline-hidden focus:ring-2 focus:ring-[#6F4E37]/25 shadow-2xs font-medium"
                                     />
                                 </div>
                             </div>
