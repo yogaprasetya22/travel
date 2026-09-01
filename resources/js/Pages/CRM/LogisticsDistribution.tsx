@@ -47,7 +47,7 @@ interface LogisticsCustomer {
         nama_paket: string;
         harga?: number;
     };
-    stage?: {
+    crm_stage?: {
         nama_stage: string;
     } | null;
     agen: {
