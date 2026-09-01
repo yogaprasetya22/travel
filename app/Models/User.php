@@ -26,7 +26,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read Tenant|null $tenant
  */
-#[Fillable(['name', 'email', 'password', 'tenant_id', 'role', 'jabatan', 'created_by'])]
+#[Fillable(['name', 'email', 'password', 'tenant_id', 'hierarchy_level_id', 'role', 'jabatan', 'created_by'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -49,6 +49,11 @@ class User extends Authenticatable
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    public function hierarchyLevel(): BelongsTo
+    {
+        return $this->belongsTo(HierarchyLevel::class, 'hierarchy_level_id');
     }
 
     public function creator(): BelongsTo

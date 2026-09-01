@@ -32,13 +32,30 @@ import {
     LayoutGrid,
     Table as TableIcon,
     ArrowRight,
+    FolderPlus,
+    MoveRight,
+    Sparkles,
 } from 'lucide-react';
 import DataTablePagination from '@/Components/DataTablePagination';
 import PerPageSelector from '@/Components/PerPageSelector';
 import { useDebounce } from '@/hooks/use-debounce';
 
-interface HierarchyUser {
+export interface HierarchyLevelItem {
     id: number;
+    tenant_id: number;
+    parent_id: number | null;
+    nama_level: string;
+    role_key: 'owner_travel' | 'admin_travel' | 'agen';
+    deskripsi: string | null;
+    wewenang_note: string | null;
+    urutan: number;
+    children?: HierarchyLevelItem[];
+}
+
+export interface HierarchyUser {
+    id: number;
+    tenant_id: number;
+    hierarchy_level_id: number | null;
     name: string;
     email: string;
     role: 'super_admin_master' | 'owner_travel' | 'admin_travel' | 'agen';
@@ -52,6 +69,7 @@ interface HierarchyUser {
     tenant?: {
         nama_travel: string;
     } | null;
+    hierarchy_level?: HierarchyLevelItem | null;
 }
 
 interface TenantItem {
@@ -62,172 +80,149 @@ interface TenantItem {
 interface UserHierarchyProps extends PageProps {
     users: HierarchyUser[];
     tenants: TenantItem[];
+    selectedTenantId: number;
+    hierarchyTree: HierarchyLevelItem[];
+    allLevels: HierarchyLevelItem[];
     currentUserRole: string;
 }
-
-// Tree Node structure definition for the 4 hierarchy levels
-interface RoleNode {
-    id: string;
-    title: string;
-    roleKey: 'super_admin_master' | 'owner_travel' | 'admin_travel' | 'agen';
-    levelDesc: string;
-    authorityNote: string;
-    children?: RoleNode[];
-}
-
-const HIERARCHY_TREE: RoleNode[] = [
-    {
-        id: 'Owner',
-        title: 'Owner',
-        roleKey: 'owner_travel',
-        levelDesc: 'Pimpinan & Pemilik Tenant Travel',
-        authorityNote: 'Memiliki otoritas penuh atas seluruh manajemen tenant, keuangan, dan seluruh cabang struktur organisasi.',
-        children: [
-            {
-                id: 'Supervisor',
-                title: 'Supervisor',
-                roleKey: 'admin_travel',
-                levelDesc: 'Supervisor Pembina Mitra & Operasional',
-                authorityNote: 'Membina team leader dan memonitor target penjualan serta evaluasi tim lapangan.',
-                children: [
-                    {
-                        id: 'Team Leader',
-                        title: 'Team Leader',
-                        roleKey: 'admin_travel',
-                        levelDesc: 'Ketua Tim Lapangan & Pembina Agen',
-                        authorityNote: 'Membimbing staff agen dalam follow-up calon jamaah dan penyuluhan manasik.',
-                        children: [
-                            {
-                                id: 'Staff',
-                                title: 'Staff',
-                                roleKey: 'agen',
-                                levelDesc: 'Mitra Sales Agen Lapangan (Direct Sales)',
-                                authorityNote: 'Merekrut dan melakukan pendekatan langsung dengan calon jamaah serta berhak atas komisi closing.',
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
-    },
-];
 
 export default function UserHierarchy({
     users = [],
     tenants = [],
+    selectedTenantId,
+    hierarchyTree = [],
+    allLevels = [],
     currentUserRole,
 }: UserHierarchyProps) {
     const { auth } = usePage<PageProps>().props;
 
-    // View mode: 'canvas' (Visual Stepped Tree) | 'table' (Tabular Listing)
+    // View mode: 'canvas' | 'table'
     const [viewMode, setViewMode] = useState<'canvas' | 'table'>('canvas');
 
     // Track collapsed/expanded node IDs in Canvas mode
-    const [expandedNodeIds, setExpandedNodeIds] = useState<Record<string, boolean>>({
-        'Owner': true,
-        'Supervisor': true,
-        'Team Leader': true,
-        'Staff': true,
+    const [expandedNodeIds, setExpandedNodeIds] = useState<Record<number, boolean>>(() => {
+        const initial: Record<number, boolean> = {};
+        allLevels.forEach((l) => {
+            initial[l.id] = true;
+        });
+        return initial;
     });
 
-    const [activeDrawerRole, setActiveDrawerRole] = useState<RoleNode | null>(null);
+    const [activeDrawerLevel, setActiveDrawerLevel] = useState<HierarchyLevelItem | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [tableSearchQuery, setTableSearchQuery] = useState('');
     const [tableJabatanFilter, setTableJabatanFilter] = useState<string>('all');
+
+    // Modals
     const [isAddUserOpen, setIsAddUserOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<HierarchyUser | null>(null);
+    const [reassigningUser, setReassigningUser] = useState<HierarchyUser | null>(null);
 
-    const createForm = useForm({
+    // Level Management Modals
+    const [levelModalMode, setLevelModalMode] = useState<'create' | 'edit' | null>(null);
+    const [selectedParentLevelId, setSelectedParentLevelId] = useState<number | null>(null);
+    const [editingLevel, setEditingLevel] = useState<HierarchyLevelItem | null>(null);
+    const [deletingLevel, setDeletingLevel] = useState<HierarchyLevelItem | null>(null);
+
+    // Form: Create / Edit User
+    const userForm = useForm({
         name: '',
         email: '',
         password: '',
-        role: 'agen',
-        jabatan: 'Staff',
-        tenant_id: tenants[0]?.id ? tenants[0].id.toString() : '',
+        hierarchy_level_id: allLevels[0]?.id ? allLevels[0].id.toString() : '',
+        tenant_id: selectedTenantId ? selectedTenantId.toString() : (tenants[0]?.id?.toString() || ''),
     });
 
-    const editForm = useForm({
+    const editUserForm = useForm({
         name: '',
         email: '',
-        jabatan: '',
+        hierarchy_level_id: '',
         password: '',
+    });
+
+    // Form: Create / Edit Hierarchy Level
+    const levelForm = useForm({
+        nama_level: '',
+        parent_id: '',
+        role_key: 'agen' as 'owner_travel' | 'admin_travel' | 'agen',
+        deskripsi: '',
+        wewenang_note: '',
+        tenant_id: selectedTenantId ? selectedTenantId.toString() : '',
+    });
+
+    // Form: Delete Level (with migration)
+    const deleteLevelForm = useForm({
+        reassign_to_level_id: '',
+    });
+
+    // Form: Reassign User
+    const reassignForm = useForm({
+        target_level_id: '',
     });
 
     const handleExpandAll = () => {
-        setExpandedNodeIds({
-            'Owner': true,
-            'Supervisor': true,
-            'Team Leader': true,
-            'Staff': true,
+        const expanded: Record<number, boolean> = {};
+        allLevels.forEach((l) => {
+            expanded[l.id] = true;
         });
+        setExpandedNodeIds(expanded);
     };
 
     const handleCollapseAll = () => {
         setExpandedNodeIds({});
     };
 
-    const toggleNode = (nodeId: string) => {
+    const toggleNode = (nodeId: number) => {
         setExpandedNodeIds((prev) => ({
             ...prev,
             [nodeId]: !prev[nodeId],
         }));
     };
 
-    // Calculate count from real database users per jabatan (excluding Super Admin Master)
-    const roleCounts = useMemo(() => {
-        const counts: Record<string, number> = {};
-        const allJabatan = ['Owner', 'Supervisor', 'Team Leader', 'Staff'];
-
-        allJabatan.forEach((jb) => {
+    // Calculate count from real database users per level
+    const levelCounts = useMemo(() => {
+        const counts: Record<number, number> = {};
+        allLevels.forEach((lvl) => {
             const countInDb = users.filter((u) => {
                 if (u.role === 'super_admin_master') return false;
-                if (u.jabatan) {
-                    return u.jabatan.toLowerCase() === jb.toLowerCase();
+                if (u.hierarchy_level_id) {
+                    return u.hierarchy_level_id === lvl.id;
                 }
-                if (jb === 'Owner' && u.role === 'owner_travel') return true;
-                if (jb === 'Staff' && u.role === 'agen') return true;
-                if (jb === 'Supervisor' && u.role === 'admin_travel') return true;
-                return false;
+                return u.jabatan?.toLowerCase() === lvl.nama_level.toLowerCase();
             }).length;
-
-            counts[jb] = countInDb;
+            counts[lvl.id] = countInDb;
         });
-
         return counts;
-    }, [users]);
+    }, [users, allLevels]);
 
     const debouncedSearchQuery = useDebounce(searchQuery, 300);
     const debouncedTableSearchQuery = useDebounce(tableSearchQuery, 300);
 
     // Filter users inside Drawer by search query
     const drawerUsers = useMemo(() => {
-        if (!activeDrawerRole) return [];
-        const jb = activeDrawerRole.title;
-
+        if (!activeDrawerLevel) return [];
         return users.filter((u) => {
             if (u.role === 'super_admin_master') return false;
 
-            const matchesJabatan =
-                (u.jabatan && u.jabatan.toLowerCase() === jb.toLowerCase()) ||
-                (jb === 'Owner' && u.role === 'owner_travel') ||
-                (jb === 'Staff' && u.role === 'agen') ||
-                (jb === 'Supervisor' && u.role === 'admin_travel' && (!u.jabatan || u.jabatan === 'Supervisor'));
+            const matchesLevel =
+                u.hierarchy_level_id === activeDrawerLevel.id ||
+                (!u.hierarchy_level_id && u.jabatan?.toLowerCase() === activeDrawerLevel.nama_level.toLowerCase());
 
             const matchesSearch =
                 !debouncedSearchQuery.trim() ||
                 u.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
                 u.email.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
 
-            return matchesJabatan && matchesSearch;
+            return matchesLevel && matchesSearch;
         });
-    }, [users, activeDrawerRole, debouncedSearchQuery]);
+    }, [users, activeDrawerLevel, debouncedSearchQuery]);
 
     // Filter users in Table Mode
     const tableUsers = useMemo(() => {
         return users.filter((u) => {
             if (u.role === 'super_admin_master') return false;
 
-            const userJabatan = u.jabatan || (u.role === 'owner_travel' ? 'Owner' : u.role === 'agen' ? 'Staff' : 'Supervisor');
+            const userJabatan = u.jabatan || u.hierarchy_level?.nama_level || (u.role === 'owner_travel' ? 'Owner' : u.role === 'agen' ? 'Staff' : 'Supervisor');
             const matchesJabatan = tableJabatanFilter === 'all' || userJabatan.toLowerCase() === tableJabatanFilter.toLowerCase();
             const matchesSearch =
                 !debouncedTableSearchQuery.trim() ||
@@ -274,53 +269,94 @@ export default function UserHierarchy({
         return links;
     }, [tablePage, totalTablePages]);
 
-    const handleOpenRoleDrawer = (node: RoleNode) => {
-        setActiveDrawerRole(node);
+    const handleOpenRoleDrawer = (level: HierarchyLevelItem) => {
+        setActiveDrawerLevel(level);
         setSearchQuery('');
     };
 
-    const handleOpenAddUser = (node?: RoleNode) => {
-        const defaultJabatan = node ? node.title : 'Staff';
-        const defaultRole = node ? node.roleKey : 'agen';
-
-        createForm.setData({
+    const handleOpenAddUser = (level?: HierarchyLevelItem) => {
+        userForm.reset();
+        userForm.setData({
             name: '',
             email: '',
             password: '',
-            role: defaultRole,
-            jabatan: defaultJabatan,
-            tenant_id: tenants[0]?.id ? tenants[0].id.toString() : '',
+            hierarchy_level_id: level ? level.id.toString() : (allLevels[0]?.id?.toString() || ''),
+            tenant_id: selectedTenantId.toString(),
         });
         setIsAddUserOpen(true);
     };
 
     const handleOpenEditUser = (user: HierarchyUser) => {
         setEditingUser(user);
-        editForm.setData({
+        editUserForm.setData({
             name: user.name,
             email: user.email,
-            jabatan: user.jabatan || activeDrawerRole?.title || '',
+            hierarchy_level_id: user.hierarchy_level_id ? user.hierarchy_level_id.toString() : '',
             password: '',
         });
     };
 
-    const handleStoreSubmit = (e: React.FormEvent) => {
+    const handleOpenReassignUser = (user: HierarchyUser) => {
+        setReassigningUser(user);
+        reassignForm.setData({
+            target_level_id: user.hierarchy_level_id ? user.hierarchy_level_id.toString() : (allLevels[0]?.id?.toString() || ''),
+        });
+    };
+
+    const handleOpenCreateLevel = (parentLevel?: HierarchyLevelItem) => {
+        setLevelModalMode('create');
+        setEditingLevel(null);
+        setSelectedParentLevelId(parentLevel ? parentLevel.id : null);
+        levelForm.reset();
+        levelForm.setData({
+            nama_level: '',
+            parent_id: parentLevel ? parentLevel.id.toString() : '',
+            role_key: parentLevel?.role_key === 'owner_travel' ? 'admin_travel' : 'agen',
+            deskripsi: '',
+            wewenang_note: '',
+            tenant_id: selectedTenantId.toString(),
+        });
+    };
+
+    const handleOpenEditLevel = (level: HierarchyLevelItem) => {
+        setLevelModalMode('edit');
+        setEditingLevel(level);
+        setSelectedParentLevelId(level.parent_id);
+        levelForm.setData({
+            nama_level: level.nama_level,
+            parent_id: level.parent_id ? level.parent_id.toString() : '',
+            role_key: level.role_key,
+            deskripsi: level.deskripsi || '',
+            wewenang_note: level.wewenang_note || '',
+            tenant_id: selectedTenantId.toString(),
+        });
+    };
+
+    const handleOpenDeleteLevel = (level: HierarchyLevelItem) => {
+        setDeletingLevel(level);
+        const otherLevels = allLevels.filter((l) => l.id !== level.id);
+        deleteLevelForm.setData({
+            reassign_to_level_id: otherLevels[0]?.id ? otherLevels[0].id.toString() : '',
+        });
+    };
+
+    const handleStoreUserSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        createForm.post(route('settings.users.store'), {
+        userForm.post(route('settings.users.store'), {
             onSuccess: () => {
-                createForm.reset();
                 setIsAddUserOpen(false);
+                userForm.reset();
             },
         });
     };
 
-    const handleUpdateSubmit = (e: React.FormEvent) => {
+    const handleUpdateUserSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingUser) return;
-        editForm.put(route('settings.users.update', editingUser.id), {
+        editUserForm.put(route('settings.users.update', editingUser.id), {
             onSuccess: () => {
                 setEditingUser(null);
-                editForm.reset();
+                editUserForm.reset();
             },
         });
     };
@@ -336,24 +372,78 @@ export default function UserHierarchy({
         }
     };
 
+    const handleReassignSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!reassigningUser) return;
+        reassignForm.post(route('settings.users.reassign', reassigningUser.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                setReassigningUser(null);
+                reassignForm.reset();
+            },
+        });
+    };
+
+    const handleLevelFormSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (levelModalMode === 'create') {
+            levelForm.post(route('settings.users.levels.store'), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setLevelModalMode(null);
+                    levelForm.reset();
+                },
+            });
+        } else if (levelModalMode === 'edit' && editingLevel) {
+            levelForm.put(route('settings.users.levels.update', editingLevel.id), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setLevelModalMode(null);
+                    setEditingLevel(null);
+                    levelForm.reset();
+                },
+            });
+        }
+    };
+
+    const handleDeleteLevelSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!deletingLevel) return;
+
+        const count = levelCounts[deletingLevel.id] || 0;
+        if (count > 0 && !deleteLevelForm.data.reassign_to_level_id) {
+            alert('Silakan pilih tingkatan jabatan tujuan untuk memindahkan seluruh user yang ada!');
+            return;
+        }
+
+        deleteLevelForm.delete(route('settings.users.levels.destroy', deletingLevel.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                if (activeDrawerLevel?.id === deletingLevel.id) setActiveDrawerLevel(null);
+                setDeletingLevel(null);
+                deleteLevelForm.reset();
+            },
+        });
+    };
+
     // Render tree node with exact stepped lines in Canvas mode
-    const renderTreeNode = (node: RoleNode, depth = 0) => {
+    const renderTreeNode = (node: HierarchyLevelItem, depth = 0) => {
         const isExpanded = !!expandedNodeIds[node.id];
-        const count = roleCounts[node.id] || 0;
+        const count = levelCounts[node.id] || 0;
         const hasChildren = node.children && node.children.length > 0;
-        const isSelected = activeDrawerRole?.id === node.id;
+        const isSelected = activeDrawerLevel?.id === node.id;
 
         return (
             <div key={node.id} className="relative flex flex-col">
                 {/* Node Row */}
                 <div
-                    className="flex items-center gap-3 relative py-3 select-none"
+                    className="flex items-center gap-3 relative py-3 select-none group/node"
                     style={{ paddingLeft: `${depth * 52}px` }}
                 >
                     {/* Stepped Connector Lines */}
                     {depth > 0 && (
                         <div
-                            className="absolute border-l-2 border-b-2 border-border/80 rounded-bl-2xl transition-all"
+                            className="absolute border-l-2 border-b-2 border-border/80 rounded-bl-2xl transition-all pointer-events-none"
                             style={{
                                 left: `${(depth - 1) * 52 + 22}px`,
                                 top: '-12px',
@@ -371,44 +461,88 @@ export default function UserHierarchy({
                                 e.stopPropagation();
                                 toggleNode(node.id);
                             }}
-                            className="h-8 w-8 rounded-xl bg-card border border-border/80 hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition-all shadow-xs z-10 cursor-pointer"
+                            className="w-7 h-7 rounded-full bg-card border border-border shadow-xs flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer shrink-0 z-10"
+                            title={isExpanded ? 'Tutup cabang' : 'Buka cabang'}
                         >
                             {isExpanded ? (
-                                <ChevronDown className="w-4 h-4" />
+                                <ChevronDown className="w-3.5 h-3.5" />
                             ) : (
-                                <ChevronRight className="w-4 h-4" />
+                                <ChevronRight className="w-3.5 h-3.5" />
                             )}
                         </button>
                     ) : (
-                        <div className="w-8 shrink-0" />
+                        <div className="w-7 h-7 flex items-center justify-center shrink-0 z-10">
+                            <div className="w-2 h-2 rounded-full bg-border" />
+                        </div>
                     )}
 
-                    {/* Role Pill Card */}
-                    <div
-                        onClick={() => handleOpenRoleDrawer(node)}
-                        className={`group flex items-center gap-3.5 px-5 py-2.5 rounded-2xl border transition-all cursor-pointer z-10 ${
-                            isSelected
-                                ? 'bg-card text-foreground border-foreground shadow-md ring-2 ring-primary/20 scale-[1.02]'
-                                : 'bg-card/90 hover:bg-card text-foreground border-border/80 hover:border-border hover:shadow-sm'
-                        }`}
-                    >
-                        {isSelected && (
-                            <div className="h-5 w-5 rounded-full bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
-                                <Check className="w-3 h-3 stroke-[3]" />
-                            </div>
-                        )}
+                    {/* Pill Capsule Button */}
+                    <div className="flex items-center gap-1.5">
+                        <button
+                            type="button"
+                            onClick={() => handleOpenRoleDrawer(node)}
+                            className={`flex items-center gap-2.5 px-4 py-2 rounded-full border shadow-xs transition-all cursor-pointer text-left ${
+                                isSelected
+                                    ? 'bg-primary text-primary-foreground border-primary ring-2 ring-primary/20 scale-102'
+                                    : 'bg-card text-foreground border-border hover:border-primary/50 hover:bg-muted/40'
+                            }`}
+                        >
+                            <span className="text-xs font-bold tracking-tight">{node.nama_level}</span>
+                            <span
+                                className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                                    isSelected
+                                        ? 'bg-primary-foreground/20 text-primary-foreground'
+                                        : 'bg-muted text-muted-foreground'
+                                }`}
+                            >
+                                {count}
+                            </span>
+                        </button>
 
-                        <span className="font-bold text-base text-foreground tracking-tight">
-                            {node.title}
-                        </span>
+                        {/* Node Action Tools (Hover/Focused) */}
+                        <div className="flex items-center gap-1 opacity-80 hover:opacity-100 transition">
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenCreateLevel(node);
+                                }}
+                                className="p-1.5 rounded-lg border border-border/60 bg-card/80 hover:bg-muted text-muted-foreground hover:text-primary transition cursor-pointer shadow-2xs"
+                                title={`Tambah sub-level di bawah ${node.nama_level}`}
+                            >
+                                <Plus className="w-3.5 h-3.5" />
+                            </button>
 
-                        <span className="px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-bold">
-                            {count}
-                        </span>
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenEditLevel(node);
+                                }}
+                                className="p-1.5 rounded-lg border border-border/60 bg-card/80 hover:bg-muted text-muted-foreground hover:text-foreground transition cursor-pointer shadow-2xs"
+                                title={`Edit level ${node.nama_level}`}
+                            >
+                                <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+
+                            {allLevels.length > 1 && node.nama_level !== 'Owner' && (
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenDeleteLevel(node);
+                                    }}
+                                    className="p-1.5 rounded-lg border border-red-500/20 bg-red-500/5 hover:bg-red-500/15 text-red-600 dark:text-red-400 transition cursor-pointer shadow-2xs"
+                                    title={`Hapus level ${node.nama_level}`}
+                                >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                {/* Render Nested Children */}
+                {/* Recursive Children Rows */}
                 {hasChildren && isExpanded && (
                     <div className="flex flex-col">
                         {node.children!.map((child) => renderTreeNode(child, depth + 1))}
@@ -420,13 +554,12 @@ export default function UserHierarchy({
 
     return (
         <PageLayout
-            title="Hierarki User & Akses"
-            breadcrumbParent="Manajemen Pengguna"
-            breadcrumbPage="Hierarki & Izin User"
-            contentClass="p-6 md:p-8 flex flex-col gap-6 w-full max-w-none"
+            title="Hierarki Struktur Organisasi User"
+            breadcrumbParent="Pengaturan"
+            breadcrumbPage="Hierarki User"
         >
-            {/* Top Toolbar */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border/80 shadow-xs">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                 <div>
                     <div className="flex items-center gap-2.5">
                         <div className="h-8 w-1.5 rounded-full bg-primary" />
@@ -435,19 +568,19 @@ export default function UserHierarchy({
                         </h1>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1 ml-4">
-                        Pohon struktur jabatan dari Owner, Supervisor, Team Leader hingga Staff Agen lapangan untuk pembagian hak akses.
+                        Pohon tingkatan jabatan dinamis per tenant dari Owner hingga Staff Lapangan untuk hak akses dan pembagian komisi.
                     </p>
                 </div>
 
                 {/* Mode Switcher & Controls */}
-                <div className="flex items-center gap-4 flex-wrap">
+                <div className="flex items-center gap-3 flex-wrap">
                     {/* Super Admin Master: Tenant Filter */}
                     {currentUserRole === 'super_admin_master' && tenants.length > 1 && (
                         <div className="flex items-center gap-2 bg-muted/60 px-3 py-1.5 rounded-xl border border-border/80 text-xs">
                             <Building className="w-3.5 h-3.5 text-primary" />
-                            <span className="font-semibold text-muted-foreground">Filter Tenant:</span>
+                            <span className="font-semibold text-muted-foreground">Tenant:</span>
                             <select
-                                defaultValue=""
+                                value={selectedTenantId}
                                 onChange={(e) => {
                                     const val = e.target.value;
                                     router.get(
@@ -458,7 +591,6 @@ export default function UserHierarchy({
                                 }}
                                 className="bg-background border border-border rounded-lg px-2.5 py-1 text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                             >
-                                <option value="">Semua Tenant Travel ({tenants.length})</option>
                                 {tenants.map((t) => (
                                     <option key={t.id} value={t.id}>{t.nama_travel}</option>
                                 ))}
@@ -494,19 +626,26 @@ export default function UserHierarchy({
 
                     {/* Canvas Controls */}
                     {viewMode === 'canvas' && (
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                             <button
                                 onClick={handleExpandAll}
-                                className="text-sm font-semibold text-primary hover:underline cursor-pointer"
+                                className="text-xs font-semibold text-primary hover:underline cursor-pointer"
                             >
                                 Expand All
                             </button>
                             <span className="text-muted-foreground/40">|</span>
                             <button
                                 onClick={handleCollapseAll}
-                                className="text-sm font-semibold text-primary hover:underline cursor-pointer"
+                                className="text-xs font-semibold text-primary hover:underline cursor-pointer"
                             >
                                 Collapse All
+                            </button>
+                            <button
+                                onClick={() => handleOpenCreateLevel()}
+                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:opacity-90 transition cursor-pointer ml-2"
+                            >
+                                <Plus className="w-3.5 h-3.5" />
+                                <span>Tambah Level</span>
                             </button>
                         </div>
                     )}
@@ -515,7 +654,7 @@ export default function UserHierarchy({
                     {viewMode === 'table' && (
                         <button
                             onClick={() => handleOpenAddUser()}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:opacity-90 transition cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-foreground text-background text-xs font-bold shadow-xs hover:opacity-90 transition cursor-pointer"
                         >
                             <Plus className="w-3.5 h-3.5" />
                             <span>Tambah User</span>
@@ -524,107 +663,109 @@ export default function UserHierarchy({
                 </div>
             </div>
 
-            {/* MODE 1: FULL-WIDTH STEPPED CANVAS CONTAINER WITH DIAGONAL STRIPED PATTERN */}
+            {/* VIEW MODE 1: VISUAL STEPPED CANVAS TREE */}
             {viewMode === 'canvas' && (
-                <div 
-                    className="w-full bg-card/60 backdrop-blur-md border border-border/80 rounded-3xl p-6 sm:p-10 shadow-xs min-h-[600px] overflow-x-auto relative"
+                <div
+                    className="relative w-full rounded-3xl border border-border/80 p-8 md:p-12 overflow-x-auto min-h-[480px] shadow-sm transition-all"
                     style={{
-                        backgroundImage: `repeating-linear-gradient(
-                            45deg,
-                            hsl(var(--border) / 0.45) 0,
-                            hsl(var(--border) / 0.45) 1.5px,
-                            transparent 0,
-                            transparent 18px
-                        )`,
+                        backgroundColor: 'hsl(var(--card))',
+                        backgroundImage: `repeating-linear-gradient(45deg, hsl(var(--border) / 0.45) 0, hsl(var(--border) / 0.45) 1.5px, transparent 0, transparent 18px)`,
                     }}
                 >
-                    <div className="flex flex-col gap-1 min-w-[700px] relative z-10">
-                        {HIERARCHY_TREE.map((rootNode) => renderTreeNode(rootNode, 0))}
+                    <div className="inline-block min-w-full">
+                        {hierarchyTree.length > 0 ? (
+                            hierarchyTree.map((rootNode) => renderTreeNode(rootNode, 0))
+                        ) : (
+                            <div className="py-24 text-center">
+                                <p className="text-sm text-muted-foreground">Belum ada struktur hierarki di tenant ini.</p>
+                                <button
+                                    onClick={() => handleOpenCreateLevel()}
+                                    className="mt-3 px-4 py-2 bg-primary text-primary-foreground text-xs font-bold rounded-xl"
+                                >
+                                    Buat Level Pertama
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
 
-            {/* MODE 2: TABLE LISTING VIEW */}
+            {/* VIEW MODE 2: TABULAR LISTING */}
             {viewMode === 'table' && (
                 <div className="flex flex-col gap-4">
-                    {/* Filters bar */}
-                    <div className="flex flex-col sm:flex-row justify-between items-center gap-3 bg-card/60 p-4 rounded-2xl border border-border/80 shadow-xs">
+                    {/* Filter & Search Bar for Table */}
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card p-4 rounded-2xl border border-border shadow-xs">
                         <div className="relative w-full sm:w-80">
                             <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <input
                                 type="text"
                                 placeholder="Cari nama, email, atau jabatan..."
                                 value={tableSearchQuery}
-                                onChange={(e) => setTableSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-4 py-1.5 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                onChange={(e) => {
+                                    setTableSearchQuery(e.target.value);
+                                    setTablePage(1);
+                                }}
+                                className="w-full pl-10 pr-4 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                             />
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                            <PerPageSelector
-                                value={tablePerPage}
-                                onChange={(val) => {
-                                    setTablePerPage(val);
-                                    setTablePage(1);
-                                }}
-                            />
-                            <div className="flex items-center gap-2">
-                                <span className="text-xs text-muted-foreground font-medium shrink-0">Filter Jabatan:</span>
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                <span className="text-xs font-medium text-muted-foreground shrink-0">Jabatan:</span>
                                 <select
                                     value={tableJabatanFilter}
                                     onChange={(e) => {
                                         setTableJabatanFilter(e.target.value);
                                         setTablePage(1);
                                     }}
-                                    className="text-xs bg-background border border-border rounded-xl px-3 py-1.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                    className="w-full sm:w-auto bg-background border border-border rounded-xl px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                                 >
-                                    <option value="all">Semua Jabatan ({tableUsers.length})</option>
-                                    <option value="Owner">Owner ({roleCounts['Owner'] || 0})</option>
-                                    <option value="Supervisor">Supervisor ({roleCounts['Supervisor'] || 0})</option>
-                                    <option value="Team Leader">Team Leader ({roleCounts['Team Leader'] || 0})</option>
-                                    <option value="Staff">Staff ({roleCounts['Staff'] || 0})</option>
+                                    <option value="all">Semua Jabatan</option>
+                                    {allLevels.map((lvl) => (
+                                        <option key={lvl.id} value={lvl.nama_level}>
+                                            {lvl.nama_level} ({levelCounts[lvl.id] || 0})
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
+
+                            <PerPageSelector
+                                value={tablePerPage}
+                                onChange={(newPerPage) => {
+                                    setTablePerPage(newPerPage);
+                                    setTablePage(1);
+                                }}
+                            />
                         </div>
                     </div>
 
-                    {/* Full-width Responsive Table */}
-                    <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/70 backdrop-blur-md shadow-xs">
+                    {/* Table View */}
+                    <div className="bg-card rounded-2xl border border-border shadow-xs overflow-hidden">
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
+                            <table className="w-full text-left text-xs">
                                 <thead>
-                                    <tr className="border-b border-border/80 bg-muted/50 text-xs font-bold text-foreground">
-                                        <th className="px-6 py-4">Nama Lengkap</th>
-                                        <th className="px-6 py-4">Alamat Email</th>
-                                        <th className="px-6 py-4 text-center">Tingkatan Jabatan</th>
-                                        <th className="px-6 py-4">Atasan Langsung / Pembuat</th>
-                                        <th className="px-6 py-4 text-center">Aksi</th>
+                                    <tr className="border-b border-border/80 bg-muted/40 text-muted-foreground font-semibold uppercase tracking-wider">
+                                        <th className="px-6 py-3.5">Nama Pengguna</th>
+                                        <th className="px-6 py-3.5">Email</th>
+                                        <th className="px-6 py-3.5 text-center">Tingkatan Jabatan</th>
+                                        <th className="px-6 py-3.5">Atasan Langsung</th>
+                                        <th className="px-6 py-3.5 text-center">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-border/60 text-xs">
+                                <tbody className="divide-y divide-border/60">
                                     {paginatedTableUsers.map((u) => {
-                                        const userJabatan = u.jabatan || (u.role === 'owner_travel' ? 'Owner' : u.role === 'agen' ? 'Staff' : 'Supervisor');
+                                        const userJabatan = u.jabatan || u.hierarchy_level?.nama_level || 'Staff';
+
                                         return (
-                                            <tr key={u.id} className="hover:bg-muted/40 transition-colors">
+                                            <tr key={u.id} className="hover:bg-muted/20 transition-colors">
                                                 <td className="px-6 py-4 font-bold text-foreground">
-                                                    <div className="flex items-center gap-2.5">
-                                                        <div className="h-7 w-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
-                                                            {u.name.substring(0, 2).toUpperCase()}
-                                                        </div>
+                                                    <div className="flex items-center gap-2">
                                                         <span>{u.name}</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-muted-foreground">{u.email}</td>
                                                 <td className="px-6 py-4 text-center">
-                                                    <span className={`px-3 py-1 rounded-full font-bold text-[11px] border ${
-                                                        userJabatan === 'Owner'
-                                                            ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
-                                                            : userJabatan === 'Supervisor'
-                                                            ? 'bg-sky-500/10 text-sky-600 border-sky-500/20'
-                                                            : userJabatan === 'Team Leader'
-                                                            ? 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20'
-                                                            : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                                                    }`}>
+                                                    <span className="px-3 py-1 rounded-full font-bold text-[11px] border bg-primary/10 text-primary border-primary/20">
                                                         {userJabatan}
                                                     </span>
                                                 </td>
@@ -639,6 +780,13 @@ export default function UserHierarchy({
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
                                                     <div className="flex items-center justify-center gap-1.5">
+                                                        <button
+                                                            onClick={() => handleOpenReassignUser(u)}
+                                                            className="p-1.5 rounded-lg border border-border bg-card hover:bg-muted text-muted-foreground hover:text-primary transition cursor-pointer shadow-2xs"
+                                                            title="Pindahkan Jabatan"
+                                                        >
+                                                            <MoveRight className="w-3.5 h-3.5" />
+                                                        </button>
                                                         <button
                                                             onClick={() => handleOpenEditUser(u)}
                                                             className="p-1.5 rounded-lg border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition cursor-pointer shadow-2xs"
@@ -686,7 +834,7 @@ export default function UserHierarchy({
             )}
 
             {/* SLIDE-OUT DRAWER 50%: DETAIL TINGKATAN JABATAN & DAFTAR USER */}
-            <Sheet open={!!activeDrawerRole} onOpenChange={(open) => { if (!open) setActiveDrawerRole(null); }}>
+            <Sheet open={!!activeDrawerLevel} onOpenChange={(open) => { if (!open) setActiveDrawerLevel(null); }}>
                 <SheetContent side="right" className="w-1/2 max-w-none flex flex-col justify-between">
                     <div className="flex flex-col gap-5 p-4 flex-1 overflow-y-auto">
                         <SheetHeader className="pb-3 border-b border-border/60">
@@ -696,30 +844,32 @@ export default function UserHierarchy({
                                         Detail Tingkatan Jabatan
                                     </span>
                                     <SheetTitle className="text-2xl font-bold text-foreground mt-1">
-                                        {activeDrawerRole?.title}
+                                        {activeDrawerLevel?.nama_level}
                                     </SheetTitle>
                                     <SheetDescription className="text-xs text-muted-foreground mt-0.5">
-                                        {activeDrawerRole?.levelDesc}
+                                        {activeDrawerLevel?.deskripsi || 'Tidak ada deskripsi level'}
                                     </SheetDescription>
                                 </div>
 
-                                <button
-                                    onClick={() => activeDrawerRole && handleOpenAddUser(activeDrawerRole)}
-                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-foreground text-background font-bold text-xs shadow-xs hover:opacity-90 transition cursor-pointer shrink-0"
-                                >
-                                    <Plus className="w-4 h-4" />
-                                    <span>Tambah User</span>
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => activeDrawerLevel && handleOpenAddUser(activeDrawerLevel)}
+                                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-foreground text-background font-bold text-xs shadow-xs hover:opacity-90 transition cursor-pointer shrink-0"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" />
+                                        <span>Tambah User</span>
+                                    </button>
+                                </div>
                             </div>
                         </SheetHeader>
 
                         {/* Authority Callout */}
-                        {activeDrawerRole && (
+                        {activeDrawerLevel && activeDrawerLevel.wewenang_note && (
                             <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 text-xs flex items-start gap-3">
                                 <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                                 <div>
-                                    <strong className="text-foreground font-semibold">Wewenang: </strong>
-                                    <span className="text-muted-foreground">{activeDrawerRole.authorityNote}</span>
+                                    <strong className="text-foreground font-semibold">Wewenang & Hak Akses: </strong>
+                                    <span className="text-muted-foreground">{activeDrawerLevel.wewenang_note}</span>
                                 </div>
                             </div>
                         )}
@@ -729,7 +879,7 @@ export default function UserHierarchy({
                             <Search className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
                             <input
                                 type="text"
-                                placeholder={`Cari nama atau email di jabatan ${activeDrawerRole?.title}...`}
+                                placeholder={`Cari nama atau email di jabatan ${activeDrawerLevel?.nama_level}...`}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full pl-10 pr-4 py-2.5 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -753,6 +903,13 @@ export default function UserHierarchy({
                                         )}
                                     </div>
                                     <div className="flex items-center gap-1.5 shrink-0">
+                                        <button
+                                            onClick={() => handleOpenReassignUser(u)}
+                                            className="p-2 rounded-xl border border-border bg-muted/40 hover:bg-muted text-muted-foreground hover:text-primary transition cursor-pointer shadow-2xs"
+                                            title="Pindahkan Jabatan User"
+                                        >
+                                            <MoveRight className="w-4 h-4" />
+                                        </button>
                                         <button
                                             onClick={() => handleOpenEditUser(u)}
                                             className="p-2 rounded-xl border border-border bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition cursor-pointer shadow-2xs"
@@ -782,7 +939,7 @@ export default function UserHierarchy({
                     <SheetFooter className="p-4 border-t border-border/60">
                         <button
                             type="button"
-                            onClick={() => setActiveDrawerRole(null)}
+                            onClick={() => setActiveDrawerLevel(null)}
                             className="w-full px-4 py-2.5 border border-border rounded-xl text-sm font-semibold hover:bg-muted transition cursor-pointer"
                         >
                             Tutup Detail
@@ -791,21 +948,21 @@ export default function UserHierarchy({
                 </SheetContent>
             </Sheet>
 
-            {/* Drawer: Add User */}
+            {/* MODAL: Tambah User */}
             <Sheet open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
                 <SheetContent side="right" className="w-1/2 max-w-none">
                     <SheetHeader>
-                        <SheetTitle>Tambah Pengguna: {createForm.data.jabatan}</SheetTitle>
-                        <SheetDescription>Daftarkan akun pengguna baru ke dalam struktur organisasi.</SheetDescription>
+                        <SheetTitle>Tambah Pengguna Baru</SheetTitle>
+                        <SheetDescription>Daftarkan akun pengguna baru ke dalam struktur hierarki organisasi.</SheetDescription>
                     </SheetHeader>
-                    <form onSubmit={handleStoreSubmit} className="flex flex-col gap-5 p-4 flex-1 overflow-y-auto">
+                    <form onSubmit={handleStoreUserSubmit} className="flex flex-col gap-5 p-4 flex-1 overflow-y-auto">
                         {currentUserRole === 'super_admin_master' && tenants.length > 0 && (
                             <div>
                                 <InputLabel htmlFor="tenant_id" value="Pilih Tenant Travel *" />
                                 <select
                                     id="tenant_id"
-                                    value={createForm.data.tenant_id}
-                                    onChange={(e) => createForm.setData('tenant_id', e.target.value)}
+                                    value={userForm.data.tenant_id}
+                                    onChange={(e) => userForm.setData('tenant_id', e.target.value)}
                                     className="mt-1 block w-full bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                                     required
                                 >
@@ -813,7 +970,7 @@ export default function UserHierarchy({
                                         <option key={t.id} value={t.id.toString()}>{t.nama_travel}</option>
                                     ))}
                                 </select>
-                                <InputError message={createForm.errors.tenant_id} className="mt-2" />
+                                <InputError message={userForm.errors.tenant_id} className="mt-2" />
                             </div>
                         )}
                         <div>
@@ -821,13 +978,13 @@ export default function UserHierarchy({
                             <TextInput
                                 id="name"
                                 type="text"
-                                value={createForm.data.name}
-                                onChange={(e) => createForm.setData('name', e.target.value)}
+                                value={userForm.data.name}
+                                onChange={(e) => userForm.setData('name', e.target.value)}
                                 className="mt-1 block w-full"
                                 required
                                 placeholder="Misal: Ust. Syahrul Ramadhan"
                             />
-                            <InputError message={createForm.errors.name} className="mt-2" />
+                            <InputError message={userForm.errors.name} className="mt-2" />
                         </div>
 
                         <div>
@@ -835,38 +992,31 @@ export default function UserHierarchy({
                             <TextInput
                                 id="email"
                                 type="email"
-                                value={createForm.data.email}
-                                onChange={(e) => createForm.setData('email', e.target.value)}
+                                value={userForm.data.email}
+                                onChange={(e) => userForm.setData('email', e.target.value)}
                                 className="mt-1 block w-full"
                                 required
                                 placeholder="syahrul@travel.com"
                             />
-                            <InputError message={createForm.errors.email} className="mt-2" />
+                            <InputError message={userForm.errors.email} className="mt-2" />
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="jabatan" value="Jabatan Struktur" />
+                            <InputLabel htmlFor="hierarchy_level_id" value="Tingkatan Jabatan *" />
                             <select
-                                id="jabatan"
-                                value={createForm.data.jabatan}
-                                onChange={(e) => {
-                                    const jb = e.target.value;
-                                    let role = 'agen';
-                                    if (jb === 'Owner') role = 'owner_travel';
-                                    else if (jb === 'Supervisor' || jb === 'Team Leader') role = 'admin_travel';
-                                    createForm.setData((data) => ({
-                                        ...data,
-                                        jabatan: jb,
-                                        role: role,
-                                    }));
-                                }}
+                                id="hierarchy_level_id"
+                                value={userForm.data.hierarchy_level_id}
+                                onChange={(e) => userForm.setData('hierarchy_level_id', e.target.value)}
                                 className="mt-1 block w-full bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                required
                             >
-                                <option value="Owner">Owner</option>
-                                <option value="Supervisor">Supervisor</option>
-                                <option value="Team Leader">Team Leader</option>
-                                <option value="Staff">Staff</option>
+                                {allLevels.map((lvl) => (
+                                    <option key={lvl.id} value={lvl.id.toString()}>
+                                        {lvl.nama_level} ({lvl.role_key})
+                                    </option>
+                                ))}
                             </select>
+                            <InputError message={userForm.errors.hierarchy_level_id} className="mt-2" />
                         </div>
 
                         <div>
@@ -874,13 +1024,13 @@ export default function UserHierarchy({
                             <TextInput
                                 id="password"
                                 type="password"
-                                value={createForm.data.password}
-                                onChange={(e) => createForm.setData('password', e.target.value)}
+                                value={userForm.data.password}
+                                onChange={(e) => userForm.setData('password', e.target.value)}
                                 className="mt-1 block w-full"
                                 required
                                 placeholder="Minimal 6 karakter"
                             />
-                            <InputError message={createForm.errors.password} className="mt-2" />
+                            <InputError message={userForm.errors.password} className="mt-2" />
                         </div>
 
                         <SheetFooter>
@@ -891,7 +1041,7 @@ export default function UserHierarchy({
                             >
                                 Batal
                             </button>
-                            <PrimaryButton disabled={createForm.processing}>
+                            <PrimaryButton disabled={userForm.processing}>
                                 Buat Akun
                             </PrimaryButton>
                         </SheetFooter>
@@ -899,25 +1049,25 @@ export default function UserHierarchy({
                 </SheetContent>
             </Sheet>
 
-            {/* Drawer: Edit User */}
+            {/* MODAL: Edit User */}
             <Sheet open={!!editingUser} onOpenChange={(open) => { if (!open) setEditingUser(null); }}>
                 <SheetContent side="right" className="w-1/2 max-w-none">
                     <SheetHeader>
                         <SheetTitle>Edit Pengguna: {editingUser?.name}</SheetTitle>
                         <SheetDescription>Perbarui data profil pengguna atau reset kata sandi.</SheetDescription>
                     </SheetHeader>
-                    <form onSubmit={handleUpdateSubmit} className="flex flex-col gap-5 p-4 flex-1">
+                    <form onSubmit={handleUpdateUserSubmit} className="flex flex-col gap-5 p-4 flex-1">
                         <div>
                             <InputLabel htmlFor="edit_name" value="Nama Lengkap" />
                             <TextInput
                                 id="edit_name"
                                 type="text"
-                                value={editForm.data.name}
-                                onChange={(e) => editForm.setData('name', e.target.value)}
+                                value={editUserForm.data.name}
+                                onChange={(e) => editUserForm.setData('name', e.target.value)}
                                 className="mt-1 block w-full"
                                 required
                             />
-                            <InputError message={editForm.errors.name} className="mt-2" />
+                            <InputError message={editUserForm.errors.name} className="mt-2" />
                         </div>
 
                         <div>
@@ -925,28 +1075,28 @@ export default function UserHierarchy({
                             <TextInput
                                 id="edit_email"
                                 type="email"
-                                value={editForm.data.email}
-                                onChange={(e) => editForm.setData('email', e.target.value)}
+                                value={editUserForm.data.email}
+                                onChange={(e) => editUserForm.setData('email', e.target.value)}
                                 className="mt-1 block w-full"
                                 required
                             />
-                            <InputError message={editForm.errors.email} className="mt-2" />
+                            <InputError message={editUserForm.errors.email} className="mt-2" />
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="edit_jabatan" value="Jabatan" />
+                            <InputLabel htmlFor="edit_level" value="Tingkatan Jabatan" />
                             <select
-                                id="edit_jabatan"
-                                value={editForm.data.jabatan}
-                                onChange={(e) => editForm.setData('jabatan', e.target.value)}
+                                id="edit_level"
+                                value={editUserForm.data.hierarchy_level_id}
+                                onChange={(e) => editUserForm.setData('hierarchy_level_id', e.target.value)}
                                 className="mt-1 block w-full bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                             >
-                                <option value="Owner">Owner</option>
-                                <option value="Supervisor">Supervisor</option>
-                                <option value="Team Leader">Team Leader</option>
-                                <option value="Staff">Staff</option>
+                                {allLevels.map((lvl) => (
+                                    <option key={lvl.id} value={lvl.id.toString()}>
+                                        {lvl.nama_level} ({lvl.role_key})
+                                    </option>
+                                ))}
                             </select>
-                            <InputError message={editForm.errors.jabatan} className="mt-2" />
                         </div>
 
                         <div>
@@ -954,12 +1104,12 @@ export default function UserHierarchy({
                             <TextInput
                                 id="edit_password"
                                 type="password"
-                                value={editForm.data.password}
-                                onChange={(e) => editForm.setData('password', e.target.value)}
+                                value={editUserForm.data.password}
+                                onChange={(e) => editUserForm.setData('password', e.target.value)}
                                 className="mt-1 block w-full"
                                 placeholder="Kosongkan jika tidak ingin mengubah sandi"
                             />
-                            <InputError message={editForm.errors.password} className="mt-2" />
+                            <InputError message={editUserForm.errors.password} className="mt-2" />
                         </div>
 
                         <SheetFooter>
@@ -970,9 +1120,228 @@ export default function UserHierarchy({
                             >
                                 Batal
                             </button>
-                            <PrimaryButton disabled={editForm.processing}>
+                            <PrimaryButton disabled={editUserForm.processing}>
                                 Simpan Perubahan
                             </PrimaryButton>
+                        </SheetFooter>
+                    </form>
+                </SheetContent>
+            </Sheet>
+
+            {/* MODAL: Pindahkan User (Reassign) */}
+            <Sheet open={!!reassigningUser} onOpenChange={(open) => { if (!open) setReassigningUser(null); }}>
+                <SheetContent side="right" className="w-1/2 max-w-none">
+                    <SheetHeader>
+                        <SheetTitle>Pindahkan Jabatan: {reassigningUser?.name}</SheetTitle>
+                        <SheetDescription>
+                            Pindahkan akun pengguna ke tingkatan struktur jabatan yang baru. Hak akses dan role sistem akan disinkronkan secara otomatis.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <form onSubmit={handleReassignSubmit} className="flex flex-col gap-5 p-4 flex-1">
+                        <div className="p-3.5 bg-muted/40 rounded-xl border border-border text-xs">
+                            <span className="text-muted-foreground">Jabatan Saat Ini: </span>
+                            <span className="font-bold text-foreground">
+                                {reassigningUser?.jabatan || reassigningUser?.hierarchy_level?.nama_level || 'Belum Ditentukan'}
+                            </span>
+                        </div>
+
+                        <div>
+                            <InputLabel htmlFor="target_level_id" value="Pilih Tingkatan Jabatan Tujuan *" />
+                            <select
+                                id="target_level_id"
+                                value={reassignForm.data.target_level_id}
+                                onChange={(e) => reassignForm.setData('target_level_id', e.target.value)}
+                                className="mt-1 block w-full bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                required
+                            >
+                                {allLevels.map((lvl) => (
+                                    <option key={lvl.id} value={lvl.id.toString()}>
+                                        {lvl.nama_level} (Role: {lvl.role_key})
+                                    </option>
+                                ))}
+                            </select>
+                            <InputError message={reassignForm.errors.target_level_id} className="mt-2" />
+                        </div>
+
+                        <SheetFooter>
+                            <button
+                                type="button"
+                                onClick={() => setReassigningUser(null)}
+                                className="px-4 py-2 border border-border rounded-lg text-sm"
+                            >
+                                Batal
+                            </button>
+                            <PrimaryButton disabled={reassignForm.processing}>
+                                Pindahkan User
+                            </PrimaryButton>
+                        </SheetFooter>
+                    </form>
+                </SheetContent>
+            </Sheet>
+
+            {/* MODAL: Tambah / Edit Hierarchy Level */}
+            <Sheet open={!!levelModalMode} onOpenChange={(open) => { if (!open) setLevelModalMode(null); }}>
+                <SheetContent side="right" className="w-1/2 max-w-none">
+                    <SheetHeader>
+                        <SheetTitle>
+                            {levelModalMode === 'create' ? 'Tambah Tingkatan Jabatan Baru' : `Edit Level: ${editingLevel?.nama_level}`}
+                        </SheetTitle>
+                        <SheetDescription>
+                            Atur nama jabatan, atasan langsung (parent), wewenang, dan role sistem.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <form onSubmit={handleLevelFormSubmit} className="flex flex-col gap-5 p-4 flex-1 overflow-y-auto">
+                        <div>
+                            <InputLabel htmlFor="nama_level" value="Nama Jabatan / Level *" />
+                            <TextInput
+                                id="nama_level"
+                                type="text"
+                                value={levelForm.data.nama_level}
+                                onChange={(e) => levelForm.setData('nama_level', e.target.value)}
+                                className="mt-1 block w-full"
+                                required
+                                placeholder="Misal: Koordinator Wilayah, Senior Agen, Branch Manager"
+                            />
+                            <InputError message={levelForm.errors.nama_level} className="mt-2" />
+                        </div>
+
+                        {levelModalMode === 'create' && (
+                            <div>
+                                <InputLabel htmlFor="parent_id" value="Atasan Langsung (Parent Level)" />
+                                <select
+                                    id="parent_id"
+                                    value={levelForm.data.parent_id}
+                                    onChange={(e) => levelForm.setData('parent_id', e.target.value)}
+                                    className="mt-1 block w-full bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                >
+                                    <option value="">Level Tertinggi (Root / Tanpa Atasan)</option>
+                                    {allLevels.map((lvl) => (
+                                        <option key={lvl.id} value={lvl.id.toString()}>
+                                            {lvl.nama_level}
+                                        </option>
+                                    ))}
+                                </select>
+                                <InputError message={levelForm.errors.parent_id} className="mt-2" />
+                            </div>
+                        )}
+
+                        <div>
+                            <InputLabel htmlFor="role_key" value="Role Sistem Dasar (Hak Akses Sistem) *" />
+                            <select
+                                id="role_key"
+                                value={levelForm.data.role_key}
+                                onChange={(e) => levelForm.setData('role_key', e.target.value as any)}
+                                className="mt-1 block w-full bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                required
+                            >
+                                <option value="agen">Agen (Direct Sales / Mitra Lapangan)</option>
+                                <option value="admin_travel">Admin Travel (Pengawas Tim / Operasional)</option>
+                                <option value="owner_travel">Owner Travel (Pimpinan Penuh)</option>
+                            </select>
+                            <InputError message={levelForm.errors.role_key} className="mt-2" />
+                        </div>
+
+                        <div>
+                            <InputLabel htmlFor="deskripsi" value="Deskripsi Singkat" />
+                            <TextInput
+                                id="deskripsi"
+                                type="text"
+                                value={levelForm.data.deskripsi}
+                                onChange={(e) => levelForm.setData('deskripsi', e.target.value)}
+                                className="mt-1 block w-full"
+                                placeholder="Contoh: Mengkoordinasikan pendaftaran agen wilayah barat"
+                            />
+                        </div>
+
+                        <div>
+                            <InputLabel htmlFor="wewenang_note" value="Catatan Wewenang & Tanggung Jawab" />
+                            <textarea
+                                id="wewenang_note"
+                                rows={3}
+                                value={levelForm.data.wewenang_note}
+                                onChange={(e) => levelForm.setData('wewenang_note', e.target.value)}
+                                className="mt-1 block w-full bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                placeholder="Deskripsikan wewenang atau KPI utama pemegang jabatan ini..."
+                            />
+                        </div>
+
+                        <SheetFooter>
+                            <button
+                                type="button"
+                                onClick={() => setLevelModalMode(null)}
+                                className="px-4 py-2 border border-border rounded-lg text-sm"
+                            >
+                                Batal
+                            </button>
+                            <PrimaryButton disabled={levelForm.processing}>
+                                {levelModalMode === 'create' ? 'Tambah Level' : 'Simpan Perubahan'}
+                            </PrimaryButton>
+                        </SheetFooter>
+                    </form>
+                </SheetContent>
+            </Sheet>
+
+            {/* MODAL: Hapus Level & Migrasi User */}
+            <Sheet open={!!deletingLevel} onOpenChange={(open) => { if (!open) setDeletingLevel(null); }}>
+                <SheetContent side="right" className="w-1/2 max-w-none">
+                    <SheetHeader>
+                        <SheetTitle className="text-red-600">Hapus Tingkatan: {deletingLevel?.nama_level}</SheetTitle>
+                        <SheetDescription>
+                            Tindakan ini akan menghapus tingkatan jabatan dari pohon hierarki tenant Anda.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <form onSubmit={handleDeleteLevelSubmit} className="flex flex-col gap-5 p-4 flex-1">
+                        {deletingLevel && (levelCounts[deletingLevel.id] || 0) > 0 ? (
+                            <div className="flex flex-col gap-4">
+                                <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-xs text-amber-900 dark:text-amber-200">
+                                    <strong className="block font-bold mb-1">
+                                        Perhatian: Terdapat {levelCounts[deletingLevel.id]} akun pengguna di jabatan ini!
+                                    </strong>
+                                    Untuk mencegah user kehilangan jabatan, silakan pilih tingkatan jabatan baru untuk memindahkan seluruh user secara otomatis:
+                                </div>
+
+                                <div>
+                                    <InputLabel htmlFor="reassign_target" value="Pindahkan Seluruh User ke *" />
+                                    <select
+                                        id="reassign_target"
+                                        value={deleteLevelForm.data.reassign_to_level_id}
+                                        onChange={(e) => deleteLevelForm.setData('reassign_to_level_id', e.target.value)}
+                                        className="mt-1 block w-full bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                        required
+                                    >
+                                        <option value="">-- Pilih Jabatan Tujuan --</option>
+                                        {allLevels
+                                            .filter((l) => l.id !== deletingLevel.id)
+                                            .map((lvl) => (
+                                                <option key={lvl.id} value={lvl.id.toString()}>
+                                                    {lvl.nama_level} ({lvl.role_key})
+                                                </option>
+                                            ))}
+                                    </select>
+                                    <InputError message={deleteLevelForm.errors.reassign_to_level_id} className="mt-2" />
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">
+                                Tidak ada pengguna di tingkatan jabatan ini. Level ini dapat langsung dihapus dengan aman.
+                            </p>
+                        )}
+
+                        <SheetFooter>
+                            <button
+                                type="button"
+                                onClick={() => setDeletingLevel(null)}
+                                className="px-4 py-2 border border-border rounded-lg text-sm"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={deleteLevelForm.processing}
+                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-lg transition disabled:opacity-50"
+                            >
+                                Hapus & Migrasikan
+                            </button>
                         </SheetFooter>
                     </form>
                 </SheetContent>
