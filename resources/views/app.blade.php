@@ -6,17 +6,34 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
-        <!-- Anti-Flicker Instant Theme Script -->
+        @php
+            $themeData = json_decode(file_get_contents(resource_path('js/lib/theme-colors.json')), true)['themes'] ?? [];
+        @endphp
+
+        <!-- Anti-Flicker Instant Theme Script (Zero-Latency Theme & CSS Vars Injection) -->
         <script>
             (function() {
                 try {
+                    var themes = @json($themeData);
                     var pref = localStorage.getItem('theme_preference') || 'dark';
-                    if (pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                        document.documentElement.classList.add('dark');
-                        document.documentElement.classList.remove('light');
-                    } else {
-                        document.documentElement.classList.remove('dark');
-                        document.documentElement.classList.add('light');
+                    if (pref === 'system') {
+                        pref = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                    }
+                    var activeTheme = themes[pref] || themes['dark'] || themes['light'];
+                    if (activeTheme) {
+                        var root = document.documentElement;
+                        if (activeTheme.type === 'dark') {
+                            root.classList.add('dark');
+                            root.classList.remove('light');
+                        } else {
+                            root.classList.remove('dark');
+                            root.classList.add('light');
+                        }
+                        if (activeTheme.variables) {
+                            for (var key in activeTheme.variables) {
+                                root.style.setProperty(key, activeTheme.variables[key]);
+                            }
+                        }
                     }
                 } catch (e) {
                     document.documentElement.classList.add('dark');
