@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PageLayout from '@/Components/Layouts/PageLayout';
 import { PageProps } from '@/Types';
-import { Card } from '@/Components/ui/card';
+import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -19,11 +19,28 @@ import {
     Plane,
     Loader2,
     SlidersHorizontal,
+    Award,
+    PieChart as PieChartIcon,
+    BarChart3,
+    Sparkles,
 } from 'lucide-react';
 import { useDebounce } from '@/hooks/use-debounce';
 import { router } from '@inertiajs/react';
 import DataTablePagination, { PaginatedData } from '@/Components/DataTablePagination';
 import PerPageSelector from '@/Components/PerPageSelector';
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip as RechartsTooltip,
+    ResponsiveContainer,
+    Cell,
+    PieChart,
+    Pie,
+    Legend,
+} from 'recharts';
 
 interface TeamMember {
     id: number;
@@ -44,6 +61,27 @@ interface TeamMember {
     total_komisi: number;
     komisi_paid: number;
     komisi_pending: number;
+}
+
+interface TopPerformerItem {
+    id: number;
+    name: string;
+    email: string;
+    level: number;
+    level_label: string;
+    jabatan: string;
+    total_jamaah: number;
+    total_omzet: number;
+    total_komisi: number;
+}
+
+interface LevelDistributionItem {
+    level: number;
+    level_name: string;
+    omzet: number;
+    jamaah: number;
+    members_count: number;
+    color: string;
 }
 
 interface HierarchyLevelItem {
@@ -86,6 +124,8 @@ interface Props extends PageProps {
         total_paid: number;
         total_pending: number;
     };
+    topPerformers: TopPerformerItem[];
+    levelDistribution: LevelDistributionItem[];
     hierarchyLevels: HierarchyLevelItem[];
     filters: {
         search?: string;
@@ -103,6 +143,8 @@ interface Props extends PageProps {
 export default function Monitoring({
     teamMembers,
     summary,
+    topPerformers = [],
+    levelDistribution = [],
     hierarchyLevels = [],
     filters,
     currentUser,
@@ -113,7 +155,7 @@ export default function Monitoring({
     const isFirstRender = useRef(true);
 
     // Customer Drawer State (Infinite Scroll)
-    const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+    const [selectedMember, setSelectedMember] = useState<TeamMember | TopPerformerItem | null>(null);
     const [drawerJamaahList, setDrawerJamaahList] = useState<JamaahDetailItem[]>([]);
     const [drawerSearch, setDrawerSearch] = useState('');
     const debouncedDrawerSearch = useDebounce(drawerSearch, 300);
@@ -183,7 +225,7 @@ export default function Monitoring({
         }
     };
 
-    const handleOpenDrawer = (member: TeamMember) => {
+    const handleOpenDrawer = (member: TeamMember | TopPerformerItem) => {
         setSelectedMember(member);
         setDrawerSearch('');
         setDrawerPage(1);
@@ -226,6 +268,21 @@ export default function Monitoring({
     };
 
     const membersList = teamMembers?.data || [];
+
+    // Chart Formatting Helper
+    const formatCurrencyShort = (num: number) => {
+        if (num >= 1_000_000_000) return `${(num / 1_000_000_000).toFixed(1)} M`;
+        if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)} Jt`;
+        if (num >= 1_000) return `${(num / 1_000).toFixed(0)} Rb`;
+        return num.toString();
+    };
+
+    // Top Performer Chart Data formatted
+    const barChartData = topPerformers.map((p) => ({
+        ...p,
+        shortName: p.name.length > 12 ? p.name.substring(0, 10) + '..' : p.name,
+        omzetJuta: p.total_omzet / 1_000_000,
+    }));
 
     return (
         <PageLayout
@@ -319,6 +376,192 @@ export default function Monitoring({
                     </div>
                     <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
                         <Coins className="w-6 h-6" />
+                    </div>
+                </Card>
+            </div>
+
+            {/* DUO ANALYTICS CHARTS SECTION */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* 1. Leaderboard Top 5 Agen (Interactive Bar Chart) */}
+                <Card className="lg:col-span-7 bg-card/70 backdrop-blur-md border border-border/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600">
+                                <Award className="w-4 h-4" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-sm text-foreground">Top Agen Penjualan (Leaderboard)</h3>
+                                <p className="text-[11px] text-muted-foreground">Klik bar grafik agen untuk melihat nasabahnya</p>
+                            </div>
+                        </div>
+                        <Badge variant="secondary" className="text-[10px] font-bold bg-primary/10 text-primary border-primary/20">
+                            Top 5 Downline
+                        </Badge>
+                    </div>
+
+                    <div className="h-64 w-full">
+                        {barChartData.length === 0 ? (
+                            <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
+                                Belum ada data transaksi omzet agen
+                            </div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart
+                                    data={barChartData}
+                                    layout="vertical"
+                                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.06)" />
+                                    <XAxis
+                                        type="number"
+                                        tickFormatter={(val) => `Rp ${val} Jt`}
+                                        tick={{ fontSize: 10, fill: 'currentColor' }}
+                                        className="text-muted-foreground"
+                                    />
+                                    <YAxis
+                                        type="category"
+                                        dataKey="shortName"
+                                        tick={{ fontSize: 11, fontWeight: 600, fill: 'currentColor' }}
+                                        className="text-foreground"
+                                    />
+                                    <RechartsTooltip
+                                        content={({ active, payload }) => {
+                                            if (active && payload && payload.length) {
+                                                const data = payload[0].payload as TopPerformerItem;
+                                                return (
+                                                    <div className="bg-popover/95 backdrop-blur-md border border-border p-3 rounded-xl shadow-xl text-xs flex flex-col gap-1 z-50">
+                                                        <div className="font-bold text-foreground flex items-center justify-between gap-3">
+                                                            <span>{data.name}</span>
+                                                            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 font-extrabold">
+                                                                Lv. {data.level}
+                                                            </Badge>
+                                                        </div>
+                                                        <span className="text-[11px] text-muted-foreground">{data.jabatan}</span>
+                                                        <div className="pt-1.5 border-t border-border mt-1 flex flex-col gap-1 text-[11px]">
+                                                            <div className="flex justify-between gap-4">
+                                                                <span className="text-muted-foreground">Omzet:</span>
+                                                                <span className="font-bold text-emerald-600">
+                                                                    Rp {data.total_omzet.toLocaleString('id-ID')}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between gap-4">
+                                                                <span className="text-muted-foreground">Jamaah:</span>
+                                                                <span className="font-bold text-sky-600">{data.total_jamaah} Pax</span>
+                                                            </div>
+                                                            <div className="flex justify-between gap-4">
+                                                                <span className="text-muted-foreground">Komisi:</span>
+                                                                <span className="font-bold text-amber-600">
+                                                                    Rp {data.total_komisi.toLocaleString('id-ID')}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <span className="text-[9px] text-primary/80 italic mt-1 font-semibold">
+                                                            👉 Klik untuk buka drawer nasabah
+                                                        </span>
+                                                    </div>
+                                                );
+                                            }
+                                            return null;
+                                        }}
+                                    />
+                                    <Bar
+                                        dataKey="omzetJuta"
+                                        radius={[0, 8, 8, 0]}
+                                        cursor="pointer"
+                                        onClick={(data) => handleOpenDrawer(data as unknown as TopPerformerItem)}
+                                    >
+                                        {barChartData.map((entry, index) => (
+                                            <Cell
+                                                key={`cell-${index}`}
+                                                fill={index === 0 ? '#10b981' : index === 1 ? '#0ea5e9' : index === 2 ? '#f59e0b' : '#8b5cf6'}
+                                            />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        )}
+                    </div>
+                </Card>
+
+                {/* 2. Distribusi Omzet per Tingkat Level (Donut Chart) */}
+                <Card className="lg:col-span-5 bg-card/70 backdrop-blur-md border border-border/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                            <div className="p-2 rounded-xl bg-sky-500/10 text-sky-600">
+                                <PieChartIcon className="w-4 h-4" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-sm text-foreground">Kontribusi per Tingkat Level</h3>
+                                <p className="text-[11px] text-muted-foreground">Porsi omzet penjualan antar jabatan tim</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="h-64 w-full flex items-center justify-center">
+                        {levelDistribution.length === 0 || summary.total_omzet === 0 ? (
+                            <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
+                                Belum ada distribusi omzet
+                            </div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={levelDistribution}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={55}
+                                        outerRadius={80}
+                                        paddingAngle={4}
+                                        dataKey="omzet"
+                                        nameKey="level_name"
+                                    >
+                                        {levelDistribution.map((entry, index) => (
+                                            <Cell key={`donut-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <RechartsTooltip
+                                        content={({ active, payload }) => {
+                                            if (active && payload && payload.length) {
+                                                const data = payload[0].payload as LevelDistributionItem;
+                                                const percentage = summary.total_omzet > 0
+                                                    ? ((data.omzet / summary.total_omzet) * 100).toFixed(1)
+                                                    : '0';
+                                                return (
+                                                    <div className="bg-popover/95 backdrop-blur-md border border-border p-3 rounded-xl shadow-xl text-xs flex flex-col gap-1 z-50">
+                                                        <span className="font-bold text-foreground">{data.level_name}</span>
+                                                        <div className="flex justify-between gap-4 mt-1">
+                                                            <span className="text-muted-foreground">Omzet:</span>
+                                                            <span className="font-bold text-emerald-600">
+                                                                Rp {data.omzet.toLocaleString('id-ID')} ({percentage}%)
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex justify-between gap-4">
+                                                            <span className="text-muted-foreground">Jumlah Anggota:</span>
+                                                            <span className="font-bold text-foreground">{data.members_count} Orang</span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }
+                                            return null;
+                                        }}
+                                    />
+                                    <Legend
+                                        verticalAlign="bottom"
+                                        height={36}
+                                        iconType="circle"
+                                        iconSize={8}
+                                        formatter={(val, entry) => {
+                                            const item = entry.payload as unknown as LevelDistributionItem;
+                                            return (
+                                                <span className="text-[11px] font-semibold text-foreground mr-2">
+                                                    {val} ({item?.members_count || 0})
+                                                </span>
+                                            );
+                                        }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        )}
                     </div>
                 </Card>
             </div>

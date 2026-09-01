@@ -32,6 +32,7 @@ class TeamMonitoringController extends Controller
         // 1. Calculate overall summary metrics across ALL downlines (unpaginated)
         $allDownlines = User::whereIn('id', $downlineIds)
             ->where('tenant_id', $targetTenantId)
+            ->with(['hierarchyLevel', 'creator'])
             ->withCount('jamaah')
             ->get();
 
@@ -45,7 +46,59 @@ class TeamMonitoringController extends Controller
         $totalKomisiPaid = (float) KomisiAgen::whereIn('agen_id', $downlineIds)->where('status_pencairan', 'paid')->sum('nominal_komisi');
         $totalKomisiPending = (float) KomisiAgen::whereIn('agen_id', $downlineIds)->where('status_pencairan', 'pending')->sum('nominal_komisi');
 
-        // 2. Query Paginated Downline Users
+        // Compute performance stats for all downlines (for Top Performers & Charts)
+        $allDownlinesStats = $allDownlines->map(function ($member) {
+            $memberJamaahIds = Jamaah::where('agen_id', $member->id)->pluck('id');
+            $omzet = (float) Pembayaran::whereIn('jamaah_id', $memberJamaahIds)
+                ->where('status_verifikasi', 'verified')
+                ->sum('nominal');
+            $komisi = (float) KomisiAgen::where('agen_id', $member->id)->sum('nominal_komisi');
+
+            return [
+                'id' => $member->id,
+                'name' => $member->name,
+                'email' => $member->email,
+                'level' => $member->level,
+                'level_label' => $member->level_label,
+                'jabatan' => $member->jabatan ?: $member->hierarchyLevel?->nama_level ?: 'Staff',
+                'total_jamaah' => $member->jamaah_count,
+                'total_omzet' => $omzet,
+                'total_komisi' => $komisi,
+            ];
+        });
+
+        // Top 5 Performers by Omzet & Jamaah
+        $topPerformers = $allDownlinesStats
+            ->sortByDesc('total_omzet')
+            ->take(5)
+            ->values();
+
+        // Level Distribution Chart Data (Omzet & Members Count per Level)
+        $palette = [
+            1 => '#10b981', // Emerald (Owner)
+            2 => '#0ea5e9', // Sky (Supervisor)
+            3 => '#f59e0b', // Amber (Team Leader)
+            4 => '#8b5cf6', // Purple (Staff / Agen)
+            5 => '#ec4899', // Pink
+        ];
+
+        $levelDistribution = $allDownlinesStats
+            ->groupBy('level')
+            ->map(function ($membersInLevel, $lvl) use ($palette) {
+                $first = $membersInLevel->first();
+
+                return [
+                    'level' => (int) $lvl,
+                    'level_name' => "Level {$lvl} ({$first['jabatan']})",
+                    'omzet' => $membersInLevel->sum('total_omzet'),
+                    'jamaah' => $membersInLevel->sum('total_jamaah'),
+                    'members_count' => $membersInLevel->count(),
+                    'color' => $palette[$lvl] ?? '#64748b',
+                ];
+            })
+            ->values();
+
+        // 2. Query Paginated Downline Users for Table
         $teamMembersQuery = User::whereIn('id', $downlineIds)
             ->where('tenant_id', $targetTenantId)
             ->with(['hierarchyLevel', 'creator'])
@@ -118,6 +171,8 @@ class TeamMonitoringController extends Controller
                 'total_paid' => $totalKomisiPaid,
                 'total_pending' => $totalKomisiPending,
             ],
+            'topPerformers' => $topPerformers,
+            'levelDistribution' => $levelDistribution,
             'hierarchyLevels' => $hierarchyLevels,
             'filters' => [
                 'search' => $search,
