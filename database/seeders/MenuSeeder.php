@@ -14,6 +14,7 @@ class MenuSeeder extends Seeder
     {
         Menu::query()->delete();
 
+        // 1. Dashboard
         $dashboardMenu = Menu::create([
             'title' => 'Dashboard',
             'url' => '/dashboard',
@@ -22,6 +23,7 @@ class MenuSeeder extends Seeder
             'urutan' => 1,
         ]);
 
+        // 2. Multi-Tenant Platform Management (Super Admin only)
         $tenantMenu = Menu::create([
             'title' => 'Kelola Travel (Multi-Tenant)',
             'url' => '/tenants',
@@ -30,6 +32,7 @@ class MenuSeeder extends Seeder
             'urutan' => 2,
         ]);
 
+        // 3. CRM & Jamaah
         $crmMenu = Menu::create([
             'title' => 'CRM & Jamaah',
             'url' => '#',
@@ -62,6 +65,7 @@ class MenuSeeder extends Seeder
             'urutan' => 3,
         ]);
 
+        // 4. Keuangan
         $financeMenu = Menu::create([
             'title' => 'Keuangan',
             'url' => '#',
@@ -86,36 +90,21 @@ class MenuSeeder extends Seeder
             'urutan' => 2,
         ]);
 
-        $userMgmtMenu = Menu::create([
-            'title' => 'Manajemen Pengguna',
+        // 5. Keagenan & Kemitraan Penjualan
+        $agencyMenu = Menu::create([
+            'title' => 'Keagenan & Komisi',
             'url' => '#',
             'icon' => 'Users',
-            'roles' => ['super_admin_master', 'owner_travel', 'supervisor', 'team_leader'],
+            'roles' => ['owner_travel', 'supervisor', 'team_leader', 'agen'],
             'urutan' => 5,
         ]);
 
         Menu::create([
-            'parent_id' => $userMgmtMenu->id,
-            'title' => 'Struktur Tim & Jabatan',
-            'url' => '/settings/users',
-            'roles' => ['super_admin_master', 'owner_travel', 'supervisor', 'team_leader'],
-            'urutan' => 1,
-        ]);
-
-        Menu::create([
-            'parent_id' => $userMgmtMenu->id,
+            'parent_id' => $agencyMenu->id,
             'title' => 'Daftar Mitra Agen',
             'url' => '/agents',
-            'roles' => ['super_admin_master', 'owner_travel', 'supervisor', 'team_leader'],
-            'urutan' => 2,
-        ]);
-
-        $agencyMenu = Menu::create([
-            'title' => 'Keagenan & Komisi',
-            'url' => '#',
-            'icon' => 'CreditCard',
-            'roles' => ['owner_travel', 'supervisor', 'team_leader', 'agen'],
-            'urutan' => 6,
+            'roles' => ['owner_travel', 'supervisor', 'team_leader'],
+            'urutan' => 1,
         ]);
 
         Menu::create([
@@ -123,15 +112,16 @@ class MenuSeeder extends Seeder
             'title' => 'Komisi & Rekap Agen',
             'url' => '/commissions',
             'roles' => ['owner_travel', 'supervisor', 'team_leader', 'agen'],
-            'urutan' => 1,
+            'urutan' => 2,
         ]);
 
+        // 6. Inventaris & Logistik
         $inventoryMenu = Menu::create([
             'title' => 'Inventaris & Gudang',
             'url' => '#',
             'icon' => 'Package',
             'roles' => ['owner_travel', 'supervisor'],
-            'urutan' => 7,
+            'urutan' => 6,
         ]);
 
         Menu::create([
@@ -142,12 +132,21 @@ class MenuSeeder extends Seeder
             'urutan' => 1,
         ]);
 
+        // 7. Pengaturan & Struktur Travel
         $settingsMenu = Menu::create([
             'title' => 'Pengaturan Travel',
             'url' => '#',
             'icon' => 'Settings',
             'roles' => ['super_admin_master', 'owner_travel', 'supervisor', 'team_leader', 'agen'],
-            'urutan' => 8,
+            'urutan' => 7,
+        ]);
+
+        Menu::create([
+            'parent_id' => $settingsMenu->id,
+            'title' => 'Struktur Tim & Jabatan',
+            'url' => '/settings/users',
+            'roles' => ['super_admin_master', 'owner_travel'],
+            'urutan' => 1,
         ]);
 
         Menu::create([
@@ -155,7 +154,7 @@ class MenuSeeder extends Seeder
             'title' => 'Pengaturan Aplikasi',
             'url' => '/settings/app',
             'roles' => ['super_admin_master', 'owner_travel', 'supervisor', 'team_leader', 'agen'],
-            'urutan' => 1,
+            'urutan' => 2,
         ]);
 
         Menu::create([
@@ -163,7 +162,7 @@ class MenuSeeder extends Seeder
             'title' => 'Rekening Bank',
             'url' => '/settings/banks',
             'roles' => ['owner_travel', 'supervisor'],
-            'urutan' => 2,
+            'urutan' => 3,
         ]);
 
         Menu::create([
@@ -171,7 +170,7 @@ class MenuSeeder extends Seeder
             'title' => 'Alur Tahapan Prospek',
             'url' => '/settings/stages',
             'roles' => ['owner_travel', 'supervisor'],
-            'urutan' => 3,
+            'urutan' => 4,
         ]);
 
         Menu::create([
@@ -179,7 +178,7 @@ class MenuSeeder extends Seeder
             'title' => 'Katalog Paket Umroh & Haji',
             'url' => '/settings/packages',
             'roles' => ['owner_travel', 'supervisor'],
-            'urutan' => 4,
+            'urutan' => 5,
         ]);
 
         Menu::create([
@@ -187,7 +186,7 @@ class MenuSeeder extends Seeder
             'title' => 'Hak Akses Menu & Fitur',
             'url' => '/settings/menus',
             'roles' => ['super_admin_master', 'owner_travel'],
-            'urutan' => 5,
+            'urutan' => 6,
         ]);
     }
 }
