@@ -13,6 +13,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Inventaris\InventarisController;
 use App\Http\Controllers\Keagenan\MitraAgenController;
 use App\Http\Controllers\Keagenan\PembagianKomisiController;
+use App\Http\Controllers\Keagenan\TeamMonitoringController;
 use App\Http\Controllers\Pembayaran\VerifyPembayaranController;
 use App\Http\Controllers\Pembayaran\ViewPaymentController;
 use App\Http\Controllers\ProfileController;
@@ -93,7 +94,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/settings/menus/{menu}', [MenuController::class, 'update'])->name('settings.menus.update');
     Route::post('/settings/menus/batch', [MenuController::class, 'batchUpdate'])->name('settings.menus.batch');
 
-    // Agency & Commission Routes
+    // Agency, Hierarchy Monitoring & Commission Routes
+    Route::get('/monitoring', [TeamMonitoringController::class, 'index'])->name('keagenan.monitoring.index');
+    Route::get('/monitoring/{member}/jamaah', [TeamMonitoringController::class, 'getMemberJamaah'])->name('keagenan.monitoring.jamaah');
     Route::get('/agents', [MitraAgenController::class, 'index'])->name('keagenan.agents.index');
     Route::post('/agents', [MitraAgenController::class, 'store'])->name('keagenan.agents.store');
     Route::get('/agents/{agent}/jamaah', [MitraAgenController::class, 'getJamaah'])->name('keagenan.agents.jamaah');

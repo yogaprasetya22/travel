@@ -158,6 +158,60 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all downline user IDs recursively (bawah-bawahannya).
+     * Level 0: All users in system.
+     * Level 1: All users in current tenant (excluding self).
+     * Level 2+: All users recursively under this user's lineage (excluding superiors/peers).
+     *
+     * @return array<int>
+     */
+    public function getDownlineUserIds(): array
+    {
+        if ($this->isSuperAdmin()) {
+            return self::pluck('id')->toArray();
+        }
+
+        if ($this->isOwner()) {
+            return self::where('tenant_id', $this->tenant_id)
+                ->where('id', '!=', $this->id)
+                ->pluck('id')
+                ->toArray();
+        }
+
+        // Recursive tree descent via created_by
+        $allDownlineIds = [];
+        $currentParentIds = [$this->id];
+
+        while (! empty($currentParentIds)) {
+            $nextLevelIds = self::whereIn('created_by', $currentParentIds)
+                ->where('tenant_id', $this->tenant_id)
+                ->pluck('id')
+                ->toArray();
+
+            $newIds = array_diff($nextLevelIds, $allDownlineIds);
+            if (empty($newIds)) {
+                break;
+            }
+
+            $allDownlineIds = array_merge($allDownlineIds, $newIds);
+            $currentParentIds = $newIds;
+        }
+
+        // If tree is not strictly linked by created_by, fallback to all users in tenant with strictly lower rank (higher level number)
+        if (empty($allDownlineIds)) {
+            $allDownlineIds = self::where('tenant_id', $this->tenant_id)
+                ->where('id', '!=', $this->id)
+                ->where(function ($q) {
+                    $q->whereHas('hierarchyLevel', fn ($h) => $h->where('urutan', '>', $this->level));
+                })
+                ->pluck('id')
+                ->toArray();
+        }
+
+        return array_values(array_unique($allDownlineIds));
+    }
+
+    /**
      * Get active tenant ID for current user (handles super admin active session).
      */
     public function getActiveTenantId(): int

@@ -101,10 +101,18 @@ class MenuSeeder extends Seeder
 
         Menu::create([
             'parent_id' => $agencyMenu->id,
+            'title' => 'Pemantauan Tim & Omzet',
+            'url' => '/monitoring',
+            'roles' => ['super_admin_master', 'owner_travel', 'supervisor', 'team_leader'],
+            'urutan' => 1,
+        ]);
+
+        Menu::create([
+            'parent_id' => $agencyMenu->id,
             'title' => 'Daftar Mitra Agen',
             'url' => '/agents',
             'roles' => ['owner_travel', 'supervisor', 'team_leader'],
-            'urutan' => 1,
+            'urutan' => 2,
         ]);
 
         Menu::create([
@@ -112,7 +120,7 @@ class MenuSeeder extends Seeder
             'title' => 'Komisi & Rekap Agen',
             'url' => '/commissions',
             'roles' => ['owner_travel', 'supervisor', 'team_leader', 'agen'],
-            'urutan' => 2,
+            'urutan' => 3,
         ]);
 
         // 6. Inventaris & Logistik
