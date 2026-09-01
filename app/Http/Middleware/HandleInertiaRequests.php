@@ -45,7 +45,15 @@ class HandleInertiaRequests extends Middleware
                 if ($user->jabatan) {
                     $userRoles[] = strtolower(str_replace(' ', '_', $user->jabatan));
                 }
-                // Also map supervisor & team_leader to admin_travel and vice versa
+                if ($user->hierarchy_level_id) {
+                    $userRoles[] = 'level_'.$user->hierarchy_level_id;
+                }
+                if ($user->role === 'owner_travel') {
+                    $userRoles[] = 'owner';
+                }
+                if ($user->role === 'agen') {
+                    $userRoles[] = 'staff';
+                }
                 if (in_array($user->role, ['admin_travel'])) {
                     if ($user->jabatan === 'Supervisor') {
                         $userRoles[] = 'supervisor';

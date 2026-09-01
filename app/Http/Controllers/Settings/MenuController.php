@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Models\HierarchyLevel;
 use App\Models\Menu;
+use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,11 +16,16 @@ class MenuController extends Controller
     /**
      * Display the Roles & Permissions menu access list.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        if (auth()->user()->role !== 'owner_travel') {
+        $currentUser = $request->user();
+        if (! in_array($currentUser->role, ['owner_travel', 'super_admin_master'])) {
             abort(403, 'Unauthorized action.');
         }
+
+        $tenantId = $currentUser->role === 'super_admin_master'
+            ? ($request->query('tenant_id') ? (int) $request->query('tenant_id') : (Tenant::first()?->id ?? 1))
+            : $currentUser->tenant_id;
 
         $menus = Menu::whereNull('parent_id')
             ->with(['children' => function ($query) {
@@ -27,16 +34,31 @@ class MenuController extends Controller
             ->orderBy('urutan')
             ->get();
 
-        $roles = [
-            'owner_travel',
-            'supervisor',
-            'team_leader',
-            'agen',
-        ];
+        // Get dynamic hierarchy levels for this tenant
+        $hierarchyLevels = HierarchyLevel::where('tenant_id', $tenantId)
+            ->orderBy('urutan')
+            ->get();
+
+        $availableLevels = $hierarchyLevels->map(function ($lvl) {
+            $key = strtolower(str_replace(' ', '_', $lvl->nama_level));
+            if ($lvl->role_key === 'owner_travel') {
+                $key = 'owner_travel';
+            } elseif ($lvl->nama_level === 'Staff' || $lvl->nama_level === 'Staff (Mitra Agen)') {
+                $key = 'agen';
+            }
+
+            return [
+                'id' => $lvl->id,
+                'name' => $lvl->nama_level,
+                'role_key' => $lvl->role_key,
+                'key' => $key,
+                'level_key' => 'level_'.$lvl->id,
+            ];
+        });
 
         return Inertia::render('Settings/Menus', [
             'menus' => $menus,
-            'availableRoles' => $roles,
+            'availableLevels' => $availableLevels,
         ]);
     }
 
@@ -45,25 +67,26 @@ class MenuController extends Controller
      */
     public function update(Request $request, Menu $menu): RedirectResponse
     {
-        if (auth()->user()->role !== 'owner_travel') {
+        $currentUser = $request->user();
+        if (! in_array($currentUser->role, ['owner_travel', 'super_admin_master'])) {
             abort(403, 'Unauthorized action.');
         }
 
         $validated = $request->validate([
             'roles' => 'present|array',
-            'roles.*' => 'string|in:super_admin_master,owner_travel,supervisor,team_leader,admin_travel,agen',
+            'roles.*' => 'string|max:100',
         ]);
 
-        // Keep super_admin_master if it was already there (since SAM is platform-wide and not managed at tenant level)
+        // Keep super_admin_master if it was already there (platform-wide)
         $newRoles = $validated['roles'];
-        if (in_array('super_admin_master', $menu->roles)) {
+        if (in_array('super_admin_master', $menu->roles ?? [])) {
             if (! in_array('super_admin_master', $newRoles)) {
                 $newRoles[] = 'super_admin_master';
             }
         }
 
         $menu->update([
-            'roles' => $newRoles,
+            'roles' => array_values(array_unique($newRoles)),
         ]);
 
         return redirect()->back()->with('success', 'Akses menu berhasil diperbarui.');

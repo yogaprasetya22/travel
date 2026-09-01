@@ -14,20 +14,32 @@ interface DBMenu {
     children?: DBMenu[]
 }
 
-interface Props {
-    menus: DBMenu[]
-    availableRoles: string[]
+interface LevelItem {
+    id: number
+    name: string
+    role_key: string
+    key: string
+    level_key: string
 }
 
-export default function Menus({ menus, availableRoles }: Props) {
-    const handleRoleToggle = (menu: DBMenu, role: string, isChecked: boolean) => {
+interface Props {
+    menus: DBMenu[]
+    availableLevels: LevelItem[]
+}
+
+export default function Menus({ menus, availableLevels = [] }: Props) {
+    const handleRoleToggle = (menu: DBMenu, level: LevelItem, isChecked: boolean) => {
         let updatedRoles = [...menu.roles]
+        const keysToToggle = [level.key, level.level_key]
+
         if (isChecked) {
-            if (!updatedRoles.includes(role)) {
-                updatedRoles.push(role)
-            }
+            keysToToggle.forEach((k) => {
+                if (!updatedRoles.includes(k)) {
+                    updatedRoles.push(k)
+                }
+            })
         } else {
-            updatedRoles = updatedRoles.filter((r) => r !== role)
+            updatedRoles = updatedRoles.filter((r) => !keysToToggle.includes(r))
         }
 
         router.put(
@@ -39,15 +51,8 @@ export default function Menus({ menus, availableRoles }: Props) {
         )
     }
 
-    const formatRoleLabel = (role: string) => {
-        const labels: Record<string, string> = {
-            owner_travel: "Owner (Pimpinan)",
-            supervisor: "Supervisor",
-            team_leader: "Team Leader",
-            agen: "Staff (Mitra Agen)",
-            super_admin_master: "Super Admin",
-        }
-        return labels[role] || role.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    const isLevelChecked = (menu: DBMenu, level: LevelItem) => {
+        return menu.roles.includes(level.key) || menu.roles.includes(level.level_key)
     }
 
     return (
@@ -67,7 +72,7 @@ export default function Menus({ menus, availableRoles }: Props) {
                         </h1>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1 ml-4">
-                        Tentukan menu, sub-menu, dan modul apa saja yang dapat diakses oleh masing-masing role pengguna.
+                        Tentukan menu, sub-menu, dan modul apa saja yang dapat diakses oleh masing-masing tingkatan jabatan hierarki tenant Anda.
                     </p>
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
@@ -85,12 +90,17 @@ export default function Menus({ menus, availableRoles }: Props) {
                                 <th className="px-6 py-4 text-sm font-bold text-foreground">
                                     Modul / Menu Sistem
                                 </th>
-                                {availableRoles.map((role) => (
+                                {availableLevels.map((level) => (
                                     <th
-                                        key={role}
+                                        key={level.id}
                                         className="px-6 py-4 text-center text-sm font-bold text-foreground"
                                     >
-                                        {formatRoleLabel(role)}
+                                        <div className="flex flex-col items-center">
+                                            <span>{level.name}</span>
+                                            <span className="text-[10px] font-normal text-muted-foreground uppercase tracking-wider">
+                                                {level.role_key}
+                                            </span>
+                                        </div>
                                     </th>
                                 ))}
                             </tr>
@@ -108,15 +118,15 @@ export default function Menus({ menus, availableRoles }: Props) {
                                                 </span>
                                             </div>
                                         </td>
-                                        {availableRoles.map((role) => (
-                                            <td key={role} className="px-6 py-4 text-center">
+                                        {availableLevels.map((level) => (
+                                            <td key={level.id} className="px-6 py-4 text-center">
                                                 <div className="flex justify-center">
                                                     <Checkbox
-                                                        checked={menu.roles.includes(role)}
+                                                        checked={isLevelChecked(menu, level)}
                                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                                             handleRoleToggle(
                                                                 menu,
-                                                                role,
+                                                                level,
                                                                 e.target.checked
                                                             )
                                                         }
@@ -146,18 +156,18 @@ export default function Menus({ menus, availableRoles }: Props) {
                                                         </span>
                                                     </div>
                                                 </td>
-                                                {availableRoles.map((role) => (
+                                                {availableLevels.map((level) => (
                                                     <td
-                                                        key={role}
+                                                        key={level.id}
                                                         className="px-6 py-3 text-center"
                                                     >
                                                         <div className="flex justify-center">
                                                             <Checkbox
-                                                                checked={child.roles.includes(role)}
+                                                                checked={isLevelChecked(child, level)}
                                                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                                                     handleRoleToggle(
                                                                         child,
-                                                                        role,
+                                                                        level,
                                                                         e.target.checked
                                                                     )
                                                                 }
