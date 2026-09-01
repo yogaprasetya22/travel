@@ -1,5 +1,7 @@
 "use client"
 
+import * as React from "react"
+import { Link } from "@inertiajs/react"
 import { ChevronRight, type LucideIcon } from "lucide-react"
 
 import {
@@ -33,12 +35,60 @@ export function NavMain({
         }[]
     }[]
 }) {
+    // Independent multi-open state persisted across pages & reloads
+    const [openMenus, setOpenMenus] = React.useState<Record<string, boolean>>(() => {
+        if (typeof window !== "undefined") {
+            try {
+                const saved = localStorage.getItem("sidebar_open_menus")
+                if (saved) {
+                    return JSON.parse(saved)
+                }
+            } catch (e) {
+                // fallback to default
+            }
+        }
+        // Default initial open states based on active items
+        const initial: Record<string, boolean> = {}
+        items.forEach((item) => {
+            if (item.isActive) {
+                initial[item.title] = true
+            }
+        })
+        return initial
+    })
+
+    // Automatically ensure active menu group is open when current URL matches
+    React.useEffect(() => {
+        items.forEach((item) => {
+            if (item.isActive && !openMenus[item.title]) {
+                setOpenMenus((prev) => {
+                    const next = { ...prev, [item.title]: true }
+                    try {
+                        localStorage.setItem("sidebar_open_menus", JSON.stringify(next))
+                    } catch (e) {}
+                    return next
+                })
+            }
+        })
+    }, [items])
+
+    const handleToggleMenu = (title: string, isOpen: boolean) => {
+        setOpenMenus((prev) => {
+            const next = { ...prev, [title]: isOpen }
+            try {
+                localStorage.setItem("sidebar_open_menus", JSON.stringify(next))
+            } catch (e) {}
+            return next
+        })
+    }
+
     return (
         <SidebarGroup>
             <SidebarGroupLabel>Platform</SidebarGroupLabel>
             <SidebarMenu>
                 {items.map((item) => {
-                    const hasChildren = item.items && item.items.length > 0;
+                    const hasChildren = item.items && item.items.length > 0
+                    const isOpen = !!openMenus[item.title]
 
                     if (!hasChildren) {
                         return (
@@ -47,28 +97,33 @@ export function NavMain({
                                     isActive={item.isActive}
                                     tooltip={item.title}
                                     render={
-                                        <a href={item.url} className="flex items-center gap-2">
+                                        <Link href={item.url} className="flex items-center gap-2">
                                             {item.icon && <item.icon />}
                                             <span>{item.title}</span>
-                                        </a>
+                                        </Link>
                                     }
                                 />
                             </SidebarMenuItem>
-                        );
+                        )
                     }
 
                     return (
                         <SidebarMenuItem key={item.title}>
                             <Collapsible
-                                defaultOpen={item.isActive}
+                                open={isOpen}
+                                onOpenChange={(open) => handleToggleMenu(item.title, open)}
                                 className="group/collapsible"
                             >
                                 <CollapsibleTrigger
                                     render={
-                                        <SidebarMenuButton tooltip={item.title}>
+                                        <SidebarMenuButton tooltip={item.title} isActive={item.isActive}>
                                             {item.icon && <item.icon />}
                                             <span>{item.title}</span>
-                                            <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[state=open]:rotate-90" />
+                                            <ChevronRight
+                                                className={`ml-auto transition-transform duration-200 ${
+                                                    isOpen ? "rotate-90" : ""
+                                                }`}
+                                            />
                                         </SidebarMenuButton>
                                     }
                                 />
@@ -79,9 +134,9 @@ export function NavMain({
                                                 <SidebarMenuSubButton
                                                     isActive={subItem.isActive}
                                                     render={
-                                                        <a href={subItem.url}>
+                                                        <Link href={subItem.url}>
                                                             <span>{subItem.title}</span>
-                                                        </a>
+                                                        </Link>
                                                     }
                                                 />
                                             </SidebarMenuSubItem>
@@ -90,7 +145,7 @@ export function NavMain({
                                 </CollapsibleContent>
                             </Collapsible>
                         </SidebarMenuItem>
-                    );
+                    )
                 })}
             </SidebarMenu>
         </SidebarGroup>
