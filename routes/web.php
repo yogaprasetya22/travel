@@ -43,7 +43,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Tenant Switcher (Super Admin)
+    // Tenants Management (Super Admin Master)
+    Route::get('/tenants', [TenantController::class, 'index'])->name('tenants.index');
+    Route::post('/tenants', [TenantController::class, 'store'])->name('tenants.store');
+    Route::put('/tenants/{tenant}', [TenantController::class, 'update'])->name('tenants.update');
+    Route::delete('/tenants/{tenant}', [TenantController::class, 'destroy'])->name('tenants.destroy');
+    Route::post('/tenants/{tenant}/enter', [TenantController::class, 'enterTenant'])->name('tenants.enter');
     Route::post('/tenants/switch', [TenantController::class, 'switchTenant'])->name('tenants.switch');
 
     // CRM & Jamaah Lifecycle Routes
