@@ -23,7 +23,7 @@ class LogisticsDistributionController extends Controller
             ->whereHas('inventarisTransaksi', function ($q) {
                 $q->where('tipe', 'OUT');
             })
-            ->with(['paket', 'agen', 'inventarisTransaksi.inventaris']);
+            ->with(['paket', 'agen', 'inventarisTransaksi.inventaris', 'stage', 'pembayaran']);
 
         if ($user->role === 'agen') {
             $query->where('agen_id', $user->id);
