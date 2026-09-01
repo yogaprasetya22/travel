@@ -33,10 +33,15 @@ class KomisiAgen extends Model
         'jamaah_id',
         'nominal_komisi',
         'status_pencairan',
+        'nomor_referensi',
+        'metode_pembayaran',
+        'catatan_pencairan',
+        'tanggal_pencairan',
     ];
 
     protected $casts = [
         'nominal_komisi' => 'float',
+        'tanggal_pencairan' => 'datetime',
     ];
 
     public function tenant(): BelongsTo

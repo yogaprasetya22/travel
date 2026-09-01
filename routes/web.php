@@ -99,6 +99,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/agents/{agent}', [MitraAgenController::class, 'destroy'])->name('keagenan.agents.destroy');
     Route::get('/commissions', [PembagianKomisiController::class, 'index'])->name('keagenan.commissions.index');
     Route::put('/commissions/{commission}', [PembagianKomisiController::class, 'update'])->name('keagenan.commissions.update');
+    Route::post('/commissions/batch-payout', [PembagianKomisiController::class, 'batchPayout'])->name('keagenan.commissions.batch');
 
     // Inventory & Logistics Routes
     Route::get('/inventaris', [InventarisController::class, 'index'])->name('inventaris.index');
