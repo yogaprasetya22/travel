@@ -21,9 +21,31 @@ class PembagianKomisiController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        $search = $request->input('search');
+        $status = $request->input('status');
         $perPage = (int) $request->input('per_page', 15);
 
-        $commissions = KomisiAgen::with(['agen', 'jamaah.paket'])
+        $query = KomisiAgen::with(['agen', 'jamaah.paket']);
+
+        if (! empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('agen', function ($qa) use ($search) {
+                    $qa->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                })->orWhereHas('jamaah', function ($qj) use ($search) {
+                    $qj->where('nama_lengkap', 'like', "%{$search}%")
+                        ->orWhereHas('paket', function ($qp) use ($search) {
+                            $qp->where('nama_paket', 'like', "%{$search}%");
+                        });
+                });
+            });
+        }
+
+        if (! empty($status) && in_array($status, ['Pending', 'Ready_to_Pay', 'Paid'])) {
+            $query->where('status_pencairan', $status);
+        }
+
+        $commissions = $query
             ->orderBy('created_at', 'desc')
             ->paginate($perPage)
             ->withQueryString();
@@ -37,6 +59,11 @@ class PembagianKomisiController extends Controller
         return Inertia::render('Keagenan/Commissions', [
             'commissions' => $commissions,
             'stats' => $stats,
+            'filters' => [
+                'search' => $search ?? '',
+                'status' => $status ?? 'ALL',
+                'per_page' => $perPage,
+            ],
         ]);
     }
 

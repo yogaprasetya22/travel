@@ -3,6 +3,9 @@ import { router } from "@inertiajs/react"
 import PageLayout from "@/Components/Layouts/PageLayout"
 import DataTablePagination, { PaginatedData } from "@/Components/DataTablePagination"
 import PerPageSelector from "@/Components/PerPageSelector"
+import { Search, X, Filter } from "lucide-react"
+import { useDebounce } from "@/hooks/use-debounce"
+import { useMounted } from "@/hooks/use-mounted"
 
 interface Commission {
     id: number
@@ -23,10 +26,42 @@ interface Props {
         total_ready: number
         total_pending: number
     }
+    filters?: {
+        search?: string
+        status?: string
+        per_page?: number
+    }
 }
 
-export default function Commissions({ commissions, stats }: Props) {
+export default function Commissions({ commissions, stats, filters }: Props) {
     const commissionList = commissions.data || []
+    const isMounted = useMounted()
+    const [searchQuery, setSearchQuery] = React.useState(filters?.search || "")
+    const [statusFilter, setStatusFilter] = React.useState(filters?.status || "ALL")
+    const debouncedSearch = useDebounce(searchQuery, 350)
+    const isInitialMount = React.useRef(true)
+
+    React.useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false
+            return
+        }
+        if (!isMounted) return
+
+        router.get(
+            route("keagenan.commissions.index"),
+            {
+                search: debouncedSearch || undefined,
+                status: statusFilter === "ALL" ? undefined : statusFilter,
+                per_page: commissions.per_page,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            }
+        )
+    }, [debouncedSearch, statusFilter])
 
     const handleMarkAsPaid = (commissionId: number) => {
         router.put(
@@ -54,7 +89,9 @@ export default function Commissions({ commissions, stats }: Props) {
                         Kelola pencairan komisi mitra agen dan catat bukti pembayaran secara manual di bawah ini.
                     </p>
                 </div>
-                <PerPageSelector value={commissions.per_page} />
+                <div className="flex items-center gap-3 shrink-0">
+                    <PerPageSelector value={commissions.per_page} />
+                </div>
             </div>
 
             {/* Summary Cards */}
@@ -70,6 +107,78 @@ export default function Commissions({ commissions, stats }: Props) {
                 <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-6 shadow-xs">
                     <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Pending Pelunasan</span>
                     <div className="text-2xl font-bold mt-2 text-amber-600 dark:text-amber-400">{fmt(stats.total_pending)}</div>
+                </div>
+            </div>
+
+            {/* Search & Filter Toolbar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card/70 backdrop-blur-md p-4 rounded-2xl border border-border/80 shadow-xs">
+                <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Cari nama agen, email, jamaah, atau paket..."
+                        className="w-full pl-10 pr-9 py-2.5 bg-background text-foreground text-xs rounded-xl border border-border/80 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
+                    />
+                    {searchQuery && (
+                        <button
+                            type="button"
+                            onClick={() => setSearchQuery("")}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-xl border border-border/60">
+                        <button
+                            type="button"
+                            onClick={() => setStatusFilter("ALL")}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                                statusFilter === "ALL"
+                                    ? "bg-card text-foreground shadow-xs"
+                                    : "text-muted-foreground hover:text-foreground"
+                            }`}
+                        >
+                            Semua Status
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setStatusFilter("Ready_to_Pay")}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                                statusFilter === "Ready_to_Pay"
+                                    ? "bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 shadow-xs"
+                                    : "text-muted-foreground hover:text-foreground"
+                            }`}
+                        >
+                            Ready to Pay
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setStatusFilter("Pending")}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                                statusFilter === "Pending"
+                                    ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-xs"
+                                    : "text-muted-foreground hover:text-foreground"
+                            }`}
+                        >
+                            Pending
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setStatusFilter("Paid")}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                                statusFilter === "Paid"
+                                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-xs"
+                                    : "text-muted-foreground hover:text-foreground"
+                            }`}
+                        >
+                            Paid
+                        </button>
+                    </div>
                 </div>
             </div>
 
