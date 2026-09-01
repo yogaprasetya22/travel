@@ -23,8 +23,13 @@ class UserHierarchyController extends Controller
         $currentUser = $request->user();
 
         if ($currentUser->role === 'super_admin_master') {
-            $tenants = Tenant::all();
-            $selectedTenantId = $request->query('tenant_id') ? (int) $request->query('tenant_id') : ($tenants->first()?->id ?? 1);
+            $tenants = Tenant::orderBy('nama_travel')->get();
+            if ($request->has('tenant_id')) {
+                $selectedTenantId = (int) $request->query('tenant_id');
+                $request->session()->put('tenant_id', $selectedTenantId);
+            } else {
+                $selectedTenantId = (int) $request->session()->get('tenant_id', $tenants->first()?->id ?? 1);
+            }
 
             $users = User::where('tenant_id', $selectedTenantId)
                 ->with(['creator', 'tenant', 'hierarchyLevel'])

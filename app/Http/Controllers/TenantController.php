@@ -26,6 +26,23 @@ class TenantController extends Controller
         $tenant = Tenant::findOrFail($validated['tenant_id']);
 
         $request->session()->put('tenant_id', $tenant->id);
+        app()->instance('tenant', $tenant);
+
+        $referer = $request->header('Referer');
+        if ($referer) {
+            $parsed = parse_url($referer);
+            $path = $parsed['path'] ?? '/dashboard';
+            if (isset($parsed['query'])) {
+                parse_str($parsed['query'], $params);
+                unset($params['tenant_id']);
+                $newQuery = http_build_query($params);
+                $cleanUrl = $path.($newQuery ? '?'.$newQuery : '');
+            } else {
+                $cleanUrl = $path;
+            }
+
+            return redirect($cleanUrl)->with('success', "Beralih ke tenant: {$tenant->nama_travel}");
+        }
 
         return redirect()->back()->with('success', "Beralih ke tenant: {$tenant->nama_travel}");
     }
