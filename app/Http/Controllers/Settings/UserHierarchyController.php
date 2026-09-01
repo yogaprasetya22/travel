@@ -22,11 +22,11 @@ class UserHierarchyController extends Controller
     {
         $currentUser = $request->user();
         $targetTenantId = $currentUser->getActiveTenantId();
-        $tenants = Tenant::where('id', $targetTenantId)->get();
 
         $users = User::where('tenant_id', $targetTenantId)
             ->with(['creator', 'tenant', 'hierarchyLevel'])
             ->get();
+        $tenants = Tenant::where('id', $targetTenantId)->get();
 
         // Get complete hierarchical tree for canvas
         $hierarchyTree = HierarchyLevel::where('tenant_id', $targetTenantId)
