@@ -102,20 +102,8 @@ class DepartureScheduleController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        // Kloter Groups
-        $kloterRecords = (clone $query)
-            ->with([
-                'paket:id,nama_paket,harga',
-                'agen:id,name,email',
-                'crmStage:id,nama_tahap',
-                'pembayaran',
-                'inventarisTransaksi.inventaris',
-            ])
-            ->orderByRaw('jamaah.tanggal_keberangkatan IS NULL, jamaah.tanggal_keberangkatan ASC')
-            ->take(300)
-            ->get();
-
-        $schedules = $kloterRecords->groupBy(function ($j) {
+        // Group schedules per departure date from current paginated page
+        $schedules = $paginatedJamaah->getCollection()->groupBy(function ($j) {
             return $j->tanggal_keberangkatan ? $j->tanggal_keberangkatan : 'Belum Ditentukan';
         });
 

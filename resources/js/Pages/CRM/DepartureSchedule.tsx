@@ -375,7 +375,7 @@ export default function DepartureSchedule({
                         </div>
                     </div>
 
-                    {viewMode === 'table' && <PerPageSelector value={paginatedJamaah.per_page} />}
+                    <PerPageSelector value={paginatedJamaah.per_page} />
                 </div>
             </div>
 
@@ -554,17 +554,18 @@ export default function DepartureSchedule({
                             </table>
                         </div>
                     </div>
-
-                    <DataTablePagination
-                        links={paginatedJamaah.links}
-                        from={paginatedJamaah.from}
-                        to={paginatedJamaah.to}
-                        total={paginatedJamaah.total}
-                        currentPage={paginatedJamaah.current_page}
-                        lastPage={paginatedJamaah.last_page}
-                    />
                 </div>
             )}
+
+            {/* Pagination Controls - Always Visible */}
+            <DataTablePagination
+                links={paginatedJamaah.links}
+                from={paginatedJamaah.from}
+                to={paginatedJamaah.to}
+                total={paginatedJamaah.total}
+                currentPage={paginatedJamaah.current_page}
+                lastPage={paginatedJamaah.last_page}
+            />
 
             {/* DETAILING & RESCHEDULE DRAWER (SLIDE-OUT SHEET) */}
             <Sheet open={!!selectedJamaah} onOpenChange={(open) => { if (!open) setSelectedJamaah(null); }}>
