@@ -78,7 +78,13 @@ export default function CurrencyInput({
                 value={displayValue}
                 onChange={handleChange}
                 placeholder={placeholder}
-                className="h-full w-full min-w-0 bg-transparent py-1 pr-2.5 pl-0 text-sm font-medium text-foreground placeholder:text-muted-foreground border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 focus:border-none disabled:cursor-not-allowed"
+                style={{
+                    border: 'none',
+                    outline: 'none',
+                    boxShadow: 'none',
+                    background: 'transparent',
+                }}
+                className="h-full w-full min-w-0 bg-transparent py-1 pr-2.5 pl-0 text-sm font-medium text-foreground placeholder:text-muted-foreground border-0 outline-none ring-0 shadow-none appearance-none focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none disabled:cursor-not-allowed"
             />
         </div>
     );
