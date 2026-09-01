@@ -13,22 +13,11 @@ import {
     SheetHeader,
     SheetTitle,
     SheetDescription,
-    SheetFooter,
 } from '@/Components/ui/sheet';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogFooter,
-} from '@/Components/ui/dialog';
 import {
     Users,
     UserCheck,
     Search,
-    Pen,
-    Trash2,
     Plus,
     Calendar,
     Mail,
@@ -80,8 +69,6 @@ interface Props {
 
 export default function Agents({ agents, metrics, filters }: Props) {
     const [isCreateOpen, setIsCreateOpen] = React.useState(false);
-    const [isEditOpen, setIsEditOpen] = React.useState(false);
-    const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
     const [isJamaahDrawerOpen, setIsJamaahDrawerOpen] = React.useState(false);
 
     const [selectedAgent, setSelectedAgent] = React.useState<Agent | null>(null);
@@ -98,10 +85,8 @@ export default function Agents({ agents, metrics, filters }: Props) {
 
     const agentList = agents.data || [];
 
-    // Forms
+    // Create Form
     const createForm = useForm({ name: '', email: '', password: '' });
-    const editForm = useForm({ name: '', email: '', password: '' });
-    const deleteForm = useForm({});
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -146,51 +131,12 @@ export default function Agents({ agents, metrics, filters }: Props) {
         );
     });
 
-    const openEditModal = (agent: Agent) => {
-        setSelectedAgent(agent);
-        editForm.setData({
-            name: agent.name,
-            email: agent.email,
-            password: '',
-        });
-        editForm.clearErrors();
-        setIsEditOpen(true);
-    };
-
-    const openDeleteModal = (agent: Agent) => {
-        setSelectedAgent(agent);
-        setIsDeleteOpen(true);
-    };
-
     const handleCreateSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         createForm.post(route('keagenan.agents.store'), {
             onSuccess: () => {
                 createForm.reset();
                 setIsCreateOpen(false);
-            },
-        });
-    };
-
-    const handleEditSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!selectedAgent) return;
-        editForm.put(route('keagenan.agents.update', selectedAgent.id), {
-            onSuccess: () => {
-                editForm.reset();
-                setIsEditOpen(false);
-                setSelectedAgent(null);
-            },
-        });
-    };
-
-    const handleDeleteSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!selectedAgent) return;
-        deleteForm.delete(route('keagenan.agents.destroy', selectedAgent.id), {
-            onSuccess: () => {
-                setIsDeleteOpen(false);
-                setSelectedAgent(null);
             },
         });
     };
@@ -210,7 +156,7 @@ export default function Agents({ agents, metrics, filters }: Props) {
                         <h1 className="text-2xl font-bold tracking-tight text-foreground">Daftar Mitra Agen</h1>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1 ml-4">
-                        Kelola seluruh mitra agen penjualan travel, monitor perolehan jamaah closing, dan lihat rincian nasabah per agen.
+                        Daftar seluruh mitra agen penjualan travel, monitor perolehan jamaah closing, dan lihat rincian nasabah per agen.
                     </p>
                 </div>
                 <button
@@ -298,7 +244,7 @@ export default function Agents({ agents, metrics, filters }: Props) {
                                 <th className="px-6 py-4 text-center">Closing Jamaah</th>
                                 <th className="px-6 py-4 text-right">Akumulasi Komisi</th>
                                 <th className="px-6 py-4">Terdaftar</th>
-                                <th className="px-6 py-4 text-center">Aksi &amp; Detail</th>
+                                <th className="px-6 py-4 text-center">Rincian Nasabah</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/60 text-xs">
@@ -348,36 +294,15 @@ export default function Agents({ agents, metrics, filters }: Props) {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-center">
-                                        <div className="flex items-center justify-center gap-1.5">
-                                            {/* Button: Lihat Nasabah */}
-                                            <button
-                                                type="button"
-                                                onClick={() => openJamaahDrawer(agent)}
-                                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary font-bold transition cursor-pointer border border-primary/20 text-[11px]"
-                                                title="Lihat Rincian Jamaah"
-                                            >
-                                                <Eye className="w-3.5 h-3.5" />
-                                                <span>Nasabah</span>
-                                            </button>
-                                            {/* Button: Edit */}
-                                            <button
-                                                type="button"
-                                                onClick={() => openEditModal(agent)}
-                                                className="p-1.5 rounded-xl bg-muted hover:bg-muted/80 text-foreground transition cursor-pointer border border-border"
-                                                title="Edit Akun Agen"
-                                            >
-                                                <Pen className="w-3.5 h-3.5 text-foreground" />
-                                            </button>
-                                            {/* Button: Hapus */}
-                                            <button
-                                                type="button"
-                                                onClick={() => openDeleteModal(agent)}
-                                                className="p-1.5 rounded-xl bg-destructive/10 hover:bg-destructive/20 text-destructive transition cursor-pointer border border-destructive/20"
-                                                title="Hapus Agen"
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
-                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => openJamaahDrawer(agent)}
+                                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary font-bold transition cursor-pointer border border-primary/20 text-xs shadow-xs"
+                                            title="Lihat Daftar Nasabah Agen"
+                                        >
+                                            <Eye className="w-3.5 h-3.5" />
+                                            <span>Lihat Nasabah</span>
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -622,7 +547,7 @@ export default function Agents({ agents, metrics, filters }: Props) {
                             />
                             <InputError message={createForm.errors.password} className="mt-1" />
                         </div>
-                        <SheetFooter className="mt-4">
+                        <div className="mt-4 flex justify-end gap-2">
                             <button
                                 type="button"
                                 onClick={() => { setIsCreateOpen(false); createForm.reset(); }}
@@ -633,102 +558,10 @@ export default function Agents({ agents, metrics, filters }: Props) {
                             <PrimaryButton disabled={createForm.processing}>
                                 {createForm.processing ? 'Menyimpan...' : 'Simpan Agen'}
                             </PrimaryButton>
-                        </SheetFooter>
+                        </div>
                     </form>
                 </SheetContent>
             </Sheet>
-
-            {/* DRAWER: EDIT MITRA AGEN */}
-            <Sheet open={isEditOpen} onOpenChange={(open) => { setIsEditOpen(open); if (!open) { setSelectedAgent(null); editForm.reset(); } }}>
-                <SheetContent side="right" className="w-full sm:max-w-md">
-                    <SheetHeader>
-                        <SheetTitle>Edit Data Mitra Agen</SheetTitle>
-                        <SheetDescription>Perbarui nama, email, atau reset password mitra agen.</SheetDescription>
-                    </SheetHeader>
-                    <form onSubmit={handleEditSubmit} className="flex flex-col gap-4 p-4 overflow-y-auto flex-1">
-                        <div>
-                            <InputLabel htmlFor="edit-name" value="Nama Lengkap Agen" />
-                            <TextInput
-                                id="edit-name"
-                                type="text"
-                                value={editForm.data.name}
-                                className="mt-1 block w-full"
-                                onChange={(e) => editForm.setData('name', e.target.value)}
-                                required
-                            />
-                            <InputError message={editForm.errors.name} className="mt-1" />
-                        </div>
-                        <div>
-                            <InputLabel htmlFor="edit-email" value="Alamat Email" />
-                            <TextInput
-                                id="edit-email"
-                                type="email"
-                                value={editForm.data.email}
-                                className="mt-1 block w-full"
-                                onChange={(e) => editForm.setData('email', e.target.value)}
-                                required
-                            />
-                            <InputError message={editForm.errors.email} className="mt-1" />
-                        </div>
-                        <div>
-                            <InputLabel htmlFor="edit-password" value="Password Baru (Kosongkan jika tidak diubah)" />
-                            <TextInput
-                                id="edit-password"
-                                type="password"
-                                value={editForm.data.password}
-                                className="mt-1 block w-full"
-                                onChange={(e) => editForm.setData('password', e.target.value)}
-                                placeholder="Kosongkan jika tetap"
-                            />
-                            <InputError message={editForm.errors.password} className="mt-1" />
-                        </div>
-                        <SheetFooter className="mt-4">
-                            <button
-                                type="button"
-                                onClick={() => { setIsEditOpen(false); editForm.reset(); setSelectedAgent(null); }}
-                                className="px-4 py-2 border border-border text-foreground hover:bg-muted/40 rounded-xl text-xs font-semibold transition"
-                            >
-                                Batal
-                            </button>
-                            <PrimaryButton disabled={editForm.processing}>
-                                {editForm.processing ? 'Menyimpan...' : 'Perbarui Agen'}
-                            </PrimaryButton>
-                        </SheetFooter>
-                    </form>
-                </SheetContent>
-            </Sheet>
-
-            {/* MODAL: KONFIRMASI HAPUS AGEN */}
-            <Dialog open={isDeleteOpen} onOpenChange={(open) => { setIsDeleteOpen(open); if (!open) setSelectedAgent(null); }}>
-                <DialogContent className="max-w-md">
-                    <DialogHeader>
-                        <DialogTitle className="text-destructive flex items-center gap-2">
-                            <Trash2 className="w-5 h-5" />
-                            <span>Hapus Mitra Agen</span>
-                        </DialogTitle>
-                        <DialogDescription className="mt-2 text-xs">
-                            Apakah Anda yakin ingin menghapus akun mitra agen <strong>{selectedAgent?.name}</strong> ({selectedAgent?.email})? Tindakan ini tidak dapat dibatalkan.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter className="mt-4 flex gap-2 justify-end">
-                        <button
-                            type="button"
-                            onClick={() => { setIsDeleteOpen(false); setSelectedAgent(null); }}
-                            className="px-4 py-2 border border-border rounded-xl text-xs font-semibold hover:bg-muted transition"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleDeleteSubmit}
-                            disabled={deleteForm.processing}
-                            className="px-4 py-2 bg-destructive text-destructive-foreground rounded-xl text-xs font-bold hover:opacity-90 transition"
-                        >
-                            {deleteForm.processing ? 'Menghapus...' : 'Ya, Hapus Agen'}
-                        </button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </PageLayout>
     );
 }
