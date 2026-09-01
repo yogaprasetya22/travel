@@ -61,8 +61,7 @@ interface JamaahSchedule {
     } | null;
     crmStage?: {
         id: number;
-        nama_stage: string;
-        warna?: string;
+        nama_tahap: string;
     } | null;
     pembayaran?: Array<{
         id: number;

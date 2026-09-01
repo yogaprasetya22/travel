@@ -93,7 +93,7 @@ class DepartureScheduleController extends Controller
             ->with([
                 'paket:id,nama_paket,harga',
                 'agen:id,name,email',
-                'crmStage:id,nama_stage,warna',
+                'crmStage:id,nama_tahap',
                 'pembayaran',
                 'inventarisTransaksi.inventaris',
             ])
@@ -107,7 +107,7 @@ class DepartureScheduleController extends Controller
             ->with([
                 'paket:id,nama_paket,harga',
                 'agen:id,name,email',
-                'crmStage:id,nama_stage,warna',
+                'crmStage:id,nama_tahap',
                 'pembayaran',
                 'inventarisTransaksi.inventaris',
             ])
