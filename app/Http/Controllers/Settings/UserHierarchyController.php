@@ -21,27 +21,12 @@ class UserHierarchyController extends Controller
     public function index(Request $request): Response
     {
         $currentUser = $request->user();
+        $targetTenantId = $currentUser->getActiveTenantId();
+        $tenants = Tenant::where('id', $targetTenantId)->get();
 
-        if ($currentUser->role === 'super_admin_master') {
-            $tenants = Tenant::orderBy('nama_travel')->get();
-            if ($request->has('tenant_id')) {
-                $selectedTenantId = (int) $request->query('tenant_id');
-                $request->session()->put('tenant_id', $selectedTenantId);
-            } else {
-                $selectedTenantId = (int) $request->session()->get('tenant_id', $tenants->first()?->id ?? 1);
-            }
-
-            $users = User::where('tenant_id', $selectedTenantId)
-                ->with(['creator', 'tenant', 'hierarchyLevel'])
-                ->get();
-            $targetTenantId = $selectedTenantId;
-        } else {
-            $targetTenantId = $currentUser->tenant_id;
-            $users = User::where('tenant_id', $targetTenantId)
-                ->with(['creator', 'hierarchyLevel'])
-                ->get();
-            $tenants = Tenant::where('id', $targetTenantId)->get();
-        }
+        $users = User::where('tenant_id', $targetTenantId)
+            ->with(['creator', 'tenant', 'hierarchyLevel'])
+            ->get();
 
         // Get complete hierarchical tree for canvas
         $hierarchyTree = HierarchyLevel::where('tenant_id', $targetTenantId)

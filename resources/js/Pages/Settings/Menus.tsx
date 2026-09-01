@@ -84,27 +84,6 @@ export default function Menus({ menus, availableLevels = [], tenants = [], selec
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                    {tenants.length > 1 && (
-                        <div className="flex items-center gap-2 bg-muted/60 px-3 py-1.5 rounded-xl border border-border/80 text-xs">
-                            <Building className="w-3.5 h-3.5 text-primary" />
-                            <span className="font-semibold text-muted-foreground">Tenant:</span>
-                            <select
-                                value={selectedTenantId}
-                                onChange={(e) => {
-                                    router.get(
-                                        route('settings.menus.index'),
-                                        { tenant_id: e.target.value },
-                                        { preserveState: true }
-                                    );
-                                }}
-                                className="bg-background border border-border rounded-lg px-2.5 py-1 text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                            >
-                                {tenants.map((t) => (
-                                    <option key={t.id} value={t.id}>{t.nama_travel}</option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
                         <Check className="w-4 h-4" />
                         <span>Perubahan Tersimpan Otomatis</span>

@@ -23,16 +23,7 @@ class MenuController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        if ($currentUser->role === 'super_admin_master') {
-            if ($request->has('tenant_id')) {
-                $tenantId = (int) $request->query('tenant_id');
-                $request->session()->put('tenant_id', $tenantId);
-            } else {
-                $tenantId = (int) $request->session()->get('tenant_id', Tenant::first()?->id ?? 1);
-            }
-        } else {
-            $tenantId = $currentUser->tenant_id;
-        }
+        $tenantId = $currentUser->getActiveTenantId();
 
         $menus = Menu::whereNull('parent_id')
             ->with(['children' => function ($query) {

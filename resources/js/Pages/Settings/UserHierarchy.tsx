@@ -580,29 +580,6 @@ export default function UserHierarchy({
 
                 {/* Mode Switcher & Controls */}
                 <div className="flex items-center gap-3 flex-wrap">
-                    {/* Super Admin Master: Tenant Filter */}
-                    {currentUserRole === 'super_admin_master' && tenants.length > 1 && (
-                        <div className="flex items-center gap-2 bg-muted/60 px-3 py-1.5 rounded-xl border border-border/80 text-xs">
-                            <Building className="w-3.5 h-3.5 text-primary" />
-                            <span className="font-semibold text-muted-foreground">Tenant:</span>
-                            <select
-                                value={selectedTenantId}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    router.get(
-                                        route('settings.users.index'),
-                                        { tenant_id: val || undefined },
-                                        { preserveState: true }
-                                    );
-                                }}
-                                className="bg-background border border-border rounded-lg px-2.5 py-1 text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                            >
-                                {tenants.map((t) => (
-                                    <option key={t.id} value={t.id}>{t.nama_travel}</option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
 
                     {/* View Mode Toggle Buttons */}
                     <div className="flex items-center bg-muted/60 p-1 rounded-xl border border-border/80">
