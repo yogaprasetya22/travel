@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\CrmStage;
+use App\Models\HierarchyLevel;
 use App\Models\Inventaris;
 use App\Models\InventarisTransaksi;
 use App\Models\Paket;
@@ -136,9 +137,50 @@ class TenantDatasetSeeder extends Seeder
                 ['id' => $paketHaji->id, 'harga' => 245000000, 'komisi' => 7500000],
             ];
 
-            // 5. Hierarchy Staff
+            // 5. Hierarchy Levels & Staff
+            $ownerLevel = HierarchyLevel::create([
+                'tenant_id' => $tenant->id,
+                'parent_id' => null,
+                'nama_level' => 'Owner',
+                'role_key' => 'owner_travel',
+                'deskripsi' => 'Pimpinan Utama Travel',
+                'wewenang_note' => 'Akses penuh ke seluruh modul dan konfigurasi.',
+                'urutan' => 1,
+            ]);
+
+            $spvLevel = HierarchyLevel::create([
+                'tenant_id' => $tenant->id,
+                'parent_id' => $ownerLevel->id,
+                'nama_level' => 'Supervisor',
+                'role_key' => 'admin_travel',
+                'deskripsi' => 'Pengawas Operasional Travel',
+                'wewenang_note' => 'Verifikasi pembayaran dan logistik inventaris.',
+                'urutan' => 2,
+            ]);
+
+            $leaderLevel = HierarchyLevel::create([
+                'tenant_id' => $tenant->id,
+                'parent_id' => $spvLevel->id,
+                'nama_level' => 'Team Leader',
+                'role_key' => 'admin_travel',
+                'deskripsi' => 'Koordinator Agen & Pipeline CRM',
+                'wewenang_note' => 'Monitoring performa penjualan tim agen.',
+                'urutan' => 3,
+            ]);
+
+            $agentLevel = HierarchyLevel::create([
+                'tenant_id' => $tenant->id,
+                'parent_id' => $leaderLevel->id,
+                'nama_level' => 'Staff (Mitra Agen)',
+                'role_key' => 'agen',
+                'deskripsi' => 'Mitra Agen Penjualan Lapangan',
+                'wewenang_note' => 'Pendaftaran calon jamaah dan pencairan komisi closing.',
+                'urutan' => 4,
+            ]);
+
             $owner = User::create([
                 'tenant_id' => $tenant->id,
+                'hierarchy_level_id' => $ownerLevel->id,
                 'name' => $tData['owner_name'],
                 'email' => $tData['owner_email'],
                 'password' => $defaultPassword,
@@ -151,6 +193,7 @@ class TenantDatasetSeeder extends Seeder
             for ($s = 1; $s <= 2; $s++) {
                 $supervisors[] = User::create([
                     'tenant_id' => $tenant->id,
+                    'hierarchy_level_id' => $spvLevel->id,
                     'name' => "Supervisor {$s} (".($tIndex === 0 ? 'Pusat' : 'Cabang').')',
                     'email' => "spv{$s}.t".($tIndex + 1).'@travel.com',
                     'password' => $defaultPassword,
@@ -165,6 +208,7 @@ class TenantDatasetSeeder extends Seeder
                 for ($tl = 1; $tl <= 2; $tl++) {
                     $teamLeaders[] = User::create([
                         'tenant_id' => $tenant->id,
+                        'hierarchy_level_id' => $leaderLevel->id,
                         'name' => 'Leader '.($spvIdx * 2 + $tl),
                         'email' => 'leader'.($spvIdx * 2 + $tl).'.t'.($tIndex + 1).'@travel.com',
                         'password' => $defaultPassword,
@@ -182,6 +226,7 @@ class TenantDatasetSeeder extends Seeder
                     $email = ($tIndex === 0 && $agentNum === 1) ? 'budi@example.com' : "agent{$agentNum}.t".($tIndex + 1).'@travel.com';
                     $agents[] = User::create([
                         'tenant_id' => $tenant->id,
+                        'hierarchy_level_id' => $agentLevel->id,
                         'name' => "Agen {$agentNum} - ".($tIndex === 0 ? 'HajjFlow' : 'Barokah'),
                         'email' => $email,
                         'password' => $defaultPassword,
