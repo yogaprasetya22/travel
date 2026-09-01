@@ -89,6 +89,9 @@ class CustomerController extends Controller
             },
             'komisiAgen',
             'inventarisTransaksi.inventaris',
+            'stageLogs.fromStage',
+            'stageLogs.toStage',
+            'stageLogs.user',
         ])
             ->latest('jamaah.created_at')
             ->paginate($perPage)

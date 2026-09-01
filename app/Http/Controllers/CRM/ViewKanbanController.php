@@ -75,6 +75,9 @@ class ViewKanbanController extends Controller
                 ->with([
                     'paket:id,nama_paket,harga',
                     'agen:id,name,email',
+                    'stageLogs.fromStage',
+                    'stageLogs.toStage',
+                    'stageLogs.user:id,name',
                 ])
                 ->select([
                     'id',
@@ -191,6 +194,9 @@ class ViewKanbanController extends Controller
         $paginator = $query->with([
             'paket:id,nama_paket,harga',
             'agen:id,name,email',
+            'stageLogs.fromStage',
+            'stageLogs.toStage',
+            'stageLogs.user:id,name',
         ])
             ->select([
                 'id',

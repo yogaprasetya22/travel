@@ -83,4 +83,9 @@ class Jamaah extends Model
     {
         return $this->hasMany(InventarisTransaksi::class);
     }
+
+    public function stageLogs(): HasMany
+    {
+        return $this->hasMany(CrmStageLog::class)->orderBy('created_at', 'desc');
+    }
 }

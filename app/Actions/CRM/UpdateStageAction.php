@@ -3,15 +3,16 @@
 namespace App\Actions\CRM;
 
 use App\Models\CrmStage;
+use App\Models\CrmStageLog;
 use App\Models\Jamaah;
 use Illuminate\Validation\ValidationException;
 
 class UpdateStageAction
 {
     /**
-     * Execute stage update.
+     * Execute stage update and record audit log.
      */
-    public function execute(Jamaah $jamaah, int $crmStageId): void
+    public function execute(Jamaah $jamaah, int $crmStageId, ?string $catatan = null): void
     {
         $stageExists = CrmStage::where('id', $crmStageId)
             ->where('tenant_id', $jamaah->tenant_id)
@@ -23,8 +24,26 @@ class UpdateStageAction
             ]);
         }
 
-        $jamaah->update([
-            'crm_stage_id' => $crmStageId,
+        $fromStageId = $jamaah->crm_stage_id;
+
+        // Record Stage Transition Log
+        CrmStageLog::create([
+            'tenant_id' => $jamaah->tenant_id,
+            'jamaah_id' => $jamaah->id,
+            'user_id' => auth()->id(),
+            'from_stage_id' => $fromStageId,
+            'to_stage_id' => $crmStageId,
+            'catatan' => $catatan,
         ]);
+
+        $updateData = [
+            'crm_stage_id' => $crmStageId,
+        ];
+
+        if (! empty($catatan)) {
+            $updateData['catatan_admin'] = $catatan;
+        }
+
+        $jamaah->update($updateData);
     }
 }

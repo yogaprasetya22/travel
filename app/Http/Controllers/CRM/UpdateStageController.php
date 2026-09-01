@@ -17,9 +17,10 @@ class UpdateStageController extends Controller
     {
         $validated = $request->validate([
             'crm_stage_id' => ['required', 'integer'],
+            'catatan' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $action->execute($jamaah, (int) $validated['crm_stage_id']);
+        $action->execute($jamaah, (int) $validated['crm_stage_id'], $validated['catatan'] ?? null);
 
         return redirect()->back();
     }

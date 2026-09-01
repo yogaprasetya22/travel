@@ -15,7 +15,30 @@ import {
     SheetDescription,
     SheetFooter,
 } from "@/Components/ui/sheet";
-import { Edit2, MessageSquare, Plus, Search, X, LayoutGrid, Table as TableIcon } from 'lucide-react';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/Components/ui/dialog";
+import { Badge } from "@/Components/ui/badge";
+import {
+    Edit2,
+    MessageSquare,
+    Plus,
+    Search,
+    X,
+    LayoutGrid,
+    Table as TableIcon,
+    ArrowRightLeft,
+    ArrowRight,
+    CheckCircle2,
+    History,
+    Clock,
+    FileText,
+} from 'lucide-react';
 import DataTablePagination from '@/Components/DataTablePagination';
 import PerPageSelector from '@/Components/PerPageSelector';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -179,6 +202,14 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
         catatan_admin: '',
     });
 
+    // Pending Stage Move Dialog State
+    const [pendingStageMove, setPendingStageMove] = useState<{
+        lead: any;
+        targetStage: { id: number; nama_tahap: string };
+        sourceStage: { id: number; nama_tahap: string } | null;
+    } | null>(null);
+    const [stageMoveNote, setStageMoveNote] = useState('');
+
     const handleDragStart = (e: React.DragEvent, leadId: number) => {
         e.dataTransfer.setData('text/plain', leadId.toString());
         setDraggedLeadId(leadId);
@@ -190,76 +221,110 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
         if (!leadIdStr) return;
 
         const leadId = parseInt(leadIdStr, 10);
-        let movedLead: any = null;
+        let foundLead: any = null;
+        let sourceStage: any = null;
+
+        for (const stage of stages) {
+            const l = stage.jamaah.find((j) => j.id === leadId);
+            if (l) {
+                foundLead = l;
+                sourceStage = stage;
+                break;
+            }
+        }
+
+        const targetStage = stages.find((s) => s.id === targetStageId);
+        if (!foundLead || !targetStage || foundLead.crm_stage_id === targetStageId) {
+            setDraggedLeadId(null);
+            return;
+        }
+
+        setPendingStageMove({
+            lead: foundLead,
+            sourceStage: sourceStage ? { id: sourceStage.id, nama_tahap: sourceStage.nama_tahap } : null,
+            targetStage: { id: targetStage.id, nama_tahap: targetStage.nama_tahap },
+        });
+        setStageMoveNote('');
+        setDraggedLeadId(null);
+    };
+
+    const handleStageChangeFromTable = (leadId: number, targetStageId: number) => {
+        let foundLead: any = null;
+        let sourceStage: any = null;
+
+        for (const stage of stages) {
+            const l = stage.jamaah.find((j) => j.id === leadId);
+            if (l) {
+                foundLead = l;
+                sourceStage = stage;
+                break;
+            }
+        }
+
+        const targetStage = stages.find((s) => s.id === targetStageId);
+        if (!foundLead || !targetStage || foundLead.crm_stage_id === targetStageId) {
+            return;
+        }
+
+        setPendingStageMove({
+            lead: foundLead,
+            sourceStage: sourceStage ? { id: sourceStage.id, nama_tahap: sourceStage.nama_tahap } : null,
+            targetStage: { id: targetStage.id, nama_tahap: targetStage.nama_tahap },
+        });
+        setStageMoveNote('');
+    };
+
+    const confirmStageMove = (note?: string) => {
+        if (!pendingStageMove) return;
+
+        const { lead, targetStage, sourceStage } = pendingStageMove;
+        const targetStageId = targetStage.id;
+        const leadId = lead.id;
 
         // Optimistic UI Update
         const nextStages = stages.map((stage) => {
             const leadExists = stage.jamaah.find((j) => j.id === leadId);
             if (leadExists) {
-                movedLead = { ...leadExists, crm_stage_id: targetStageId };
                 return {
                     ...stage,
                     jamaah: stage.jamaah.filter((j) => j.id !== leadId),
+                    total_leads: Math.max(0, stage.total_leads - 1),
+                };
+            }
+            if (stage.id === targetStageId) {
+                const newLog = {
+                    id: Date.now(),
+                    user: { id: auth.user.id, name: auth.user.name },
+                    from_stage: sourceStage,
+                    to_stage: targetStage,
+                    catatan: note || null,
+                    created_at: new Date().toISOString(),
+                };
+
+                const updatedLead = {
+                    ...lead,
+                    crm_stage_id: targetStageId,
+                    catatan_admin: note || lead.catatan_admin,
+                    stage_logs: [newLog, ...(lead.stage_logs || [])],
+                };
+                return {
+                    ...stage,
+                    jamaah: [updatedLead, ...stage.jamaah],
+                    total_leads: stage.total_leads + 1,
                 };
             }
             return stage;
         });
+        setStages(nextStages);
+        setPendingStageMove(null);
 
-        if (movedLead) {
-            const updatedStages = nextStages.map((stage) => {
-                if (stage.id === targetStageId) {
-                    return {
-                        ...stage,
-                        jamaah: [movedLead, ...stage.jamaah],
-                    };
-                }
-                return stage;
-            });
-            setStages(updatedStages);
-        }
-
-        // Call backend update
+        // Call backend update with note
         router.patch(
             route('crm.update-stage', leadId),
-            { crm_stage_id: targetStageId },
             {
-                preserveScroll: true,
-                onError: () => setStages(initialStages),
-            }
-        );
-        setDraggedLeadId(null);
-    };
-
-    const handleStageChangeFromTable = (leadId: number, targetStageId: number) => {
-        let movedLead: any = null;
-        const nextStages = stages.map((stage) => {
-            const leadExists = stage.jamaah.find((j) => j.id === leadId);
-            if (leadExists) {
-                movedLead = { ...leadExists, crm_stage_id: targetStageId };
-                return {
-                    ...stage,
-                    jamaah: stage.jamaah.filter((j) => j.id !== leadId),
-                };
-            }
-            return stage;
-        });
-
-        if (movedLead) {
-            const updatedStages = nextStages.map((stage) => {
-                if (stage.id === targetStageId) {
-                    return {
-                        ...stage,
-                        jamaah: [movedLead, ...stage.jamaah],
-                    };
-                }
-                return stage;
-            });
-            setStages(updatedStages);
-        }
-
-        router.patch(
-            route('crm.update-stage', leadId),
-            { crm_stage_id: targetStageId },
+                crm_stage_id: targetStageId,
+                catatan: note || undefined,
+            },
             {
                 preserveScroll: true,
                 onError: () => setStages(initialStages),
@@ -1102,6 +1167,80 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
                     </form>
                 </SheetContent>
             </Sheet>
+
+            {/* Modal Dialog: Konfirmasi & Catatan Pindah Tahap CRM */}
+            <Dialog open={!!pendingStageMove} onOpenChange={(open) => { if (!open) setPendingStageMove(null); }}>
+                <DialogContent className="sm:max-w-md rounded-2xl p-6 bg-card border border-border">
+                    <DialogHeader>
+                        <div className="flex items-center gap-2.5 mb-1">
+                            <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                                <ArrowRightLeft className="w-5 h-5" />
+                            </div>
+                            <DialogTitle className="text-base font-bold text-foreground">
+                                Pindah Tahap CRM &amp; Catat Log
+                            </DialogTitle>
+                        </div>
+                        <DialogDescription className="text-xs text-muted-foreground">
+                            Pindahkan prospek nasabah ke tahap berikutnya dan tambahkan catatan riwayat aktivitas.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {pendingStageMove && (
+                        <div className="flex flex-col gap-4 py-2">
+                            <div className="p-3.5 rounded-xl bg-muted/50 border border-border/80 flex flex-col gap-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-bold text-foreground">
+                                        {pendingStageMove.lead.nama_lengkap}
+                                    </span>
+                                    <span className="text-[11px] text-muted-foreground font-mono">
+                                        {pendingStageMove.lead.no_hp}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs pt-1 border-t border-border/60">
+                                    <Badge variant="outline" className="text-[10px] font-bold">
+                                        {pendingStageMove.sourceStage?.nama_tahap || 'Tahap Asal'}
+                                    </Badge>
+                                    <ArrowRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                    <Badge className="text-[10px] font-bold bg-primary text-primary-foreground">
+                                        {pendingStageMove.targetStage.nama_tahap}
+                                    </Badge>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-1.5">
+                                <InputLabel htmlFor="stage-note" value="Catatan / Alasan Perpindahan (Opsional)" />
+                                <textarea
+                                    id="stage-note"
+                                    rows={3}
+                                    value={stageMoveNote}
+                                    onChange={(e) => setStageMoveNote(e.target.value)}
+                                    placeholder="Contoh: Sudah bayar DP Rp 5jt via transfer BSI, paspor sudah diverifikasi, minta reschedule..."
+                                    className="w-full rounded-xl border border-border bg-background p-3 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground"
+                                    autoFocus
+                                />
+                            </div>
+
+                            <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setPendingStageMove(null)}
+                                    className="px-4 py-2 border border-border rounded-xl text-xs font-semibold hover:bg-muted transition cursor-pointer"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => confirmStageMove(stageMoveNote)}
+                                    className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-bold transition cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
+                                >
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    <span>Simpan &amp; Pindahkan</span>
+                                </button>
+                            </DialogFooter>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </PageLayout>
     );
 }
