@@ -1,0 +1,1 @@
+import{f as e,l as t}from"./app-B_FKAPge.js";var n=e(t(),1);function r(){let[e,t]=(0,n.useState)(!1);return(0,n.useEffect)(()=>(t(!0),()=>t(!1)),[]),e}export{r as t};

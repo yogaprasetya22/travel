@@ -1,16 +1,3 @@
-# ─────────────────────────────────────────
-# Stage 1: Node/Bun builder (Vite assets)
-# ─────────────────────────────────────────
-FROM oven/bun:1 AS node-builder
-
-WORKDIR /app
-
-# Install deps using bun (uses bun.lock)
-COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
-
-COPY . .
-RUN bun run build
 
 # ─────────────────────────────────────────
 # Stage 2: PHP/Composer builder
@@ -84,7 +71,6 @@ WORKDIR /var/www/html
 
 # Copy app from builders
 COPY --from=composer-builder /app .
-COPY --from=node-builder /app/public/build ./public/build
 
 # Storage & cache dirs
 RUN mkdir -p storage/logs \
