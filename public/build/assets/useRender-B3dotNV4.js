@@ -1,1 +1,0 @@
-import{n as e}from"./dist-CW4k4ptf.js";function t(t){return e(t.defaultTagName??`div`,t,t)}export{t};
