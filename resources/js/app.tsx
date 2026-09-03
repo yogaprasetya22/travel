@@ -6,9 +6,11 @@ import { createRoot } from 'react-dom/client';
 import { ThemeProvider } from './Components/ThemeProvider';
 import { configureEcho } from '@laravel/echo-react';
 
-configureEcho({
-    broadcaster: 'reverb',
-});
+if (import.meta.env.VITE_REVERB_APP_KEY) {
+    configureEcho({
+        broadcaster: 'reverb',
+    });
+}
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 

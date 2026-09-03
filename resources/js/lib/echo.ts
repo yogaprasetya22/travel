@@ -12,11 +12,16 @@ window.Pusher = Pusher;
 
 let echoInstance: Echo<'reverb'> | null = null;
 
-export function getEcho(): Echo<'reverb'> {
+export function getEcho(): Echo<'reverb'> | null {
+    const key = import.meta.env.VITE_REVERB_APP_KEY;
+    if (!key || typeof window === 'undefined') {
+        return null;
+    }
+
     if (!echoInstance) {
         echoInstance = new Echo({
             broadcaster: 'reverb',
-            key: import.meta.env.VITE_REVERB_APP_KEY || 'hajjflow_app_key',
+            key: key,
             wsHost: import.meta.env.VITE_REVERB_HOST || window.location.hostname,
             wsPort: import.meta.env.VITE_REVERB_PORT ? Number(import.meta.env.VITE_REVERB_PORT) : 8080,
             wssPort: import.meta.env.VITE_REVERB_PORT ? Number(import.meta.env.VITE_REVERB_PORT) : 8080,

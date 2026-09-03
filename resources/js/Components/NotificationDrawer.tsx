@@ -83,9 +83,6 @@ export function NotificationDrawer() {
 
         fetchNotifications();
 
-        // 2. Setup WebSocket Reverb Listeners via Laravel Echo
-        const echo = getEcho();
-
         // Subtle audio chime
         const playChime = () => {
             try {
@@ -131,6 +128,11 @@ export function NotificationDrawer() {
 
             playChime();
         };
+
+        const echo = getEcho();
+        if (!echo) {
+            return;
+        }
 
         const userChannel = echo.private(`App.Models.User.${user.id}`);
         userChannel.notification(handleIncomingNotification);
