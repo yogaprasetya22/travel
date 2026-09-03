@@ -5,7 +5,8 @@
     "scripts": {
         "build": "tsc && vite build",
         "dev": "vite",
-        "lint": "eslint resources/js --ext .js,.jsx,.ts,.tsx --ignore-path .gitignore --fix"
+        "lint": "eslint resources/js --ext .js,.jsx,.ts,.tsx --ignore-path .gitignore --fix",
+        "generate:guide": "bun run scripts/generate-manual-guide.ts"
     },
     "devDependencies": {
         "@headlessui/react": "^2.0.0",
@@ -28,6 +29,7 @@
         "eslint-plugin-react-hooks": "^4.6.2",
         "laravel-echo": "^2.4.0",
         "laravel-vite-plugin": "^3.1",
+        "playwright": "^1.62.1",
         "postcss": "^8.4.31",
         "prettier": "^3.3.0",
         "prettier-plugin-organize-imports": "^4.0.0",
