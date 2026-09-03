@@ -1,13 +1,13 @@
 
 # ─────────────────────────────────────────
-# Stage 1: Frontend (Node/Vite builder)
+# Stage 1: Frontend (Bun Vite builder)
 # ─────────────────────────────────────────
-FROM node:20-alpine AS frontend-builder
+FROM oven/bun:alpine AS frontend-builder
 WORKDIR /app
-COPY package.json package-lock.json* bun.lock* ./
-RUN npm ci || npm install
+COPY package.json bun.lock* ./
+RUN bun install
 COPY . .
-RUN npm run build
+RUN bun run build
 
 # ─────────────────────────────────────────
 # Stage 2: PHP/Composer builder
