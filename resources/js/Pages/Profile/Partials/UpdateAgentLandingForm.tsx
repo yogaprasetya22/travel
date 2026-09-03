@@ -561,6 +561,25 @@ export default function UpdateAgentLandingForm({
                                             className="text-xs h-8 bg-background"
                                         />
                                     </div>
+                                    <div className="space-y-1">
+                                        <Label className="text-[10px] font-bold text-muted-foreground">YouTube (Channel / URL):</Label>
+                                        <Input
+                                            value={data.social_links.youtube || ''}
+                                            onChange={(e) => handleSocialChange('youtube', e.target.value)}
+                                            placeholder="@channel_umroh atau https://youtube.com/..."
+                                            className="text-xs h-8 bg-background"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label className="text-[10px] font-bold text-muted-foreground">Facebook (Username / URL):</Label>
+                                        <Input
+                                            value={data.social_links.facebook || ''}
+                                            onChange={(e) => handleSocialChange('facebook', e.target.value)}
+                                            placeholder="username atau https://facebook.com/..."
+                                            className="text-xs h-8 bg-background"
+                                        />
+                                    </div>
+                                    <br />
                                 </div>
                             </div>
 
@@ -684,7 +703,7 @@ export default function UpdateAgentLandingForm({
                                         <Quote className="w-3.5 h-3.5" />
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <p className="text-xs text-foreground/85 font-normal leading-relaxed">
+                                        <p className="text-[10px] text-foreground/85 font-normal leading-relaxed">
                                             {data.bio && data.bio.trim() !== '' ? data.bio : 'Setiap langkah Anda menuju Tanah Suci adalah perjalanan hati yang berharga.'}
                                         </p>
                                         <div className="flex items-center gap-2 pt-0.5">
@@ -701,13 +720,13 @@ export default function UpdateAgentLandingForm({
                             <div
                                 className="w-full p-3.5 rounded-2xl bg-emerald-700/90 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm flex items-center justify-between shadow-sm transition-all border border-emerald-600/40"
                             >
-                                <div className="flex items-center gap-3 min-w-0">
+                                <div className="flex items-center gap-2 min-w-0">
                                     <div className="p-2 rounded-xl bg-white/15 text-white shrink-0">
                                         <MessageCircle className="w-4 h-4 fill-white" />
                                     </div>
                                     <div className="flex flex-col text-left">
-                                        <span className="font-bold text-xs sm:text-sm">Konsultasi &amp; Tanya Jawab Bimbingan</span>
-                                        <span className="text-[10px] text-emerald-100 font-normal">Hubungi langsung via WhatsApp (+{formattedAgentWa})</span>
+                                        <span className="font-bold text-[10px] sm:text-[10px] -mb-2">Konsultasi &amp; Tanya Jawab Bimbingan</span>
+                                        <span className="text-[8px] text-emerald-100 font-normal">Hubungi langsung via WhatsApp (+{formattedAgentWa})</span>
                                     </div>
                                 </div>
                                 <ChevronRight className="w-4 h-4 text-white/80 shrink-0" />
@@ -749,7 +768,56 @@ export default function UpdateAgentLandingForm({
                                 })}
                             </div>
                         </div>
-
+                        {/* Social Media Bar */}
+                        {(data.social_links.instagram || data.social_links.tiktok || data.social_links.youtube || data.social_links.facebook) && (
+                            <div className="flex items-center justify-center gap-3 pt-2">
+                                {data.social_links.instagram && (
+                                    <a
+                                        href={`https://instagram.com/${data.social_links.instagram.replace('@', '')}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="p-2.5 rounded-full bg-card hover:bg-muted text-muted-foreground hover:text-pink-500 border border-border/80 shadow-xs transition-colors"
+                                        title="Instagram"
+                                    >
+                                        <Share2 className="w-3.5 h-3.5" />
+                                    </a>
+                                )}
+                                {data.social_links.tiktok && (
+                                    <a
+                                        href={`https://tiktok.com/@${data.social_links.tiktok.replace('@', '')}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="p-2.5 rounded-full bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border/80 shadow-xs transition-colors"
+                                        title="TikTok"
+                                    >
+                                        <Globe className="w-3.5 h-3.5" />
+                                    </a>
+                                )}
+                                {data.social_links.youtube && (
+                                    <a
+                                        href={data.social_links.youtube.startsWith('http') ? data.social_links.youtube : `https://youtube.com/@${data.social_links.youtube}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="p-2.5 rounded-full bg-card hover:bg-muted text-muted-foreground hover:text-red-500 border border-border/80 shadow-xs transition-colors"
+                                        title="YouTube"
+                                    >
+                                        <Video className="w-3.5 h-3.5" />
+                                    </a>
+                                )}
+                                {data.social_links.facebook && (
+                                    <a
+                                        href={data.social_links.facebook.startsWith('http') ? data.social_links.facebook : `https://facebook.com/${data.social_links.facebook}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="p-2.5 rounded-full bg-card hover:bg-muted text-muted-foreground hover:text-blue-500 border border-border/80 shadow-xs transition-colors"
+                                        title="Facebook"
+                                    >
+                                        <Globe className="w-3.5 h-3.5" />
+                                    </a>
+                                )}
+                            </div>
+                        )}
+                    </div>
                         {/* Footer inside Phone */}
                         <div className="w-full pt-3 pb-1 border-t border-border/40 text-[8px] text-muted-foreground z-10">
                             &copy; {new Date().getFullYear()} {tenant?.nama_travel || 'Travel'}. All rights reserved.
