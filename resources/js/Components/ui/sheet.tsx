@@ -48,6 +48,38 @@ function SheetContent({
   side?: "top" | "right" | "bottom" | "left"
   showCloseButton?: boolean
 }) {
+  const sideConfig = {
+    top: {
+      initial: { y: "-100%" },
+      animate: { y: 0 },
+      exit: { y: "-100%" },
+      classes: "inset-x-0 top-0 border-b",
+    },
+    bottom: {
+      initial: { y: "100%" },
+      animate: { y: 0 },
+      exit: { y: "100%" },
+      classes: "inset-x-0 bottom-0 border-t",
+    },
+    left: {
+      initial: { x: "-100%" },
+      animate: { x: 0 },
+      exit: { x: "-100%" },
+      classes: "inset-y-0 left-0 h-full w-full sm:max-w-md border-r",
+    },
+    right: {
+      initial: { x: "100%" },
+      animate: { x: 0 },
+      exit: { x: "100%" },
+      classes: "inset-y-0 right-0 h-full w-full sm:max-w-md border-l",
+    },
+  }[side] || {
+    initial: { x: "100%" },
+    animate: { x: 0 },
+    exit: { x: "100%" },
+    classes: "inset-y-0 right-0 h-full w-full sm:max-w-md border-l",
+  }
+
   return (
     <SheetPortal>
       <SheetOverlay />
@@ -56,13 +88,13 @@ function SheetContent({
         data-side={side}
         render={
           <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 220 }}
+            initial={sideConfig.initial}
+            animate={sideConfig.animate}
+            exit={sideConfig.exit}
+            transition={{ type: "spring", damping: 25, stiffness: 240 }}
             className={cn(
-              "fixed z-50 flex flex-col gap-4 bg-popover bg-clip-padding text-sm text-popover-foreground shadow-lg",
-              "inset-y-0 right-0 h-full border-l",
+              "fixed z-50 flex flex-col gap-4 bg-background bg-clip-padding text-sm text-foreground shadow-2xl",
+              sideConfig.classes,
               className
             )}
           />
@@ -76,12 +108,12 @@ function SheetContent({
             render={
               <Button
                 variant="ghost"
-                className="absolute top-3 right-3"
+                className="absolute top-3.5 right-3.5 z-20 h-8 w-8 rounded-full p-0 text-muted-foreground hover:text-foreground hover:bg-muted/80"
                 size="icon-sm"
               />
             }
           >
-            <XIcon />
+            <XIcon className="h-4 w-4" />
             <span className="sr-only">Close</span>
           </SheetPrimitive.Close>
         )}
@@ -94,7 +126,7 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="sheet-header"
-      className={cn("flex flex-col gap-0.5 p-4", className)}
+      className={cn("flex flex-col gap-1 p-4 sm:p-6 pr-12 sm:pr-14", className)}
       {...props}
     />
   )

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import themeData from '@/lib/theme-colors.json';
+import ApplicationLogo from '@/Components/ApplicationLogo';
 
 import { Head, Link, useForm } from '@inertiajs/react';
 import { PageProps } from '@/Types';
@@ -110,9 +111,7 @@ export default function Register({
                     </Link>
 
                     <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-black text-sm shadow-xs">
-                            🕌
-                        </div>
+                        <ApplicationLogo className="w-9 h-9 shrink-0" />
                         <span className="font-extrabold text-sm text-foreground">{travelName}</span>
                     </div>
                 </div>

@@ -18,6 +18,7 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from "@/Components/ui/sidebar"
+import ApplicationLogo from "@/Components/ApplicationLogo"
 import { Tenant, User } from "@/Types"
 
 interface TeamSwitcherProps {
@@ -54,21 +55,17 @@ export function TeamSwitcher({ user, activeTenant, tenants = [] }: TeamSwitcherP
             <SidebarMenuItem>
                 <DropdownMenu>
                     <DropdownMenuTrigger
-                        className="peer/menu-button group/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm ring-sidebar-ring outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground h-12 text-sm leading-tight data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                        className="peer/menu-button group/menu-button flex w-full items-center gap-2.5 overflow-hidden rounded-xl text-left text-sm ring-sidebar-ring outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground h-12 leading-tight data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-0!"
                     >
-                        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground font-bold shrink-0">
-                            {isSuperAdmin ? (
-                                <Building2 className="size-4" />
-                            ) : (
-                                <Building2 className="size-4" />
-                            )}
+                        <div className="flex aspect-square size-8 items-center justify-center shrink-0">
+                            <ApplicationLogo className="w-8 h-8 group-data-[collapsible=icon]:w-7 group-data-[collapsible=icon]:h-7" />
                         </div>
-                        <div className="grid flex-1 text-left text-sm leading-tight">
+                        <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                             <span className="truncate font-bold text-foreground">{displayName}</span>
                             <span className="truncate text-xs text-muted-foreground">{displaySub}</span>
                         </div>
                         {isSuperAdmin && tenants.length > 0 && (
-                            <ChevronsUpDown className="ml-auto size-4 text-muted-foreground" />
+                            <ChevronsUpDown className="ml-auto size-4 text-muted-foreground shrink-0 group-data-[collapsible=icon]:hidden" />
                         )}
                     </DropdownMenuTrigger>
                     {isSuperAdmin && (
@@ -89,11 +86,10 @@ export function TeamSwitcher({ user, activeTenant, tenants = [] }: TeamSwitcherP
                                     <DropdownMenuItem
                                         key={t.id}
                                         onClick={() => handleSwitchTenant(t.id)}
-                                        className={`gap-3 p-2.5 rounded-lg cursor-pointer transition ${
-                                            isActive
-                                                ? "bg-primary/10 text-primary font-bold"
-                                                : "hover:bg-muted text-foreground"
-                                        }`}
+                                        className={`gap-3 p-2.5 rounded-lg cursor-pointer transition ${isActive
+                                            ? "bg-primary/10 text-primary font-bold"
+                                            : "hover:bg-muted text-foreground"
+                                            }`}
                                     >
                                         <div className="flex size-7 items-center justify-center rounded-md border border-border bg-card shrink-0">
                                             <Building2 className="size-3.5 text-primary" />

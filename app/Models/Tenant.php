@@ -35,46 +35,46 @@ class Tenant extends Model
 
     public function rekeningTenants(): HasMany
     {
-        return $this->hasMany(RekeningTenant::class);
+        return $this->hasMany(RekeningTenant::class)->withoutGlobalScope('tenant');
     }
 
     public function crmStages(): HasMany
     {
-        return $this->hasMany(CrmStage::class);
+        return $this->hasMany(CrmStage::class)->withoutGlobalScope('tenant');
     }
 
     public function paket(): HasMany
     {
-        return $this->hasMany(Paket::class);
+        return $this->hasMany(Paket::class)->withoutGlobalScope('tenant');
     }
 
     public function inventaris(): HasMany
     {
-        return $this->hasMany(Inventaris::class);
+        return $this->hasMany(Inventaris::class)->withoutGlobalScope('tenant');
     }
 
     public function overrideKomisi(): HasMany
     {
-        return $this->hasMany(OverrideKomisiAgen::class);
+        return $this->hasMany(OverrideKomisiAgen::class)->withoutGlobalScope('tenant');
     }
 
     public function jamaah(): HasMany
     {
-        return $this->hasMany(Jamaah::class);
+        return $this->hasMany(Jamaah::class)->withoutGlobalScope('tenant');
     }
 
     public function pembayaran(): HasMany
     {
-        return $this->hasMany(Pembayaran::class);
+        return $this->hasMany(Pembayaran::class)->withoutGlobalScope('tenant');
     }
 
     public function komisiAgen(): HasMany
     {
-        return $this->hasMany(KomisiAgen::class);
+        return $this->hasMany(KomisiAgen::class)->withoutGlobalScope('tenant');
     }
 
     public function inventarisTransaksi(): HasMany
     {
-        return $this->hasMany(InventarisTransaksi::class);
+        return $this->hasMany(InventarisTransaksi::class)->withoutGlobalScope('tenant');
     }
 }

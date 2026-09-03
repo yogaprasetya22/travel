@@ -32,7 +32,11 @@ class TenantController extends Controller
         $perPage = (int) $request->input('per_page', 12);
 
         $query = Tenant::query()
-            ->withCount(['users', 'jamaah', 'paket'])
+            ->withCount([
+                'users',
+                'jamaah' => fn ($q) => $q->withoutGlobalScope('tenant'),
+                'paket' => fn ($q) => $q->withoutGlobalScope('tenant'),
+            ])
             ->with(['users' => function ($q) {
                 $q->where('role', 'owner_travel')->select('id', 'tenant_id', 'name', 'email');
             }]);

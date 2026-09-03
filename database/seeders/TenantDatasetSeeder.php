@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Hash;
 class TenantDatasetSeeder extends Seeder
 {
     /**
-     * Seed 2 tenants with 10,000+ realistic relational records each for stress-testing and production preview.
+     * Seed 2 tenants with complete, realistic employee, agent, banking, and 10,000+ relational CRM records.
      */
     public function run(): void
     {
@@ -30,6 +30,12 @@ class TenantDatasetSeeder extends Seeder
                 'subdomain' => 'hajjflow',
                 'owner_name' => 'H. Abdullah Hakim, Lc',
                 'owner_email' => 'test@example.com',
+                'owner_nik' => '3201011508820001',
+                'owner_phone' => '081289901122',
+                'owner_city' => 'Jakarta Selatan',
+                'owner_address' => 'Jl. Kemang Raya No. 45, RT 02/RW 05, Bangka, Mampang Prapatan',
+                'owner_bank' => 'Bank Syariah Indonesia (BSI)',
+                'owner_rek' => '7123849102',
                 'bank' => 'Bank Syariah Indonesia (BSI)',
                 'acc_no' => '7123849102',
                 'acc_name' => 'PT HajjFlow Nusantara Amanah',
@@ -37,13 +43,22 @@ class TenantDatasetSeeder extends Seeder
             [
                 'name' => 'Barokah Madinah Wisata',
                 'subdomain' => 'barokah',
-                'owner_name' => 'Hj. Siti Rahmawati',
+                'owner_name' => 'Hj. Siti Rahmawati, S.E.',
                 'owner_email' => 'owner@barokah.com',
+                'owner_nik' => '3273045209860003',
+                'owner_phone' => '081398877665',
+                'owner_city' => 'Bandung',
+                'owner_address' => 'Jl. Ir. H. Juanda No. 128, Dago, Coblong',
+                'owner_bank' => 'Bank Mandiri',
+                'owner_rek' => '1420098765432',
                 'bank' => 'Bank Mandiri',
                 'acc_no' => '1420098765432',
                 'acc_name' => 'PT Barokah Madinah Mandiri',
             ],
         ];
+
+        $cities = ['Jakarta Selatan', 'Jakarta Timur', 'Bandung', 'Surabaya', 'Semarang', 'Yogyakarta', 'Medan', 'Makassar', 'Bekasi', 'Tangerang Selatan'];
+        $banks = ['BCA', 'Bank Mandiri', 'BSI (Bank Syariah Indonesia)', 'BRI', 'BNI'];
 
         foreach ($tenantsData as $tIndex => $tData) {
             $this->command->info('Seeding Tenant '.($tIndex + 1).": {$tData['name']}...");
@@ -56,11 +71,20 @@ class TenantDatasetSeeder extends Seeder
 
             app()->instance('tenant', $tenant);
 
-            // 1. Bank Rekening
+            // 1. Bank Rekening Resmi Travel
             $rekening = RekeningTenant::create([
                 'tenant_id' => $tenant->id,
                 'nama_bank' => $tData['bank'],
                 'nomor_rekening' => $tData['acc_no'],
+                'atas_nama' => $tData['acc_name'],
+                'is_active' => true,
+            ]);
+
+            // Bank Sekunder Travel
+            RekeningTenant::create([
+                'tenant_id' => $tenant->id,
+                'nama_bank' => 'BCA',
+                'nomor_rekening' => '8830'.rand(100000, 999999),
                 'atas_nama' => $tData['acc_name'],
                 'is_active' => true,
             ]);
@@ -71,7 +95,7 @@ class TenantDatasetSeeder extends Seeder
             $stage3 = CrmStage::create(['tenant_id' => $tenant->id, 'nama_tahap' => 'Negosiasi', 'urutan' => 3]);
             $stage4 = CrmStage::create(['tenant_id' => $tenant->id, 'nama_tahap' => 'Closing', 'urutan' => 4]);
 
-            // 3. Inventaris
+            // 3. Inventaris / Perlengkapan
             $invKoper = Inventaris::create([
                 'tenant_id' => $tenant->id,
                 'nama_barang' => 'Koper Fiber Executive 24 Inch',
@@ -90,10 +114,17 @@ class TenantDatasetSeeder extends Seeder
                 'stok_tersedia' => 25000,
                 'stok_minimum' => 50,
             ]);
+            $invBatik = Inventaris::create([
+                'tenant_id' => $tenant->id,
+                'nama_barang' => 'Kain Seragam Batik Travel Eksklusif',
+                'stok_tersedia' => 25000,
+                'stok_minimum' => 50,
+            ]);
 
             InventarisTransaksi::create(['tenant_id' => $tenant->id, 'inventaris_id' => $invKoper->id, 'jamaah_id' => null, 'qty' => 25000, 'tipe' => 'IN']);
             InventarisTransaksi::create(['tenant_id' => $tenant->id, 'inventaris_id' => $invKain->id, 'jamaah_id' => null, 'qty' => 25000, 'tipe' => 'IN']);
             InventarisTransaksi::create(['tenant_id' => $tenant->id, 'inventaris_id' => $invBuku->id, 'jamaah_id' => null, 'qty' => 25000, 'tipe' => 'IN']);
+            InventarisTransaksi::create(['tenant_id' => $tenant->id, 'inventaris_id' => $invBatik->id, 'jamaah_id' => null, 'qty' => 25000, 'tipe' => 'IN']);
 
             // 4. Packages
             $paketReguler = Paket::create([
@@ -125,10 +156,10 @@ class TenantDatasetSeeder extends Seeder
                 'komisi_persentase' => 0.00,
             ]);
 
-            $paketReguler->inventaris()->attach([$invKoper->id => ['qty' => 1], $invKain->id => ['qty' => 1], $invBuku->id => ['qty' => 1]]);
-            $paketVIP->inventaris()->attach([$invKoper->id => ['qty' => 1], $invKain->id => ['qty' => 1], $invBuku->id => ['qty' => 1]]);
-            $paketPlus->inventaris()->attach([$invKoper->id => ['qty' => 1], $invKain->id => ['qty' => 1], $invBuku->id => ['qty' => 1]]);
-            $paketHaji->inventaris()->attach([$invKoper->id => ['qty' => 2], $invKain->id => ['qty' => 2], $invBuku->id => ['qty' => 2]]);
+            $paketReguler->inventaris()->attach([$invKoper->id => ['qty' => 1], $invKain->id => ['qty' => 1], $invBuku->id => ['qty' => 1], $invBatik->id => ['qty' => 1]]);
+            $paketVIP->inventaris()->attach([$invKoper->id => ['qty' => 1], $invKain->id => ['qty' => 1], $invBuku->id => ['qty' => 1], $invBatik->id => ['qty' => 1]]);
+            $paketPlus->inventaris()->attach([$invKoper->id => ['qty' => 1], $invKain->id => ['qty' => 1], $invBuku->id => ['qty' => 1], $invBatik->id => ['qty' => 1]]);
+            $paketHaji->inventaris()->attach([$invKoper->id => ['qty' => 2], $invKain->id => ['qty' => 2], $invBuku->id => ['qty' => 2], $invBatik->id => ['qty' => 2]]);
 
             $packagesList = [
                 ['id' => $paketReguler->id, 'harga' => 28500000, 'komisi' => 1250000],
@@ -137,14 +168,14 @@ class TenantDatasetSeeder extends Seeder
                 ['id' => $paketHaji->id, 'harga' => 245000000, 'komisi' => 7500000],
             ];
 
-            // 5. Hierarchy Levels & Staff
+            // 5. Hierarchy Levels Structure
             $ownerLevel = HierarchyLevel::create([
                 'tenant_id' => $tenant->id,
                 'parent_id' => null,
                 'nama_level' => 'Owner',
                 'role_key' => 'owner_travel',
-                'deskripsi' => 'Pimpinan Utama Travel',
-                'wewenang_note' => 'Akses penuh ke seluruh modul dan konfigurasi.',
+                'deskripsi' => 'Pimpinan Utama & Direksi Travel',
+                'wewenang_note' => 'Akses penuh ke seluruh modul, keuangan, dan konfigurasi master.',
                 'urutan' => 1,
             ]);
 
@@ -153,8 +184,8 @@ class TenantDatasetSeeder extends Seeder
                 'parent_id' => $ownerLevel->id,
                 'nama_level' => 'Supervisor',
                 'role_key' => 'admin_travel',
-                'deskripsi' => 'Pengawas Operasional Travel',
-                'wewenang_note' => 'Verifikasi pembayaran dan logistik inventaris.',
+                'deskripsi' => 'Pengawas Operasional & Finance Cabang',
+                'wewenang_note' => 'Verifikasi bukti transfer jamaah, jadwal, dan inventaris logistik.',
                 'urutan' => 2,
             ]);
 
@@ -163,8 +194,8 @@ class TenantDatasetSeeder extends Seeder
                 'parent_id' => $spvLevel->id,
                 'nama_level' => 'Team Leader',
                 'role_key' => 'admin_travel',
-                'deskripsi' => 'Koordinator Agen & Pipeline CRM',
-                'wewenang_note' => 'Monitoring performa penjualan tim agen.',
+                'deskripsi' => 'Koordinator Pembina Tim Mitra Agen',
+                'wewenang_note' => 'Monitoring performa penjualan tim agen dan pembagian lead CRM.',
                 'urutan' => 3,
             ]);
 
@@ -173,11 +204,12 @@ class TenantDatasetSeeder extends Seeder
                 'parent_id' => $leaderLevel->id,
                 'nama_level' => 'Staff (Mitra Agen)',
                 'role_key' => 'agen',
-                'deskripsi' => 'Mitra Agen Penjualan Lapangan',
-                'wewenang_note' => 'Pendaftaran calon jamaah dan pencairan komisi closing.',
+                'deskripsi' => 'Konsultan & Mitra Pemasaran Lapangan',
+                'wewenang_note' => 'Pendaftaran calon jamaah, share bio link, dan klaim pencairan komisi.',
                 'urutan' => 4,
             ]);
 
+            // Seed Owner
             $owner = User::create([
                 'tenant_id' => $tenant->id,
                 'hierarchy_level_id' => $ownerLevel->id,
@@ -186,52 +218,151 @@ class TenantDatasetSeeder extends Seeder
                 'password' => $defaultPassword,
                 'role' => 'owner_travel',
                 'jabatan' => 'Owner',
+                'nik' => $tData['owner_nik'],
+                'no_hp' => $tData['owner_phone'],
+                'kota' => $tData['owner_city'],
+                'alamat' => $tData['owner_address'],
+                'status_karyawan' => 'aktif',
+                'nama_bank' => $tData['owner_bank'],
+                'nomor_rekening' => $tData['owner_rek'],
+                'atas_nama_rekening' => $tData['owner_name'],
+                'bio' => "Direktur Utama {$tData['name']}. Melayani bimbingan ibadah Umroh dan Haji Khusus dengan amanah, nyaman, dan sesuai sunnah.",
+                'social_links' => [
+                    'instagram' => 'https://instagram.com/travel_resmi',
+                    'facebook' => 'https://facebook.com/travel_resmi',
+                ],
                 'created_by' => null,
             ]);
 
+            // Seed Supervisors
             $supervisors = [];
             for ($s = 1; $s <= 2; $s++) {
+                $spvName = "Ustadz H. Rahmat Hidayat {$s}";
                 $supervisors[] = User::create([
                     'tenant_id' => $tenant->id,
                     'hierarchy_level_id' => $spvLevel->id,
-                    'name' => "Supervisor {$s} (".($tIndex === 0 ? 'Pusat' : 'Cabang').')',
+                    'name' => "{$spvName} (".($tIndex === 0 ? 'Pusat' : 'Cabang').')',
                     'email' => "spv{$s}.t".($tIndex + 1).'@travel.com',
                     'password' => $defaultPassword,
                     'role' => 'admin_travel',
                     'jabatan' => 'Supervisor',
+                    'nik' => '32'.str_pad((string) (71000000000000 + ($tIndex * 100) + $s), 14, '0', STR_PAD_LEFT),
+                    'no_hp' => '0812'.rand(10000000, 99999999),
+                    'kota' => $cities[$s % count($cities)],
+                    'alamat' => "Komplek Perkantoran Graha Travel Blok {$s}, Lt. 2",
+                    'status_karyawan' => 'aktif',
+                    'nama_bank' => $banks[$s % count($banks)],
+                    'nomor_rekening' => '5300'.rand(100000, 999999),
+                    'atas_nama_rekening' => $spvName,
+                    'bio' => 'Supervisor Operasional & Pendamping Ibadah Umroh/Haji Resmi.',
                     'created_by' => $owner->id,
                 ]);
             }
 
+            // Seed Team Leaders
             $teamLeaders = [];
             foreach ($supervisors as $spvIdx => $spv) {
                 for ($tl = 1; $tl <= 2; $tl++) {
+                    $tlIdx = ($spvIdx * 2 + $tl);
+                    $tlName = "Leader Pembina {$tlIdx} - ".($tIndex === 0 ? 'Jabodetabek' : 'Jawa Barat');
                     $teamLeaders[] = User::create([
                         'tenant_id' => $tenant->id,
                         'hierarchy_level_id' => $leaderLevel->id,
-                        'name' => 'Leader '.($spvIdx * 2 + $tl),
-                        'email' => 'leader'.($spvIdx * 2 + $tl).'.t'.($tIndex + 1).'@travel.com',
+                        'name' => $tlName,
+                        'email' => "leader{$tlIdx}.t".($tIndex + 1).'@travel.com',
                         'password' => $defaultPassword,
                         'role' => 'admin_travel',
                         'jabatan' => 'Team Leader',
+                        'nik' => '32'.str_pad((string) (72000000000000 + ($tIndex * 100) + $tlIdx), 14, '0', STR_PAD_LEFT),
+                        'no_hp' => '0813'.rand(10000000, 99999999),
+                        'kota' => $cities[($tlIdx + 2) % count($cities)],
+                        'alamat' => "Jl. Boulevard Raya No. {$tlIdx}, Sentra Bisnis",
+                        'status_karyawan' => 'aktif',
+                        'nama_bank' => $banks[$tlIdx % count($banks)],
+                        'nomor_rekening' => '7200'.rand(100000, 999999),
+                        'atas_nama_rekening' => $tlName,
+                        'bio' => 'Team Leader Konsultan Syiar Baitullah. Siap membantu kemitraan agen travel se-Indonesia.',
                         'created_by' => $spv->id,
                     ]);
                 }
             }
 
+            // Seed Agents
+            $agentNames = [
+                'Budi Santoso, S.Kom',
+                'Aisyah Putri Azzahra',
+                'H. Muhammad Fauzan',
+                'Dewi Lestari, S.Pd',
+                'dr. Hendra Kusuma',
+                'Nurul Fadilah',
+                'Agus Setiawan',
+                'Ustadzah Maryam Fitriani',
+                'Ridwan Kamiludin',
+                'Fathimah Zahra',
+                'Bambang Tri Nugroho',
+                'Tri Wahyuni, M.Si',
+                'Eko Prasetyo Utomo',
+                'Siti Khodijah',
+                'Wahyu Al-Fatih',
+                'Laila Ramadhani',
+            ];
+
             $agents = [];
             foreach ($teamLeaders as $tlIdx => $tl) {
                 for ($ag = 1; $ag <= 4; $ag++) {
                     $agentNum = ($tlIdx * 4 + $ag);
-                    $email = ($tIndex === 0 && $agentNum === 1) ? 'budi@example.com' : "agent{$agentNum}.t".($tIndex + 1).'@travel.com';
+                    $name = $agentNames[($agentNum - 1) % count($agentNames)];
+                    $isPrimaryDemo = ($tIndex === 0 && $agentNum === 1);
+                    $email = $isPrimaryDemo ? 'budi@example.com' : "agent{$agentNum}.t".($tIndex + 1).'@travel.com';
+                    $referral = $isPrimaryDemo ? 'AG-DXPP4B' : 'AG-'.strtoupper(substr(md5("ag-{$tIndex}-{$agentNum}"), 0, 6));
+
                     $agents[] = User::create([
                         'tenant_id' => $tenant->id,
                         'hierarchy_level_id' => $agentLevel->id,
-                        'name' => "Agen {$agentNum} - ".($tIndex === 0 ? 'HajjFlow' : 'Barokah'),
+                        'name' => $isPrimaryDemo ? 'Budi Santoso (Agen Konsultan)' : "{$name} - ".($tIndex === 0 ? 'HajjFlow' : 'Barokah'),
                         'email' => $email,
                         'password' => $defaultPassword,
                         'role' => 'agen',
-                        'jabatan' => 'Staff',
+                        'jabatan' => 'Konsultan Bimbingan Umroh',
+                        'nik' => '32'.str_pad((string) (73000000000000 + ($tIndex * 100) + $agentNum), 14, '0', STR_PAD_LEFT),
+                        'no_hp' => '08'.($isPrimaryDemo ? '81234567890' : (rand(11, 19).rand(1000000, 9999999))),
+                        'kota' => $cities[($agentNum * 3) % count($cities)],
+                        'alamat' => "Jl. Dahlia Indah No. {$agentNum}, RT 04/RW 02",
+                        'status_karyawan' => 'aktif',
+                        'nama_bank' => $banks[$agentNum % count($banks)],
+                        'nomor_rekening' => ($agentNum % 2 === 0 ? '5385' : '7188').rand(100000, 999999),
+                        'atas_nama_rekening' => $name,
+                        'referral_code' => $referral,
+                        'bio' => 'Konsultan Resmi Umroh & Haji Berizin Kemenag RI. Melayani konsultasi pendaftaran, tabungan umroh, dan bimbingan manasik.',
+                        'landing_links' => [
+                            [
+                                'id' => 'link-1',
+                                'title' => 'Daftar Paket Umroh Reguler Promo',
+                                'url' => 'https://wa.me/6281234567890?text=Halo%20saya%20tertarik%20paket%20Umroh%20Reguler',
+                                'icon' => 'plane',
+                                'is_highlight' => true,
+                            ],
+                            [
+                                'id' => 'link-2',
+                                'title' => 'Download Brosur & Jadwal Keberangkatan',
+                                'url' => 'https://wa.me/6281234567890?text=Mohon%20kirimkan%20brosur%20paket%20terbaru',
+                                'icon' => 'file',
+                                'is_highlight' => false,
+                            ],
+                            [
+                                'id' => 'link-3',
+                                'title' => 'Konsultasi Tabungan Porsi Haji Furoda',
+                                'url' => 'https://wa.me/6281234567890?text=Konsultasi%20Haji%20Furoda',
+                                'icon' => 'chat',
+                                'is_highlight' => false,
+                            ],
+                        ],
+                        'social_links' => [
+                            'instagram' => 'https://instagram.com/konsultan_umroh_resmi',
+                            'tiktok' => 'https://tiktok.com/@konsultan_umroh',
+                            'youtube' => 'https://youtube.com/@syiarumroh',
+                            'facebook' => 'https://facebook.com/bimbinganumroh',
+                        ],
                         'created_by' => $tl->id,
                     ]);
                 }
@@ -239,7 +370,6 @@ class TenantDatasetSeeder extends Seeder
             $agentIds = array_map(fn ($a) => $a->id, $agents);
 
             // 6. Bulk Seed Realistic Jamaah & Relational Transactions per Tenant
-            // Tenant 1 has ~6,500 records, Tenant 2 has ~9,500 records to create distinct comparative chart bars
             $totalRecords = ($tIndex === 0) ? 6500 : 9500;
             $chunkSize = 1000;
             $batches = ceil($totalRecords / $chunkSize);
@@ -251,7 +381,6 @@ class TenantDatasetSeeder extends Seeder
             $fnCount = count($firstNames);
             $lnCount = count($lastNames);
 
-            // Agent performance weighting (agent 1 and 2 are superstar closers)
             $numAgents = count($agentIds);
 
             for ($b = 0; $b < $batches; $b++) {
@@ -264,7 +393,6 @@ class TenantDatasetSeeder extends Seeder
                     $ln = $lastNames[($recordIndex * 5 + $i) % $lnCount];
                     $fullName = "{$fn} {$ln} {$recordIndex}";
 
-                    // Random created_at distributed across the last 6 months (0 to 175 days ago)
                     $daysAgo = rand(0, 175);
                     $createdAt = now()->subDays($daysAgo)->subHours(rand(1, 23))->subMinutes(rand(1, 59));
 

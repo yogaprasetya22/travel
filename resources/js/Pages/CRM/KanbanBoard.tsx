@@ -847,7 +847,7 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
 
             {/* Follow-up Note Modal/Drawer */}
             <Sheet open={!!selectedLead} onOpenChange={(open) => { if (!open) setSelectedLead(null); }}>
-                <SheetContent side="right" className="w-1/2 max-w-none">
+                <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2">
                     <SheetHeader>
                         <SheetTitle>Log Follow-up: {selectedLead?.nama_lengkap}</SheetTitle>
                         <SheetDescription>
@@ -898,9 +898,9 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
                 </SheetContent>
             </Sheet>
 
-            {/* Slide-out Drawer 50%: Edit Calon Nasabah */}
+            {/* Slide-out Drawer: Edit Calon Nasabah */}
             <Sheet open={!!editingLead} onOpenChange={(open) => { if (!open) setEditingLead(null); }}>
-                <SheetContent side="right" className="w-1/2 max-w-none flex flex-col justify-between">
+                <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2 flex flex-col justify-between">
                     <div className="flex flex-col gap-5 p-4 flex-1 overflow-y-auto">
                         <SheetHeader className="pb-3 border-b border-border/60">
                             <SheetTitle className="text-2xl font-bold text-foreground">
@@ -1035,9 +1035,9 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
                 </SheetContent>
             </Sheet>
 
-            {/* Slide-out Drawer 50%: Tambah Calon Nasabah */}
+            {/* Slide-out Drawer: Tambah Calon Nasabah */}
             <Sheet open={isAddLeadOpen} onOpenChange={setIsAddLeadOpen}>
-                <SheetContent side="right" className="w-1/2 max-w-none">
+                <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2">
                     <SheetHeader>
                         <SheetTitle>Tambah Calon Nasabah Baru</SheetTitle>
                         <SheetDescription>Daftarkan prospek baru ke dalam CRM pipeline.</SheetDescription>

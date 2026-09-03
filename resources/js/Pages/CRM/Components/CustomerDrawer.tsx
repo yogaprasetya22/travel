@@ -13,6 +13,7 @@ import {
     SheetDescription,
     SheetFooter,
 } from '@/Components/ui/sheet';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/Components/ui/tabs';
 import {
     Receipt,
     User,
@@ -200,7 +201,7 @@ export default function CustomerDrawer({
 
     return (
         <Sheet open={!!customer} onOpenChange={(open) => { if (!open) onClose(); }}>
-            <SheetContent side="right" className="w-1/2 max-w-none">
+            <SheetContent side="right" className="w-full sm:max-w-xl md:max-w-2xl p-0 flex flex-col gap-0 overflow-hidden">
                 <SheetHeader>
                     <SheetTitle>Manajemen Nasabah &amp; Transaksi Pelunasan</SheetTitle>
                     <SheetDescription>
@@ -227,52 +228,47 @@ export default function CustomerDrawer({
                         </div>
 
                         {/* 3 Tab Switcher */}
-                        <div className="grid grid-cols-3 p-1 bg-muted/60 rounded-xl border border-border/80 gap-1">
-                            <button
-                                type="button"
-                                onClick={() => { setActiveDrawerTab('biodata'); setIsAddPaymentOpen(false); }}
-                                className={`py-2 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                                    activeDrawerTab === 'biodata'
-                                        ? 'bg-card text-foreground shadow-xs'
-                                        : 'text-muted-foreground hover:text-foreground'
-                                }`}
-                            >
-                                <User className="w-3.5 h-3.5" />
-                                <span>1. Biodata</span>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => { setActiveDrawerTab('financial'); setIsAddPaymentOpen(false); }}
-                                className={`py-2 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                                    activeDrawerTab === 'financial'
-                                        ? 'bg-card text-foreground shadow-xs'
-                                        : 'text-muted-foreground hover:text-foreground'
-                                }`}
-                            >
-                                <Receipt className="w-3.5 h-3.5" />
-                                <span>2. Keuangan</span>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => { setActiveDrawerTab('riwayat'); setIsAddPaymentOpen(false); }}
-                                className={`py-2 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                                    activeDrawerTab === 'riwayat'
-                                        ? 'bg-card text-foreground shadow-xs'
-                                        : 'text-muted-foreground hover:text-foreground'
-                                }`}
-                            >
-                                <History className="w-3.5 h-3.5" />
-                                <span>3. Riwayat Log</span>
-                            </button>
-                        </div>
+                        <Tabs
+                            value={activeDrawerTab}
+                            onValueChange={(val) => {
+                                if (val) {
+                                    setActiveDrawerTab(val as any);
+                                    setIsAddPaymentOpen(false);
+                                }
+                            }}
+                            className="flex flex-col gap-4 w-full"
+                        >
+                            <TabsList className="grid grid-cols-3 w-full p-1 bg-muted/60 rounded-xl border border-border/80 gap-1 h-auto bg-transparent">
+                                <TabsTrigger
+                                    value="biodata"
+                                    className="py-2 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer data-active:bg-card data-active:text-foreground data-active:shadow-xs text-muted-foreground hover:text-foreground border-0 shadow-none after:hidden"
+                                >
+                                    <User className="w-3.5 h-3.5" />
+                                    <span className="truncate">1. Biodata</span>
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="financial"
+                                    className="py-2 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer data-active:bg-card data-active:text-foreground data-active:shadow-xs text-muted-foreground hover:text-foreground border-0 shadow-none after:hidden"
+                                >
+                                    <Receipt className="w-3.5 h-3.5" />
+                                    <span className="truncate">2. Keuangan</span>
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="riwayat"
+                                    className="py-2 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer data-active:bg-card data-active:text-foreground data-active:shadow-xs text-muted-foreground hover:text-foreground border-0 shadow-none after:hidden"
+                                >
+                                    <History className="w-3.5 h-3.5" />
+                                    <span className="truncate">3. Riwayat</span>
+                                </TabsTrigger>
+                            </TabsList>
 
-                        {/* TAB 1: BIODATA EDIT FORM */}
-                        {activeDrawerTab === 'biodata' && (
-                            <form onSubmit={handleUpdateSubmit} className="flex flex-col gap-4">
-                                <div>
-                                    <InputLabel htmlFor="nama_lengkap" value="Nama Lengkap Jamaah *" />
-                                    <TextInput
-                                        id="nama_lengkap"
+                            {/* TAB 1: BIODATA EDIT FORM */}
+                            <TabsContent value="biodata" className="m-0 outline-none">
+                                <form onSubmit={handleUpdateSubmit} className="flex flex-col gap-4">
+                                    <div>
+                                        <InputLabel htmlFor="nama_lengkap" value="Nama Lengkap Jamaah *" />
+                                        <TextInput
+                                            id="nama_lengkap"
                                         type="text"
                                         value={editForm.data.nama_lengkap}
                                         className="mt-1 block w-full text-xs"
@@ -374,10 +370,10 @@ export default function CustomerDrawer({
                                     </PrimaryButton>
                                 </SheetFooter>
                             </form>
-                        )}
+                        </TabsContent>
 
                         {/* TAB 2: FINANCIAL & PAYMENT SETTLEMENT */}
-                        {activeDrawerTab === 'financial' && (
+                        <TabsContent value="financial" className="flex flex-col gap-4 m-0 outline-none">
                             <div className="flex flex-col gap-4">
                                 <div className="p-4 rounded-2xl bg-muted/40 border border-border/80 flex flex-col gap-3">
                                     <div className="flex items-center justify-between">
@@ -408,18 +404,26 @@ export default function CustomerDrawer({
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <div className="font-extrabold text-foreground">{toRupiah(pay.nominal)}</div>
-                                                    <span className="text-[10px] font-bold text-emerald-600">Terverifikasi</span>
+                                                    <div className="font-extrabold text-foreground">
+                                                        +{toRupiah(pay.nominal)}
+                                                    </div>
+                                                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                                                        Terverifikasi
+                                                    </span>
                                                 </div>
                                             </div>
                                         ))}
+
                                         {(customer.pembayaran || []).length === 0 && (
-                                            <div className="p-4 text-center text-xs text-muted-foreground italic">
-                                                Belum ada transaksi pembayaran terverifikasi.
+                                            <div className="p-4 text-center text-xs text-muted-foreground">
+                                                Belum ada histori pembayaran tercatat.
                                             </div>
                                         )}
                                     </div>
+                                </div>
 
+                                {/* Action Buttons: Add Payment & Commission Payout */}
+                                <div className="flex flex-col gap-2">
                                     {remaining > 0 ? (
                                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs p-3 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
                                             <div>
@@ -468,7 +472,7 @@ export default function CustomerDrawer({
                                                     <CurrencyInput
                                                         id="nominal"
                                                         value={paymentForm.data.nominal}
-                                                        onChange={(val) => paymentForm.setData('nominal', val)}
+                                                        onChange={(val) => paymentForm.setData('nominal', String(val))}
                                                         placeholder="Rp 0"
                                                         className="mt-1 block w-full text-xs font-bold"
                                                         required
@@ -592,10 +596,10 @@ export default function CustomerDrawer({
                                     </button>
                                 </SheetFooter>
                             </div>
-                        )}
+                        </TabsContent>
 
                         {/* TAB 3: STAGE TRANSITION & NOTES LOG TIMELINE */}
-                        {activeDrawerTab === 'riwayat' && (
+                        <TabsContent value="riwayat" className="flex flex-col gap-4 m-0 outline-none">
                             <div className="flex flex-col gap-4">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
@@ -687,7 +691,8 @@ export default function CustomerDrawer({
                                     </button>
                                 </SheetFooter>
                             </div>
-                        )}
+                        </TabsContent>
+                    </Tabs>
                     </div>
                 )}
             </SheetContent>

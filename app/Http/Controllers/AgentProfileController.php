@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Paket;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -23,14 +24,18 @@ class AgentProfileController extends Controller
         }
 
         $agent = User::where('referral_code', $referralCode)
-            ->where('role', 'agen')
             ->where('tenant_id', $tenant->id)
             ->with('tenant')
             ->firstOrFail();
 
+        $packages = Paket::where('tenant_id', $tenant->id)
+            ->where('is_active', true)
+            ->get();
+
         return Inertia::render('Agent/Profile', [
             'agent' => $agent,
             'tenant' => $agent->tenant,
+            'packages' => $packages,
             'registerUrl' => route('public.register', ['ref' => $agent->referral_code]),
         ]);
     }

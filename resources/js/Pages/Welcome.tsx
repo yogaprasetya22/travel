@@ -28,6 +28,7 @@ import {
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
+import ApplicationLogo from '@/Components/ApplicationLogo';
 
 interface PaketItem {
     id: number;
@@ -97,10 +98,8 @@ export default function Welcome({
             <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-primary">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
                     {/* Brand Logo */}
-                    <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary to-primary text-white flex items-center justify-center shadow-md shadow-primary/20 font-black text-sm sm:text-xl">
-                            <Landmark className="w-4 h-4 sm:w-6 sm:h-6" />
-                        </div>
+                    <div className="flex items-center gap-2.5 sm:gap-3.5">
+                        <ApplicationLogo className="w-9 h-9 sm:w-11 sm:h-11 shrink-0" />
                         <div className="flex flex-col">
                             <span className="font-extrabold text-sm sm:text-lg tracking-tight text-foreground leading-tight">
                                 {travelName}

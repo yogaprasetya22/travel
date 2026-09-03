@@ -35,7 +35,21 @@ export const resetPasswordSchema = z.object({
 export const updateProfileSchema = z.object({
     name: z.string().min(2, 'Nama minimal 2 karakter.'),
     email: z.email({ error: 'Alamat email tidak valid.' }),
+    no_hp: z.string().max(30).optional().nullable(),
+    kota: z.string().max(100).optional().nullable(),
     bio: z.string().max(1000, 'Bio maksimal 1000 karakter.').optional().nullable(),
+    landing_links: z.array(z.object({
+        title: z.string().min(1, 'Judul link wajib diisi'),
+        url: z.string().min(1, 'URL wajib diisi'),
+        icon: z.string().optional(),
+        is_highlight: z.boolean().optional(),
+    })).optional().nullable(),
+    social_links: z.object({
+        instagram: z.string().optional().nullable(),
+        tiktok: z.string().optional().nullable(),
+        youtube: z.string().optional().nullable(),
+        facebook: z.string().optional().nullable(),
+    }).optional().nullable(),
 });
 
 export const updatePasswordSchema = z.object({

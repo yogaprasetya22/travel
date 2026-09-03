@@ -2,6 +2,7 @@ import { Head, useForm } from '@inertiajs/react';
 import React from 'react';
 import { Tenant, Paket } from '@/Types';
 import { guestRegisterSchema, zodErrors } from '@/lib/schemas';
+import ApplicationLogo from '@/Components/ApplicationLogo';
 
 interface GuestRegisterFormProps {
     email: string;
@@ -36,13 +37,15 @@ export default function GuestRegisterForm({ email, packages, tenant }: GuestRegi
 
             <div className="w-full max-w-lg bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl p-8 shadow-xl">
                 {/* Header */}
-                <div className="text-center mb-8">
-                    {tenant?.logo && (
+                <div className="text-center mb-8 flex flex-col items-center">
+                    {tenant?.logo ? (
                         <img
                             src={tenant.logo}
                             alt={tenant.nama_travel}
                             className="h-12 mx-auto mb-4 object-contain"
                         />
+                    ) : (
+                        <ApplicationLogo className="w-12 h-12 mb-3 shrink-0" />
                     )}
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                         Pilgrim Registration

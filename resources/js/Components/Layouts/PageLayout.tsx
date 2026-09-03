@@ -13,6 +13,8 @@ import {
 import { motion } from 'framer-motion';
 import { Sun, Moon, Palette } from 'lucide-react';
 import { useTheme } from '@/Components/ThemeProvider';
+import { NotificationDrawer } from '@/Components/NotificationDrawer';
+import { NotificationToast } from '@/Components/NotificationToast';
 
 interface PageLayoutProps {
     /** <title> tag value */
@@ -59,30 +61,31 @@ export default function PageLayout({
             <AppSidebar />
             <SidebarInset>
                 <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
                         <SidebarTrigger className="-ml-1" />
                         <Separator
                             orientation="vertical"
-                            className="mr-2 data-[orientation=vertical]:h-4"
+                            className="mr-1 data-[orientation=vertical]:h-4"
                         />
-                        <Breadcrumb>
-                            <BreadcrumbList>
+                        <Breadcrumb className="min-w-0">
+                            <BreadcrumbList className="flex-nowrap">
                                 {breadcrumbParent && (
                                     <>
-                                        <BreadcrumbItem>
-                                            <span className="text-muted-foreground">{breadcrumbParent}</span>
+                                        <BreadcrumbItem className="hidden sm:inline-flex">
+                                            <span className="text-muted-foreground truncate max-w-[120px]">{breadcrumbParent}</span>
                                         </BreadcrumbItem>
-                                        <BreadcrumbSeparator />
+                                        <BreadcrumbSeparator className="hidden sm:inline-flex" />
                                     </>
                                 )}
-                                <BreadcrumbItem>
-                                    <BreadcrumbPage>{breadcrumbPage}</BreadcrumbPage>
+                                <BreadcrumbItem className="min-w-0">
+                                    <BreadcrumbPage className="truncate max-w-[130px] xs:max-w-[180px] sm:max-w-none">{breadcrumbPage}</BreadcrumbPage>
                                 </BreadcrumbItem>
                             </BreadcrumbList>
                         </Breadcrumb>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                        <NotificationDrawer />
                         <Link
                             href={route('settings.app.index') + '?tab=appearance'}
                             className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
@@ -113,6 +116,8 @@ export default function PageLayout({
                 >
                     {children}
                 </motion.div>
+
+                <NotificationToast />
             </SidebarInset>
         </SidebarProvider>
     );

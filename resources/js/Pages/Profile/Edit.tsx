@@ -5,12 +5,25 @@ import { usePage } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
+import UpdateAgentLandingForm from './Partials/UpdateAgentLandingForm';
 import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
-import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
-import { Mail, Building2, BadgeCheck, Share2, Copy, Check, Sparkles } from 'lucide-react';
+import { getAgentBioUrl } from '@/lib/utils';
+import {
+    Mail,
+    Building2,
+    BadgeCheck,
+    Copy,
+    Check,
+    Sparkles,
+    User as UserIcon,
+    Shield,
+    ExternalLink,
+} from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/Components/ui/tabs';
 
 interface Props extends PageProps {
     mustVerifyEmail: boolean;
@@ -29,29 +42,30 @@ export default function Edit({
     const { auth } = usePage<PageProps>().props;
     const user = auth.user;
     const [copied, setCopied] = useState(false);
+    const [activeTab, setActiveTab] = useState<string>('linktree');
 
-    const referralUrl = typeof window !== 'undefined'
-        ? `${window.location.origin}/daftar?ref=${encodeURIComponent(user.email)}`
-        : '';
+    const agentProfileUrl = getAgentBioUrl(user.referral_code, user.tenant?.domain_atau_subdomain);
 
     const handleCopy = () => {
-        navigator.clipboard.writeText(referralUrl);
+        if (!agentProfileUrl) return;
+        navigator.clipboard.writeText(agentProfileUrl);
         setCopied(true);
         setTimeout(() => setCopied(false), 2500);
     };
 
     return (
         <PageLayout
-            title="Pengaturan Profil Akun"
+            title="Pengaturan Profil & Bio Link"
             breadcrumbParent="Pengaturan Travel"
-            breadcrumbPage="Profil Akun"
+            breadcrumbPage="Profil & Bio Link"
             contentClass="p-6 md:p-8 flex flex-col gap-6 w-full max-w-4xl mx-auto"
         >
             {/* User Profile Banner with shadcn Card & Avatar */}
             <Card className="bg-card/60 backdrop-blur-md border border-border/80 shadow-xs">
                 <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                        <Avatar className="h-16 w-16 rounded-2xl border border-primary/20 bg-primary/10">
+                        <Avatar className="h-16 w-16 rounded-2xl border-2 border-primary/30 shadow-md">
+                            <AvatarImage src={user.avatar_url || user.avatar || undefined} alt={user.name} className="object-cover" />
                             <AvatarFallback className="rounded-2xl bg-primary/10 text-primary font-extrabold text-2xl">
                                 {user.name.substring(0, 2).toUpperCase()}
                             </AvatarFallback>
@@ -82,35 +96,47 @@ export default function Edit({
                             </div>
                         </div>
                     </div>
+
+                    {agentProfileUrl && (
+                        <a
+                            href={agentProfileUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold shadow-sm transition-all"
+                        >
+                            <span>Lihat Bio Link Saya</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                    )}
                 </CardContent>
             </Card>
 
-            {/* Unique Referral Link Card for Agents & Leaders */}
-            {user.level >= 1 && (
-                <Card className="bg-gradient-to-r from-primary/5 via-card to-primary/5 border border-primary/20 shadow-xs rounded-2xl p-5">
+            {/* Unique Referral & Bio Link Card */}
+            {agentProfileUrl && (
+                <Card className="bg-gradient-to-r from-primary/10 via-card to-primary/5 border border-primary/20 shadow-xs rounded-2xl p-5">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-2">
                                 <Sparkles className="w-4 h-4 text-primary" />
                                 <span className="font-extrabold text-sm text-foreground">
-                                    Link Referral Pendaftaran Calon Jamaah Anda
+                                    Tautan Bio Link &amp; Referral Resmi Anda
                                 </span>
                             </div>
                             <p className="text-xs text-muted-foreground max-w-xl">
-                                Bagikan link ini ke calon jamaah di WhatsApp / Medsos. Calon jamaah yang mendaftar melalui link ini akan otomatis ter-assign ke akun Anda dan komisi tercatat langsung.
+                                Pasang link ini di bio Instagram/TikTok/WhatsApp Anda. Calon jamaah yang mengklik akan langsung diarahkan ke halaman Linktree Anda.
                             </p>
                         </div>
 
                         <div className="flex items-center gap-2 w-full sm:w-auto">
                             <Input
                                 readOnly
-                                value={referralUrl}
+                                value={agentProfileUrl}
                                 className="text-xs h-9 font-mono rounded-xl bg-background max-w-xs"
                             />
                             <Button
                                 size="sm"
                                 onClick={handleCopy}
-                                className="text-xs font-bold rounded-xl h-9 gap-1.5 shrink-0"
+                                className="text-xs font-bold rounded-xl h-9 gap-1.5 shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground"
                             >
                                 {copied ? (
                                     <>
@@ -129,20 +155,58 @@ export default function Edit({
                 </Card>
             )}
 
-            {/* Profile Forms with shadcn Components */}
-            <div className="flex flex-col gap-6">
-                {/* 1. Informasi Profil */}
-                <UpdateProfileInformationForm
-                    mustVerifyEmail={mustVerifyEmail}
-                    status={status}
-                />
+            {/* Shadcn Tabs System */}
+            <Tabs
+                value={activeTab}
+                onValueChange={(val) => { if (typeof val === 'string') setActiveTab(val); }}
+                className="flex flex-col gap-6 w-full"
+            >
+                {/* Navigation Tabs List */}
+                <TabsList className="flex flex-row overflow-x-auto no-scrollbar items-center justify-start w-full p-1.5 bg-card/60 backdrop-blur-md rounded-2xl border border-border/80 shadow-xs gap-1.5 h-auto bg-transparent">
+                    <TabsTrigger
+                        value="linktree"
+                        className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 cursor-pointer data-active:bg-primary data-active:text-primary-foreground data-active:shadow-xs text-foreground/80 hover:bg-muted hover:text-foreground border-0 shadow-none after:hidden"
+                    >
+                        <Sparkles className="w-4 h-4 shrink-0" />
+                        <span className="whitespace-nowrap">Kustomisasi Bio Link (Linktree)</span>
+                    </TabsTrigger>
 
-                {/* 2. Update Password */}
-                <UpdatePasswordForm />
+                    <TabsTrigger
+                        value="account"
+                        className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 cursor-pointer data-active:bg-primary data-active:text-primary-foreground data-active:shadow-xs text-foreground/80 hover:bg-muted hover:text-foreground border-0 shadow-none after:hidden"
+                    >
+                        <UserIcon className="w-4 h-4 shrink-0" />
+                        <span className="whitespace-nowrap">Informasi Akun Dasar</span>
+                    </TabsTrigger>
 
-                {/* 3. Delete Account with Protection */}
-                <DeleteUserForm protection={protection} />
-            </div>
+                    <TabsTrigger
+                        value="security"
+                        className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 cursor-pointer data-active:bg-primary data-active:text-primary-foreground data-active:shadow-xs text-foreground/80 hover:bg-muted hover:text-foreground border-0 shadow-none after:hidden"
+                    >
+                        <Shield className="w-4 h-4 shrink-0" />
+                        <span className="whitespace-nowrap">Keamanan &amp; Kata Sandi</span>
+                    </TabsTrigger>
+                </TabsList>
+
+                {/* Profile Forms based on Active Tab */}
+                <div className="flex flex-col gap-6">
+                    <TabsContent value="linktree" className="flex flex-col gap-6 m-0 outline-none">
+                        <UpdateAgentLandingForm />
+                    </TabsContent>
+
+                    <TabsContent value="account" className="flex flex-col gap-6 m-0 outline-none">
+                        <UpdateProfileInformationForm
+                            mustVerifyEmail={mustVerifyEmail}
+                            status={status}
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="security" className="flex flex-col gap-6 m-0 outline-none">
+                        <UpdatePasswordForm />
+                        <DeleteUserForm protection={protection} />
+                    </TabsContent>
+                </div>
+            </Tabs>
         </PageLayout>
     );
 }

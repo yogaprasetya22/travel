@@ -15,6 +15,7 @@ use App\Http\Controllers\Inventaris\InventarisController;
 use App\Http\Controllers\Keagenan\MitraAgenController;
 use App\Http\Controllers\Keagenan\PembagianKomisiController;
 use App\Http\Controllers\Keagenan\TeamMonitoringController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Pembayaran\VerifyPembayaranController;
 use App\Http\Controllers\Pembayaran\ViewPaymentController;
 use App\Http\Controllers\ProfileController;
@@ -42,6 +43,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // In-App Real-time Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/blast', [NotificationController::class, 'sendBlast'])->name('notifications.blast');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 
     // Tenants Management (Super Admin Master)
     Route::get('/tenants', [TenantController::class, 'index'])->name('tenants.index');

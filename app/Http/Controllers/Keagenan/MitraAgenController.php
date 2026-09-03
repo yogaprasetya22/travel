@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Keagenan;
 
 use App\Http\Controllers\Controller;
+use App\Models\HierarchyLevel;
 use App\Models\Pembayaran;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -31,19 +32,35 @@ class MitraAgenController extends Controller
 
         $query = User::where('tenant_id', $tenantId)
             ->where('role', 'agen')
+            ->with(['creator', 'hierarchyLevel', 'tenant'])
             ->withCount('jamaah')
             ->withSum('komisi as total_komisi', 'nominal_komisi');
 
         if (! empty($search)) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'ilike', "%{$search}%")
-                    ->orWhere('email', 'ilike', "%{$search}%");
+                    ->orWhere('email', 'ilike', "%{$search}%")
+                    ->orWhere('no_hp', 'ilike', "%{$search}%")
+                    ->orWhere('kota', 'ilike', "%{$search}%")
+                    ->orWhere('referral_code', 'ilike', "%{$search}%");
             });
         }
 
         $agents = $query->orderBy('name')
             ->paginate($perPage)
             ->withQueryString();
+
+        // Hierarchy levels available for this tenant
+        $hierarchyLevels = HierarchyLevel::where('tenant_id', $tenantId)
+            ->orderBy('urutan')
+            ->get();
+
+        // Potential leaders/supervisors in this tenant
+        $leaders = User::where('tenant_id', $tenantId)
+            ->whereIn('role', ['owner_travel', 'admin_travel', 'agen'])
+            ->select('id', 'name', 'role', 'jabatan', 'hierarchy_level_id')
+            ->orderBy('name')
+            ->get();
 
         // Metrics for summary
         $metrics = [
@@ -53,6 +70,8 @@ class MitraAgenController extends Controller
 
         return Inertia::render('Keagenan/Agents', [
             'agents' => $agents,
+            'hierarchyLevels' => $hierarchyLevels,
+            'leaders' => $leaders,
             'metrics' => $metrics,
             'filters' => [
                 'search' => $search ?? '',
@@ -74,7 +93,18 @@ class MitraAgenController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8',
+            'password' => 'required|string|min:6',
+            'nik' => 'nullable|string|max:30',
+            'no_hp' => 'nullable|string|max:30',
+            'kota' => 'nullable|string|max:100',
+            'alamat' => 'nullable|string',
+            'status_karyawan' => 'nullable|string|max:30',
+            'nama_bank' => 'nullable|string|max:50',
+            'nomor_rekening' => 'nullable|string|max:50',
+            'atas_nama_rekening' => 'nullable|string|max:150',
+            'jabatan' => 'nullable|string|max:100',
+            'hierarchy_level_id' => 'nullable|exists:hierarchy_levels,id',
+            'created_by' => 'nullable|exists:users,id',
         ]);
 
         $tenantId = $user->getActiveTenantId();
@@ -85,11 +115,20 @@ class MitraAgenController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => 'agen',
-            'jabatan' => 'Staff',
-            'created_by' => $user->id,
+            'nik' => $validated['nik'] ?? null,
+            'no_hp' => $validated['no_hp'] ?? null,
+            'kota' => $validated['kota'] ?? null,
+            'alamat' => $validated['alamat'] ?? null,
+            'status_karyawan' => $validated['status_karyawan'] ?? 'aktif',
+            'nama_bank' => $validated['nama_bank'] ?? null,
+            'nomor_rekening' => $validated['nomor_rekening'] ?? null,
+            'atas_nama_rekening' => $validated['atas_nama_rekening'] ?? null,
+            'jabatan' => $validated['jabatan'] ?? 'Konsultan Bimbingan Umroh',
+            'hierarchy_level_id' => $validated['hierarchy_level_id'] ?? null,
+            'created_by' => $validated['created_by'] ?? $user->id,
         ]);
 
-        return redirect()->back()->with('success', 'Mitra agen baru berhasil didaftarkan.');
+        return redirect()->back()->with('success', 'Data mitra agen baru berhasil didaftarkan.');
     }
 
     /**
@@ -116,11 +155,33 @@ class MitraAgenController extends Controller
                 'max:255',
                 Rule::unique('users', 'email')->ignore($agent->id),
             ],
-            'password' => 'nullable|string|min:8',
+            'password' => 'nullable|string|min:6',
+            'nik' => 'nullable|string|max:30',
+            'no_hp' => 'nullable|string|max:30',
+            'kota' => 'nullable|string|max:100',
+            'alamat' => 'nullable|string',
+            'status_karyawan' => 'nullable|string|max:30',
+            'nama_bank' => 'nullable|string|max:50',
+            'nomor_rekening' => 'nullable|string|max:50',
+            'atas_nama_rekening' => 'nullable|string|max:150',
+            'jabatan' => 'nullable|string|max:100',
+            'hierarchy_level_id' => 'nullable|exists:hierarchy_levels,id',
+            'created_by' => 'nullable|exists:users,id',
         ]);
 
         $agent->name = $validated['name'];
         $agent->email = $validated['email'];
+        $agent->nik = $validated['nik'] ?? $agent->nik;
+        $agent->no_hp = $validated['no_hp'] ?? $agent->no_hp;
+        $agent->kota = $validated['kota'] ?? $agent->kota;
+        $agent->alamat = $validated['alamat'] ?? $agent->alamat;
+        $agent->status_karyawan = $validated['status_karyawan'] ?? $agent->status_karyawan;
+        $agent->nama_bank = $validated['nama_bank'] ?? $agent->nama_bank;
+        $agent->nomor_rekening = $validated['nomor_rekening'] ?? $agent->nomor_rekening;
+        $agent->atas_nama_rekening = $validated['atas_nama_rekening'] ?? $agent->atas_nama_rekening;
+        $agent->jabatan = $validated['jabatan'] ?? $agent->jabatan;
+        $agent->hierarchy_level_id = $validated['hierarchy_level_id'] ?? $agent->hierarchy_level_id;
+        $agent->created_by = $validated['created_by'] ?? $agent->created_by;
 
         if (! empty($validated['password'])) {
             $agent->password = Hash::make($validated['password']);
@@ -227,9 +288,18 @@ class MitraAgenController extends Controller
                 'total_jamaah' => $totalAgentJamaah,
                 'total_omzet' => $totalAgentOmzet,
             ],
-            'jamaah' => $jamaahList,
-            'current_page' => $paginator->currentPage(),
-            'last_page' => $paginator->lastPage(),
+            'agent_stats' => [
+                'total_jamaah' => $totalAgentJamaah,
+                'total_omzet' => $totalAgentOmzet,
+            ],
+            'jamaah' => [
+                'data' => $jamaahList,
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'next_page_url' => $paginator->nextPageUrl(),
+                'has_more' => $paginator->hasMorePages(),
+                'total' => $paginator->total(),
+            ],
             'has_more' => $paginator->hasMorePages(),
             'total' => $paginator->total(),
         ]);

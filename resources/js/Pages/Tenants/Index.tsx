@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import PageLayout from '@/Components/Layouts/PageLayout';
 import { PageProps } from '@/Types';
 import { useTheme } from '@/Components/ThemeProvider';
@@ -15,35 +15,18 @@ import {
     Edit2,
     Trash2,
     ShieldCheck,
-    Check,
     Coins,
     Globe,
     Layers,
-    Sparkles,
-    AlertCircle,
 } from 'lucide-react';
 import PerPageSelector from '@/Components/PerPageSelector';
 import DataTablePagination from '@/Components/DataTablePagination';
-
-interface TenantOwner {
-    id: number;
-    name: string;
-    email: string;
-}
-
-interface TenantItem {
-    id: number;
-    nama_travel: string;
-    domain_atau_subdomain: string;
-    logo?: string | null;
-    theme_name?: string | null;
-    created_at?: string;
-    users_count: number;
-    jamaah_count: number;
-    paket_count: number;
-    total_omzet?: number;
-    users?: TenantOwner[];
-}
+import {
+    TenantItem,
+    CreateTenantSheet,
+    EditTenantSheet,
+    DeleteTenantModal,
+} from './TenantsPartials/TenantFormSheet';
 
 interface PaginatedTenants {
     data: TenantItem[];
@@ -80,36 +63,11 @@ export default function Index({ tenants, metrics, filters, activeTenantId, domai
     const [searchQuery, setSearchQuery] = useState(filters.search || '');
     const { themes } = useTheme();
     const themeList = Object.values(themes || {});
-    
-    // Modal states
+
+    // Drawer states
     const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [isEditOpen, setIsEditOpen] = useState(false);
-    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    
-    const [selectedTenant, setSelectedTenant] = useState<TenantItem | null>(null);
-
-    // Create Form state
-    const [createForm, setCreateForm] = useState({
-        nama_travel: '',
-        domain_atau_subdomain: '',
-        owner_name: '',
-        owner_email: '',
-        owner_password: '',
-        theme_name: 'coffee',
-    });
-    const [createErrors, setCreateErrors] = useState<Record<string, string>>({});
-    const [isSubmittingCreate, setIsSubmittingCreate] = useState(false);
-
-    // Edit Form state
-    const [editForm, setEditForm] = useState({
-        nama_travel: '',
-        domain_atau_subdomain: '',
-        theme_name: '',
-    });
-    const [editErrors, setEditErrors] = useState<Record<string, string>>({});
-    const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
-
-    const [isSubmittingDelete, setIsSubmittingDelete] = useState(false);
+    const [selectedEditTenant, setSelectedEditTenant] = useState<TenantItem | null>(null);
+    const [selectedDeleteTenant, setSelectedDeleteTenant] = useState<TenantItem | null>(null);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -118,85 +76,6 @@ export default function Index({ tenants, metrics, filters, activeTenantId, domai
             { search: searchQuery, per_page: filters.per_page },
             { preserveState: true }
         );
-    };
-
-    const handleCreateSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmittingCreate(true);
-        setCreateErrors({});
-
-        router.post(route('tenants.store'), createForm, {
-            preserveScroll: true,
-            onSuccess: () => {
-                setIsCreateOpen(false);
-                setCreateForm({
-                    nama_travel: '',
-                    domain_atau_subdomain: '',
-                    owner_name: '',
-                    owner_email: '',
-                    owner_password: '',
-                    theme_name: 'coffee',
-                });
-                setIsSubmittingCreate(false);
-            },
-            onError: (errs) => {
-                setCreateErrors(errs);
-                setIsSubmittingCreate(false);
-            },
-        });
-    };
-
-    const openEditModal = (tenant: TenantItem) => {
-        setSelectedTenant(tenant);
-        setEditForm({
-            nama_travel: tenant.nama_travel,
-            domain_atau_subdomain: tenant.domain_atau_subdomain,
-            theme_name: tenant.theme_name || 'coffee',
-        });
-        setEditErrors({});
-        setIsEditOpen(true);
-    };
-
-    const handleEditSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!selectedTenant) return;
-
-        setIsSubmittingEdit(true);
-        setEditErrors({});
-
-        router.put(route('tenants.update', selectedTenant.id), editForm, {
-            preserveScroll: true,
-            onSuccess: () => {
-                setIsEditOpen(false);
-                setSelectedTenant(null);
-                setIsSubmittingEdit(false);
-            },
-            onError: (errs) => {
-                setEditErrors(errs);
-                setIsSubmittingEdit(false);
-            },
-        });
-    };
-
-    const openDeleteModal = (tenant: TenantItem) => {
-        setSelectedTenant(tenant);
-        setIsDeleteOpen(true);
-    };
-
-    const handleDeleteSubmit = () => {
-        if (!selectedTenant) return;
-        setIsSubmittingDelete(true);
-        router.delete(route('tenants.destroy', selectedTenant.id), {
-            preserveScroll: true,
-            onSuccess: () => {
-                setIsDeleteOpen(false);
-                setSelectedTenant(null);
-                setIsSubmittingDelete(false);
-            },
-            onError: () => {
-                setIsSubmittingDelete(false);
-            },
-        });
     };
 
     const handleEnterTenant = (tenant: TenantItem) => {
@@ -219,162 +98,177 @@ export default function Index({ tenants, metrics, filters, activeTenantId, domai
                             Tenants &amp; Travel Agency Management
                         </h1>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1 ml-4">
-                        Pusat kontrol pendaftaran travel baru, alokasi domain, pemantauan staff, dan monitoring jamaah lintas multi-tenant SaaS.
+                    <p className="text-xs text-muted-foreground mt-1 ml-4">
+                        Kelola seluruh entitas bisnis travel agensi, isolasi multi-tenant database, dan akun Super Owner.
                     </p>
                 </div>
-                <button
-                    type="button"
-                    onClick={() => setIsCreateOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs shadow-xs hover:bg-primary/90 transition cursor-pointer shrink-0"
-                >
-                    <Plus className="w-4 h-4" />
-                    <span>Onboard Travel Baru</span>
-                </button>
+
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    <button
+                        type="button"
+                        onClick={() => setIsCreateOpen(true)}
+                        className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-sm hover:bg-primary/90 transition-all cursor-pointer w-full md:w-auto"
+                    >
+                        <Plus className="w-4 h-4" />
+                        <span>Onboard Tenant Baru</span>
+                    </button>
+                </div>
             </div>
 
-            {/* Platform Metrics Cards */}
+            {/* Platform Metrics Overview Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-card/70 border border-border/80 rounded-2xl p-5 shadow-xs flex items-center gap-4">
+                <div className="bg-card border border-border/80 rounded-2xl p-5 flex items-center gap-4 shadow-2xs">
                     <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                         <Building2 className="w-6 h-6" />
                     </div>
                     <div>
-                        <div className="text-xs font-semibold text-muted-foreground">Total Travel (Tenants)</div>
-                        <div className="text-2xl font-extrabold text-foreground mt-0.5">
-                            {metrics?.total_tenants || 0} <span className="text-xs font-normal text-muted-foreground">Agensi</span>
-                        </div>
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Total Travel Agensi</p>
+                        <h3 className="text-2xl font-extrabold text-foreground mt-0.5">{metrics.total_tenants}</h3>
+                        <p className="text-[10px] text-muted-foreground">Terdaftar di ekosistem</p>
                     </div>
                 </div>
 
-                <div className="bg-card/70 border border-border/80 rounded-2xl p-5 shadow-xs flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                <div className="bg-card border border-border/80 rounded-2xl p-5 flex items-center gap-4 shadow-2xs">
+                    <div className="h-12 w-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
                         <Users className="w-6 h-6" />
                     </div>
                     <div>
-                        <div className="text-xs font-semibold text-muted-foreground">Total Staff / Mitra Global</div>
-                        <div className="text-2xl font-extrabold text-blue-600 dark:text-blue-400 mt-0.5">
-                            {metrics?.total_users || 0} <span className="text-xs font-normal text-muted-foreground">Pengguna</span>
-                        </div>
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Staff &amp; Mitra Agen</p>
+                        <h3 className="text-2xl font-extrabold text-foreground mt-0.5">{metrics.total_users.toLocaleString('id-ID')}</h3>
+                        <p className="text-[10px] text-muted-foreground">Di seluruh travel agensi</p>
                     </div>
                 </div>
 
-                <div className="bg-card/70 border border-border/80 rounded-2xl p-5 shadow-xs flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-                        <Layers className="w-6 h-6" />
+                <div className="bg-card border border-border/80 rounded-2xl p-5 flex items-center gap-4 shadow-2xs">
+                    <div className="h-12 w-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                        <Package className="w-6 h-6" />
                     </div>
                     <div>
-                        <div className="text-xs font-semibold text-muted-foreground">Total Jamaah Terdaftar</div>
-                        <div className="text-2xl font-extrabold text-purple-600 dark:text-purple-400 mt-0.5">
-                            {metrics?.total_jamaah || 0} <span className="text-xs font-normal text-muted-foreground">Orang</span>
-                        </div>
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Total Database Jamaah</p>
+                        <h3 className="text-2xl font-extrabold text-foreground mt-0.5">{metrics.total_jamaah.toLocaleString('id-ID')}</h3>
+                        <p className="text-[10px] text-muted-foreground">Prospek &amp; Jamaah Closing</p>
                     </div>
                 </div>
 
-                <div className="bg-card/70 border border-border/80 rounded-2xl p-5 shadow-xs flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <div className="bg-card border border-border/80 rounded-2xl p-5 flex items-center gap-4 shadow-2xs">
+                    <div className="h-12 w-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
                         <Coins className="w-6 h-6" />
                     </div>
                     <div>
-                        <div className="text-xs font-semibold text-muted-foreground">Total Omzet Transaksi</div>
-                        <div className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
-                            Rp {(metrics?.total_omzet || 0).toLocaleString('id-ID')}
-                        </div>
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Akumulasi Omzet Platform</p>
+                        <h3 className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                            Rp {(metrics.total_omzet || 0).toLocaleString('id-ID')}
+                        </h3>
+                        <p className="text-[10px] text-muted-foreground">Total transaksi terverifikasi</p>
                     </div>
                 </div>
             </div>
 
-            {/* Filter Toolbar */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card/60 p-4 rounded-2xl border border-border/80">
-                <form onSubmit={handleSearch} className="relative w-full sm:w-80">
+            {/* Filter & Search Bar */}
+            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 bg-card/40 p-3 rounded-2xl border border-border/60">
+                <form onSubmit={handleSearch} className="relative flex-1 max-w-md">
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input
                         type="text"
                         placeholder="Cari nama travel atau subdomain..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground placeholder:text-muted-foreground"
+                        className="w-full pl-10 pr-4 py-2 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground shadow-2xs"
                     />
                 </form>
 
-                <PerPageSelector value={tenants.per_page} />
+                <div className="flex items-center gap-3 self-end sm:self-auto">
+                    <PerPageSelector
+                        value={filters.per_page}
+                        options={[6, 12, 24, 48]}
+                    />
+                </div>
             </div>
 
-            {/* Tenant Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {(tenants.data || []).map((t) => {
-                    const isActive = activeTenantId === t.id;
+            {/* Tenants Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {tenants.data.map((t) => {
+                    const isCurrentActive = t.id === activeTenantId;
                     const owner = t.users && t.users.length > 0 ? t.users[0] : null;
 
                     return (
                         <div
                             key={t.id}
-                            className={`rounded-2xl border bg-card/80 backdrop-blur-md p-6 shadow-xs flex flex-col justify-between gap-5 transition-all hover:shadow-md ${
-                                isActive ? 'border-primary ring-2 ring-primary/20' : 'border-border/80'
+                            className={`bg-card rounded-2xl border p-5 flex flex-col justify-between gap-5 transition-all relative overflow-hidden group ${
+                                isCurrentActive
+                                    ? 'border-primary ring-2 ring-primary/20 shadow-md'
+                                    : 'border-border/80 hover:border-border hover:shadow-xs'
                             }`}
                         >
                             {/* Card Top */}
                             <div className="flex flex-col gap-4">
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-lg border border-primary/20 shrink-0">
-                                            {t.nama_travel.charAt(0).toUpperCase()}
+                                        <div className="h-12 w-12 rounded-xl bg-muted/60 border border-border flex items-center justify-center text-foreground font-black text-lg shadow-2xs shrink-0">
+                                            {t.nama_travel.charAt(0)}
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-base text-foreground leading-tight">
+                                            <h3 className="font-bold text-sm text-foreground group-hover:text-primary transition line-clamp-1">
                                                 {t.nama_travel}
                                             </h3>
-                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
+                                            <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground font-mono">
                                                 <Globe className="w-3.5 h-3.5 text-primary" />
-                                                <span className="font-medium text-foreground font-mono">{t.domain_atau_subdomain}{domainSuffix}</span>
-                                                <div className="flex gap-1 ml-2">
-                                                    <span className="text-[10px] font-bold bg-muted px-2 py-0.5 rounded border border-border capitalize text-muted-foreground">Tema: {t.theme_name || 'coffee'}</span>
-                                                </div>
+                                                <span>{t.domain_atau_subdomain}{domainSuffix}</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${
-                                        isActive
-                                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                                            : 'bg-muted text-muted-foreground border-border'
-                                    }`}>
-                                        {isActive ? 'Aktif di Sesi' : 'Tenant Active'}
-                                    </span>
+
+                                    <div className="flex flex-col items-end gap-1 shrink-0">
+                                        {isCurrentActive ? (
+                                            <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-2xs">
+                                                Aktif di Sesi
+                                            </span>
+                                        ) : (
+                                            <span className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-muted text-muted-foreground border border-border">
+                                                Tenant Active
+                                            </span>
+                                        )}
+                                        {t.theme_name && (
+                                            <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                                                Tema: {t.theme_name}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
 
-                                {/* Owner Profile Info */}
-                                <div className="bg-muted/40 rounded-xl p-3 border border-border/60 flex items-center justify-between gap-2">
+                                {/* Owner Information Box */}
+                                <div className="bg-muted/30 border border-border/70 rounded-xl p-3 flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-2.5 min-w-0">
-                                        <div className="h-8 w-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                        <div className="h-7 w-7 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
                                             <Crown className="w-4 h-4" />
                                         </div>
                                         <div className="min-w-0">
-                                            <div className="text-[11px] font-bold text-foreground truncate">
-                                                {owner ? owner.name : 'Owner Belum Terdaftar'}
-                                            </div>
-                                            <div className="text-[10px] text-muted-foreground truncate">
+                                            <p className="text-xs font-bold text-foreground truncate">
+                                                {owner ? owner.name : 'Owner Belum Ditentukan'}
+                                            </p>
+                                            <p className="text-[10px] text-muted-foreground truncate">
                                                 {owner ? owner.email : '-'}
-                                            </div>
+                                            </p>
                                         </div>
                                     </div>
-                                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-background border border-border text-muted-foreground shrink-0">
+                                    <span className="text-[10px] text-muted-foreground font-semibold shrink-0 bg-background px-2 py-1 rounded-md border border-border">
                                         Owner
                                     </span>
                                 </div>
 
-                                {/* Tenant Metrics Pills */}
+                                {/* Metrics Summary Pill Grid */}
                                 <div className="grid grid-cols-3 gap-2 text-center">
-                                    <div className="bg-background/80 rounded-xl p-2 border border-border/70">
-                                        <div className="text-xs font-extrabold text-foreground">{t.users_count || 0}</div>
-                                        <div className="text-[10px] text-muted-foreground font-medium">Staff &amp; Agen</div>
+                                    <div className="bg-muted/20 border border-border/50 rounded-xl p-2.5">
+                                        <span className="text-xs font-extrabold text-foreground block">{t.users_count || 0}</span>
+                                        <span className="text-[10px] text-muted-foreground block mt-0.5">Staff &amp; Agen</span>
                                     </div>
-                                    <div className="bg-background/80 rounded-xl p-2 border border-border/70">
-                                        <div className="text-xs font-extrabold text-foreground">{t.jamaah_count || 0}</div>
-                                        <div className="text-[10px] text-muted-foreground font-medium">Jamaah</div>
+                                    <div className="bg-muted/20 border border-border/50 rounded-xl p-2.5">
+                                        <span className="text-xs font-extrabold text-foreground block">{(t.jamaah_count || 0).toLocaleString('id-ID')}</span>
+                                        <span className="text-[10px] text-muted-foreground block mt-0.5">Jamaah</span>
                                     </div>
-                                    <div className="bg-background/80 rounded-xl p-2 border border-border/70">
-                                        <div className="text-xs font-extrabold text-foreground">{t.paket_count || 0}</div>
-                                        <div className="text-[10px] text-muted-foreground font-medium">Paket Umroh</div>
+                                    <div className="bg-muted/20 border border-border/50 rounded-xl p-2.5">
+                                        <span className="text-xs font-extrabold text-foreground block">{t.paket_count || 0}</span>
+                                        <span className="text-[10px] text-muted-foreground block mt-0.5">Paket Umroh</span>
                                     </div>
                                 </div>
 
@@ -400,7 +294,7 @@ export default function Index({ tenants, metrics, filters, activeTenantId, domai
 
                                 <button
                                     type="button"
-                                    onClick={() => openEditModal(t)}
+                                    onClick={() => setSelectedEditTenant(t)}
                                     className="p-2 rounded-xl border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition cursor-pointer shadow-2xs"
                                     title="Edit Informasi Tenant"
                                 >
@@ -409,7 +303,7 @@ export default function Index({ tenants, metrics, filters, activeTenantId, domai
 
                                 <button
                                     type="button"
-                                    onClick={() => openDeleteModal(t)}
+                                    onClick={() => setSelectedDeleteTenant(t)}
                                     className="p-2 rounded-xl border border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 transition cursor-pointer"
                                     title="Hapus Tenant"
                                 >
@@ -433,344 +327,27 @@ export default function Index({ tenants, metrics, filters, activeTenantId, domai
                 />
             </div>
 
-            {/* MODAL 1: ONBOARD TRAVEL BARU */}
-            {isCreateOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/50 backdrop-blur-sm overflow-y-auto">
-                    <div className="w-full max-w-3xl bg-card border border-border rounded-3xl shadow-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 my-8">
-                        <div className="p-6 md:p-8 border-b border-border/80 flex justify-between items-start bg-muted/20">
-                            <div>
-                                <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-                                    <Building2 className="w-5 h-5 text-primary" />
-                                    <span>Onboard Tenant Travel Baru</span>
-                                </h2>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    Daftarkan travel agensi baru ke dalam ekosistem SaaS HajjFlow dengan konfigurasi instan.
-                                </p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setIsCreateOpen(false)}
-                                className="text-muted-foreground hover:text-foreground p-1.5 rounded-xl hover:bg-muted transition text-sm cursor-pointer"
-                            >
-                                ✕
-                            </button>
-                        </div>
+            {/* DRAWER 1: ONBOARD TRAVEL BARU */}
+            <CreateTenantSheet
+                isOpen={isCreateOpen}
+                onClose={() => setIsCreateOpen(false)}
+                domainSuffix={domainSuffix}
+                themeList={themeList}
+            />
 
-                        <form onSubmit={handleCreateSubmit} className="p-6 md:p-8 flex flex-col gap-6">
-                            {/* Alert Scaffold Info */}
-                            <div className="flex items-start gap-3 p-4 rounded-2xl bg-primary/10 border border-primary/20 text-xs text-foreground">
-                                <Sparkles className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                                <div className="leading-relaxed">
-                                    <strong className="text-primary font-bold">Auto-Scaffold Sistem Otomatis:</strong> Saat travel dibuat, sistem akan langsung men-generate struktur jabatan hierarki (*Owner, Supervisor, Staff*), 5 tahapan CRM Leads, dan akun Owner pertama yang langsung dapat digunakan untuk login.
-                                </div>
-                            </div>
+            {/* DRAWER 2: EDIT TENANT */}
+            <EditTenantSheet
+                selectedTenant={selectedEditTenant}
+                onClose={() => setSelectedEditTenant(null)}
+                domainSuffix={domainSuffix}
+                themeList={themeList}
+            />
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div className="md:col-span-2">
-                                    <label className="block text-xs font-bold text-foreground mb-1.5">
-                                        Nama Travel Agensi <span className="text-rose-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        required
-                                        placeholder="Contoh: PT Barokah Madinah Wisata"
-                                        value={createForm.nama_travel}
-                                        onChange={(e) => setCreateForm({ ...createForm, nama_travel: e.target.value })}
-                                        className="w-full px-4 py-2.5 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground shadow-2xs"
-                                    />
-                                    {createErrors.nama_travel && (
-                                        <p className="text-[11px] text-rose-500 mt-1 font-medium">{createErrors.nama_travel}</p>
-                                    )}
-                                </div>
-
-                                <div className="md:col-span-2">
-                                    <label className="block text-xs font-bold text-foreground mb-1.5">
-                                        Subdomain / Slug Travel <span className="text-rose-500">*</span>
-                                    </label>
-                                    <div className="flex items-center shadow-2xs rounded-xl overflow-hidden border border-border">
-                                        <input
-                                            type="text"
-                                            required
-                                            placeholder="barokah"
-                                            value={createForm.domain_atau_subdomain}
-                                            onChange={(e) => setCreateForm({ ...createForm, domain_atau_subdomain: e.target.value })}
-                                            className="w-full px-4 py-2.5 text-xs bg-background border-none focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground font-mono"
-                                        />
-                                        <span className="bg-muted px-4 py-2.5 text-xs text-muted-foreground font-mono font-bold border-l border-border shrink-0">
-                                            {domainSuffix}
-                                        </span>
-                                    </div>
-                                    {createErrors.domain_atau_subdomain && (
-                                        <p className="text-[11px] text-rose-500 mt-1 font-medium">{createErrors.domain_atau_subdomain}</p>
-                                    )}
-                                </div>
-
-                                <div className="md:col-span-2 pt-3 border-t border-border/70">
-                                    <div className="text-xs font-bold text-foreground mb-1 flex items-center gap-1.5">
-                                        <Crown className="w-4 h-4 text-amber-500" />
-                                        <span>Informasi Kredensial Akun Owner Pertama</span>
-                                    </div>
-                                    <p className="text-[11px] text-muted-foreground mb-3">Akun pimpinan utama untuk login dan mengelola operasional travel ini.</p>
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-bold text-foreground mb-1.5">
-                                        Nama Lengkap Owner <span className="text-rose-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        required
-                                        placeholder="H. Fulan Abdullah"
-                                        value={createForm.owner_name}
-                                        onChange={(e) => setCreateForm({ ...createForm, owner_name: e.target.value })}
-                                        className="w-full px-4 py-2.5 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground shadow-2xs"
-                                    />
-                                    {createErrors.owner_name && (
-                                        <p className="text-[11px] text-rose-500 mt-1 font-medium">{createErrors.owner_name}</p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-bold text-foreground mb-1.5">
-                                        Email Login Owner <span className="text-rose-500">*</span>
-                                    </label>
-                                    <input
-                                        type="email"
-                                        required
-                                        placeholder="owner@barokah.com"
-                                        value={createForm.owner_email}
-                                        onChange={(e) => setCreateForm({ ...createForm, owner_email: e.target.value })}
-                                        className="w-full px-4 py-2.5 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground shadow-2xs"
-                                    />
-                                    {createErrors.owner_email && (
-                                        <p className="text-[11px] text-rose-500 mt-1 font-medium">{createErrors.owner_email}</p>
-                                    )}
-                                </div>
-
-                                <div className="md:col-span-2">
-                                    <label className="block text-xs font-bold text-foreground mb-1.5">
-                                        Password Default Owner <span className="text-rose-500">*</span>
-                                    </label>
-                                    <input
-                                        type="password"
-                                        required
-                                        placeholder="Minimal 6 karakter"
-                                        value={createForm.owner_password}
-                                        onChange={(e) => setCreateForm({ ...createForm, owner_password: e.target.value })}
-                                        className="w-full px-4 py-2.5 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground shadow-2xs"
-                                    />
-                                    {createErrors.owner_password && (
-                                        <p className="text-[11px] text-rose-500 mt-1 font-medium">{createErrors.owner_password}</p>
-                                    )}
-                                </div>
-
-                                <div className="md:col-span-2 pt-3 border-t border-border/70">
-                                    <div className="text-xs font-bold text-foreground mb-1 flex items-center gap-1.5">
-                                        <Sparkles className="w-4 h-4 text-purple-500" />
-                                        <span>Konfigurasi Tema Publik</span>
-                                    </div>
-                                    <p className="text-[11px] text-muted-foreground mb-3">Warna utama dan latar belakang untuk halaman Welcome dan Pendaftaran (publik).</p>
-                                </div>
-
-
-                                <div className="md:col-span-2">
-                                    <label className="block text-xs font-bold text-foreground mb-1.5">Pilih Tema Publik DaisyUI</label>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-48 overflow-y-auto p-2 border border-border rounded-xl bg-muted/20">
-                                        {themeList.map((t) => {
-                                            const bgStyle = t.variables['--background'] ? `hsl(${t.variables['--background']})` : (t.type === 'dark' ? '#0f172a' : '#ffffff');
-                                            const fgStyle = t.variables['--foreground'] ? `hsl(${t.variables['--foreground']})` : (t.type === 'dark' ? '#ffffff' : '#0f172a');
-                                            const isSelected = createForm.theme_name === t.name;
-                                            return (
-                                                <button
-                                                    key={t.name}
-                                                    type="button"
-                                                    onClick={() => setCreateForm({ ...createForm, theme_name: t.name })}
-                                                    className={`p-2 rounded-xl border text-left text-[10px] font-bold capitalize transition-all flex items-center justify-between gap-1 ${isSelected ? 'border-primary ring-1 ring-primary/30 shadow-xs' : 'border-border hover:border-foreground/30'}`}
-                                                    style={{ backgroundColor: bgStyle, color: fgStyle }}
-                                                >
-                                                    {t.name}
-                                                    {isSelected && <Check className="w-3 h-3" />}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <div className="flex items-center justify-end gap-3 pt-5 border-t border-border/80">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsCreateOpen(false)}
-                                    className="px-5 py-2.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground transition cursor-pointer"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={isSubmittingCreate}
-                                    className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:bg-primary/90 disabled:opacity-50 transition cursor-pointer"
-                                >
-                                    {isSubmittingCreate ? 'Menyimpan...' : 'Onboard & Buat Tenant'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* MODAL 2: EDIT TENANT */}
-            {isEditOpen && selectedTenant && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/50 backdrop-blur-sm overflow-y-auto">
-                    <div className="w-full max-w-xl bg-card border border-border rounded-3xl shadow-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 my-8">
-                        <div className="p-6 md:p-7 border-b border-border/80 flex justify-between items-start bg-muted/20">
-                            <div>
-                                <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-                                    <Edit2 className="w-5 h-5 text-primary" />
-                                    <span>Edit Informasi Tenant</span>
-                                </h2>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    Perbarui nama agensi atau subdomain travel.
-                                </p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setIsEditOpen(false)}
-                                className="text-muted-foreground hover:text-foreground p-1.5 rounded-xl hover:bg-muted transition text-sm cursor-pointer"
-                            >
-                                ✕
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleEditSubmit} className="p-6 md:p-7 flex flex-col gap-5">
-                            <div>
-                                <label className="block text-xs font-bold text-foreground mb-1.5">
-                                    Nama Travel Agensi <span className="text-rose-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={editForm.nama_travel}
-                                    onChange={(e) => setEditForm({ ...editForm, nama_travel: e.target.value })}
-                                    className="w-full px-4 py-2.5 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground shadow-2xs"
-                                />
-                                {editErrors.nama_travel && (
-                                    <p className="text-[11px] text-rose-500 mt-1 font-medium">{editErrors.nama_travel}</p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-foreground mb-1.5">
-                                    Subdomain / Slug <span className="text-rose-500">*</span>
-                                </label>
-                                <div className="flex items-center shadow-2xs rounded-xl overflow-hidden border border-border">
-                                    <input
-                                        type="text"
-                                        required
-                                        value={editForm.domain_atau_subdomain}
-                                        onChange={(e) => setEditForm({ ...editForm, domain_atau_subdomain: e.target.value })}
-                                        className="w-full px-4 py-2.5 text-xs bg-background border-none focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground font-mono"
-                                    />
-                                    <span className="bg-muted px-4 py-2.5 text-xs text-muted-foreground font-mono font-bold border-l border-border shrink-0">
-                                        {domainSuffix}
-                                    </span>
-                                </div>
-                                {editErrors.domain_atau_subdomain && (
-                                    <p className="text-[11px] text-rose-500 mt-1 font-medium">{editErrors.domain_atau_subdomain}</p>
-                                )}
-                            </div>
-
-                            <div className="pt-2 border-t border-border/70">
-                                <div className="text-xs font-bold text-foreground mb-1 flex items-center gap-1.5">
-                                    <Sparkles className="w-4 h-4 text-purple-500" />
-                                    <span>Konfigurasi Tema Publik</span>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-                                <div className="md:col-span-2">
-                                    <label className="block text-xs font-bold text-foreground mb-1.5">Pilih Tema Publik DaisyUI</label>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-48 overflow-y-auto p-2 border border-border rounded-xl bg-muted/20">
-                                        {themeList.map((t) => {
-                                            const bgStyle = t.variables['--background'] ? `hsl(${t.variables['--background']})` : (t.type === 'dark' ? '#0f172a' : '#ffffff');
-                                            const fgStyle = t.variables['--foreground'] ? `hsl(${t.variables['--foreground']})` : (t.type === 'dark' ? '#ffffff' : '#0f172a');
-                                            const isSelected = editForm.theme_name === t.name;
-                                            return (
-                                                <button
-                                                    key={t.name}
-                                                    type="button"
-                                                    onClick={() => setEditForm({ ...editForm, theme_name: t.name })}
-                                                    className={`p-2 rounded-xl border text-left text-[10px] font-bold capitalize transition-all flex items-center justify-between gap-1 ${isSelected ? 'border-primary ring-1 ring-primary/30 shadow-xs' : 'border-border hover:border-foreground/30'}`}
-                                                    style={{ backgroundColor: bgStyle, color: fgStyle }}
-                                                >
-                                                    {t.name}
-                                                    {isSelected && <Check className="w-3 h-3" />}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <div className="flex items-center justify-end gap-3 pt-5 border-t border-border/80">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsEditOpen(false)}
-                                    className="px-5 py-2.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground transition cursor-pointer"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={isSubmittingEdit}
-                                    className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:bg-primary/90 disabled:opacity-50 transition cursor-pointer"
-                                >
-                                    {isSubmittingEdit ? 'Menyimpan...' : 'Simpan Perubahan'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* MODAL 3: DELETE CONFIRMATION */}
-            {isDeleteOpen && selectedTenant && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/50 backdrop-blur-sm overflow-y-auto">
-                    <div className="w-full max-w-lg bg-card border border-border rounded-3xl shadow-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 my-8">
-                        <div className="p-6 md:p-7 flex flex-col items-center text-center gap-4">
-                            <div className="h-14 w-14 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center border border-rose-500/20">
-                                <AlertCircle className="w-7 h-7" />
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold text-foreground">Hapus Tenant Travel?</h3>
-                                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                                    Apakah Anda yakin ingin menghapus <strong className="text-foreground">{selectedTenant.nama_travel}</strong>? Seluruh data operasional, inventaris, dan akun jamaah travel ini akan dibersihkan dari sistem.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="p-5 bg-muted/30 border-t border-border/80 flex items-center justify-end gap-3">
-                            <button
-                                type="button"
-                                onClick={() => setIsDeleteOpen(false)}
-                                className="px-5 py-2.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground transition cursor-pointer"
-                            >
-                                Batal
-                            </button>
-                            <button
-                                type="button"
-                                disabled={isSubmittingDelete}
-                                onClick={handleDeleteSubmit}
-                                className="px-5 py-2.5 rounded-xl bg-rose-600 text-white text-xs font-bold shadow-xs hover:bg-rose-700 disabled:opacity-50 transition cursor-pointer"
-                            >
-                                {isSubmittingDelete ? 'Menghapus...' : 'Ya, Hapus Tenant'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* DRAWER 3: DELETE CONFIRMATION */}
+            <DeleteTenantModal
+                selectedTenant={selectedDeleteTenant}
+                onClose={() => setSelectedDeleteTenant(null)}
+            />
         </PageLayout>
     );
 }

@@ -4,6 +4,7 @@ import { Label } from '@/Components/ui/label';
 import { Button } from '@/Components/ui/button';
 import Checkbox from '@/Components/Checkbox';
 import InputError from '@/Components/InputError';
+import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Head, Link, useForm } from '@inertiajs/react';
 import React, { FormEventHandler } from 'react';
 import { loginSchema, zodErrors } from '@/lib/schemas';
@@ -52,11 +53,9 @@ export default function Login({
                 {/* Content Overlay */}
                 <div className="relative z-10 flex flex-col justify-between h-full w-full">
                     <header className="mb-12">
-                        <div className="text-lg font-bold tracking-tight flex items-center gap-2">
-                            <div className="w-6 h-6 rounded bg-indigo-500 flex items-center justify-center text-white font-extrabold text-xs">
-                                H
-                            </div>
-                            <span>HajjFlow <span className="font-normal text-indigo-200">Pro</span></span>
+                        <div className="text-lg font-bold tracking-tight flex items-center gap-3">
+                            <ApplicationLogo className="w-9 h-9 shrink-0" />
+                            <span>HajjFlow <span className="font-normal text-amber-300">Pro</span></span>
                         </div>
                     </header>
 

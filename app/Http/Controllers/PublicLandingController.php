@@ -10,8 +10,10 @@ use App\Models\Pembayaran;
 use App\Models\RekeningTenant;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Notifications\JamaahRegisteredNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -173,6 +175,30 @@ class PublicLandingController extends Controller
                     'status_pencairan' => 'Pending',
                 ]);
             }
+        }
+
+        // 6. Broadcast & Save Real-Time Notification for Tenant Staff & Assigned Agent
+        try {
+            $admins = User::where('tenant_id', $tenantId)
+                ->whereIn('role', ['tenant_owner', 'super_admin', 'admin', 'staff', 'owner_travel', 'admin_travel'])
+                ->get();
+
+            $assignedAgent = $agenId ? User::find($agenId) : null;
+            $notification = new JamaahRegisteredNotification(
+                jamaah: $jamaah,
+                source: 'Website Resmi',
+                agentName: $assignedAgent?->name
+            );
+
+            foreach ($admins as $admin) {
+                $admin->notify($notification);
+            }
+
+            if ($assignedAgent && ! $admins->contains('id', $assignedAgent->id)) {
+                $assignedAgent->notify($notification);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Broadcast notification error: '.$e->getMessage());
         }
 
         return redirect()->route('public.register.success', [

@@ -1,4 +1,5 @@
 import * as React from "react"
+import { router } from "@inertiajs/react"
 import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -107,6 +108,13 @@ function SidebarProvider({
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [toggleSidebar])
 
+  // Automatically close mobile sidebar on navigation
+  React.useEffect(() => {
+    return router.on("navigate", () => {
+      setOpenMobile(false)
+    })
+  }, [setOpenMobile])
+
   // We add a state so that we can do data-state="expanded" or "collapsed".
   // This makes it easier to style the sidebar with Tailwind classes.
   const state = open ? "expanded" : "collapsed"
@@ -187,10 +195,11 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+          showCloseButton={false}
+          className="w-[85vw] max-w-[320px] bg-sidebar p-0 text-sidebar-foreground border-r border-sidebar-border shadow-2xl overflow-hidden [&>button]:hidden"
           style={
             {
-              "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+              "--sidebar-width": "18rem",
             } as React.CSSProperties
           }
           side={side}
@@ -199,7 +208,7 @@ function Sidebar({
             <SheetTitle>Sidebar</SheetTitle>
             <SheetDescription>Displays the mobile sidebar.</SheetDescription>
           </SheetHeader>
-          <div className="flex h-full w-full flex-col">{children}</div>
+          <div className="flex h-full w-full flex-col overflow-y-auto bg-sidebar">{children}</div>
         </SheetContent>
       </Sheet>
     )
@@ -340,7 +349,7 @@ function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="sidebar-header"
       data-sidebar="header"
-      className={cn("flex flex-col gap-2 p-4", className)}
+      className={cn("flex flex-col gap-2 p-2 group-data-[collapsible=icon]:p-2", className)}
       {...props}
     />
   )

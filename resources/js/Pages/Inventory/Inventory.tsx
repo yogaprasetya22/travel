@@ -18,6 +18,7 @@ import {
 import DataTablePagination, { PaginatedData } from "@/Components/DataTablePagination"
 import PerPageSelector from "@/Components/PerPageSelector"
 import { useDebounce } from "@/hooks/use-debounce"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/Components/ui/tabs"
 import {
     Boxes,
     PackageCheck,
@@ -290,32 +291,34 @@ export default function Inventory({ items, logs, metrics, filters }: Props) {
             </div>
 
             {/* Navigation Tabs & Search Controls */}
-            <div className="flex flex-col gap-4">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-border pb-2 sm:pb-0">
-                    <div className="flex">
-                        <button
-                            onClick={() => setActiveTab("items")}
-                            className={`pb-3 px-4 text-sm font-medium border-b-2 transition-colors cursor-pointer ${
-                                activeTab === "items"
-                                    ? "border-primary text-foreground font-semibold"
-                                    : "border-transparent text-muted-foreground hover:text-foreground"
-                            }`}
+            <Tabs
+                value={activeTab}
+                onValueChange={(val) => {
+                    if (val === "items" || val === "logs") {
+                        setActiveTab(val);
+                    }
+                }}
+                className="flex flex-col gap-4 w-full"
+            >
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <TabsList className="flex flex-row items-center justify-start p-1 bg-card/60 backdrop-blur-md rounded-2xl border border-border/80 shadow-xs gap-1 h-auto bg-transparent overflow-x-auto no-scrollbar w-full sm:w-auto">
+                        <TabsTrigger
+                            value="items"
+                            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer data-active:bg-primary data-active:text-primary-foreground data-active:shadow-xs text-foreground/80 hover:bg-muted hover:text-foreground border-0 shadow-none after:hidden shrink-0"
                         >
-                            Daftar Inventaris &amp; Posisi Stok ({items.total || itemList.length})
-                        </button>
-                        <button
-                            onClick={() => setActiveTab("logs")}
-                            className={`pb-3 px-4 text-sm font-medium border-b-2 transition-colors cursor-pointer ${
-                                activeTab === "logs"
-                                    ? "border-primary text-foreground font-semibold"
-                                    : "border-transparent text-muted-foreground hover:text-foreground"
-                            }`}
+                            <Boxes className="w-4 h-4 shrink-0" />
+                            <span className="whitespace-nowrap">Daftar Inventaris ({items.total || itemList.length})</span>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="logs"
+                            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer data-active:bg-primary data-active:text-primary-foreground data-active:shadow-xs text-foreground/80 hover:bg-muted hover:text-foreground border-0 shadow-none after:hidden shrink-0"
                         >
-                            Log Mutasi &amp; Riwayat Distribusi ({logs.total || logList.length})
-                        </button>
-                    </div>
+                            <RefreshCw className="w-4 h-4 shrink-0" />
+                            <span className="whitespace-nowrap">Log Mutasi &amp; Riwayat ({logs.total || logList.length})</span>
+                        </TabsTrigger>
+                    </TabsList>
 
-                    <div className="pb-2 sm:pb-0 flex items-center gap-3">
+                    <div className="pb-2 sm:pb-0 flex items-center gap-3 self-end sm:self-auto">
                         {activeTab === "items" ? (
                             <PerPageSelector value={items.per_page} paramName="items_per_page" />
                         ) : (
@@ -324,8 +327,9 @@ export default function Inventory({ items, logs, metrics, filters }: Props) {
                     </div>
                 </div>
 
-                {/* Filter Toolbar */}
-                {activeTab === "items" ? (
+                {/* Tab: Daftar Barang */}
+                <TabsContent value="items" className="flex flex-col gap-4 m-0 outline-none">
+                    {/* Items Filter Toolbar */}
                     <div className="flex flex-col md:flex-row items-center justify-between gap-3 bg-card/60 p-3 rounded-2xl border border-border/80">
                         <div className="relative w-full md:w-80">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -360,7 +364,119 @@ export default function Inventory({ items, logs, metrics, filters }: Props) {
                             ))}
                         </div>
                     </div>
-                ) : (
+
+                    {/* Items Table */}
+                    <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/70 backdrop-blur-md shadow-xs">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b border-border/80 bg-muted/50 text-xs font-bold text-foreground">
+                                        <th className="px-6 py-4">SKU / Kode</th>
+                                        <th className="px-6 py-4">Nama Barang &amp; Kategori</th>
+                                        <th className="px-6 py-4">Harga Pokok (HPP)</th>
+                                        <th className="px-6 py-4">Stok Tersedia</th>
+                                        <th className="px-6 py-4">Lokasi Gudang</th>
+                                        <th className="px-6 py-4">Status</th>
+                                        <th className="px-6 py-4 text-center">Aksi Cepat</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-border/60 text-xs">
+                                    {itemList.map((item) => {
+                                        const isOutOfStock = item.stok_tersedia <= 0
+                                        const isLow = item.stok_tersedia <= item.stok_minimum && !isOutOfStock
+
+                                        return (
+                                            <tr key={item.id} className="hover:bg-muted/40 transition-colors">
+                                                <td className="px-6 py-4 font-mono font-bold text-primary">
+                                                    {item.sku || `INV-${item.id}`}
+                                                </td>
+                                                <td className="px-6 py-4 font-bold text-foreground">
+                                                    <div>{item.nama_barang}</div>
+                                                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5 font-normal">
+                                                        <Tag className="w-3 h-3 text-muted-foreground" />
+                                                        <span>{item.kategori || "Perlengkapan"}</span>
+                                                        <span>•</span>
+                                                        <span>Satuan: {item.satuan || "Pcs"}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 font-medium text-foreground">
+                                                    {toRupiah(item.harga_pokok || 0)}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="font-extrabold text-foreground text-sm">
+                                                        {item.stok_tersedia} <span className="text-xs font-normal text-muted-foreground">{item.satuan || "Pcs"}</span>
+                                                    </div>
+                                                    <div className="text-[11px] text-muted-foreground">
+                                                        Min. Safety: {item.stok_minimum} {item.satuan || "Pcs"}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-muted-foreground">
+                                                    <div className="flex items-center gap-1">
+                                                        <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                                                        <span>{item.lokasi_rak || "Gudang Utama"}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold border ${
+                                                        isOutOfStock
+                                                            ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
+                                                            : isLow
+                                                            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                                                            : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                                                    }`}>
+                                                        {isOutOfStock ? "Habis (0)" : isLow ? "Stok Kritis" : "Aman"}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-center">
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <button
+                                                            onClick={() => {
+                                                                setAdjustingItem(item)
+                                                                adjustForm.setData({ tipe: "IN", qty: 10, alasan: "Restock Barang Masuk" })
+                                                            }}
+                                                            className="px-2.5 py-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1"
+                                                        >
+                                                            <RefreshCw className="w-3 h-3" />
+                                                            <span>Restock</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleEditClick(item)}
+                                                            className="px-2.5 py-1.5 border border-border bg-card hover:bg-muted text-foreground rounded-lg text-xs font-semibold transition cursor-pointer"
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
+                                    {itemList.length === 0 && (
+                                        <tr>
+                                            <td colSpan={7} className="py-12 text-center text-muted-foreground italic">
+                                                Tidak ada data barang inventaris yang sesuai pencarian.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="border-t border-border/80 px-4 bg-muted/20">
+                            <DataTablePagination
+                                links={items.links}
+                                from={items.from}
+                                to={items.to}
+                                total={items.total}
+                                currentPage={items.current_page}
+                                lastPage={items.last_page}
+                            />
+                        </div>
+                    </div>
+                </TabsContent>
+
+                {/* Tab: Log Transaksi */}
+                <TabsContent value="logs" className="flex flex-col gap-4 m-0 outline-none">
+                    {/* Logs Filter Toolbar */}
                     <div className="flex items-center justify-between gap-3 bg-card/60 p-3 rounded-2xl border border-border/80">
                         <div className="relative w-full md:w-96">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -373,208 +489,94 @@ export default function Inventory({ items, logs, metrics, filters }: Props) {
                             />
                         </div>
                     </div>
-                )}
-            </div>
-
-            {/* Tab: Daftar Barang */}
-            {activeTab === "items" && (
-                <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/70 backdrop-blur-md shadow-xs">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="border-b border-border/80 bg-muted/50 text-xs font-bold text-foreground">
-                                    <th className="px-6 py-4">SKU / Kode</th>
-                                    <th className="px-6 py-4">Nama Barang &amp; Kategori</th>
-                                    <th className="px-6 py-4">Harga Pokok (HPP)</th>
-                                    <th className="px-6 py-4">Stok Tersedia</th>
-                                    <th className="px-6 py-4">Lokasi Gudang</th>
-                                    <th className="px-6 py-4">Status</th>
-                                    <th className="px-6 py-4 text-center">Aksi Cepat</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border/60 text-xs">
-                                {itemList.map((item) => {
-                                    const isOutOfStock = item.stok_tersedia <= 0
-                                    const isLow = item.stok_tersedia <= item.stok_minimum && !isOutOfStock
-
-                                    return (
-                                        <tr key={item.id} className="hover:bg-muted/40 transition-colors">
-                                            <td className="px-6 py-4 font-mono font-bold text-primary">
-                                                {item.sku || `INV-${item.id}`}
+                    <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/70 backdrop-blur-md shadow-xs">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b border-border/80 bg-muted/50 text-xs font-bold text-foreground">
+                                        <th className="px-6 py-4">Waktu Transaksi</th>
+                                        <th className="px-6 py-4">Barang</th>
+                                        <th className="px-6 py-4">Jumlah Mutasi</th>
+                                        <th className="px-6 py-4">Tipe Pergerakan</th>
+                                        <th className="px-6 py-4">Alasan / Referensi</th>
+                                        <th className="px-6 py-4">Petugas / PIC</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-border/60 text-xs">
+                                    {logList.map((log) => (
+                                        <tr key={log.id} className="hover:bg-muted/40 transition-colors">
+                                            <td className="px-6 py-4 text-muted-foreground">
+                                                {new Date(log.created_at).toLocaleString("id-ID", {
+                                                    day: "numeric",
+                                                    month: "short",
+                                                    year: "numeric",
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                })}
                                             </td>
                                             <td className="px-6 py-4 font-bold text-foreground">
-                                                <div>{item.nama_barang}</div>
-                                                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5 font-normal">
-                                                    <Tag className="w-3 h-3 text-muted-foreground" />
-                                                    <span>{item.kategori || "Perlengkapan"}</span>
-                                                    <span>•</span>
-                                                    <span>Satuan: {item.satuan || "Pcs"}</span>
-                                                </div>
+                                                <div>{log.inventaris?.nama_barang || "Barang Terhapus"}</div>
+                                                {log.inventaris?.sku && (
+                                                    <div className="text-[11px] font-mono text-muted-foreground">{log.inventaris.sku}</div>
+                                                )}
                                             </td>
-                                            <td className="px-6 py-4 font-medium text-foreground">
-                                                {toRupiah(item.harga_pokok || 0)}
+                                            <td className="px-6 py-4 font-bold text-foreground">
+                                                <span className={log.tipe === "IN" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
+                                                    {log.tipe === "IN" ? "+" : "-"}{log.qty} Unit
+                                                </span>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="font-extrabold text-foreground text-sm">
-                                                    {item.stok_tersedia} <span className="text-xs font-normal text-muted-foreground">{item.satuan || "Pcs"}</span>
-                                                </div>
-                                                <div className="text-[11px] text-muted-foreground">
-                                                    Min. Safety: {item.stok_minimum} {item.satuan || "Pcs"}
-                                                </div>
+                                                <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold border ${
+                                                    log.tipe === "IN"
+                                                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                                                        : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
+                                                }`}>
+                                                    {log.tipe === "IN" ? <ArrowDownLeft className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
+                                                    <span>{log.tipe === "IN" ? "Stock IN (Masuk)" : "Stock OUT (Keluar)"}</span>
+                                                </span>
                                             </td>
                                             <td className="px-6 py-4 text-muted-foreground">
-                                                <div className="flex items-center gap-1">
-                                                    <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                                                    <span>{item.lokasi_rak || "Gudang Utama"}</span>
-                                                </div>
+                                                {log.jamaah ? (
+                                                    <span className="font-medium text-foreground">
+                                                        Distribusi Jamaah: {log.jamaah.nama_lengkap}
+                                                    </span>
+                                                ) : (
+                                                    log.alasan || "Penyesuaian Manual"
+                                                )}
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold border ${
-                                                    isOutOfStock
-                                                        ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
-                                                        : isLow
-                                                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
-                                                        : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                                                }`}>
-                                                    {isOutOfStock ? "Habis (0)" : isLow ? "Stok Kritis" : "Aman"}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <button
-                                                        onClick={() => {
-                                                            setAdjustingItem(item)
-                                                            adjustForm.setData({ tipe: "IN", qty: 10, alasan: "Restock Barang Masuk" })
-                                                        }}
-                                                        className="px-2.5 py-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1"
-                                                    >
-                                                        <RefreshCw className="w-3 h-3" />
-                                                        <span>Restock</span>
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleEditClick(item)}
-                                                        className="px-2.5 py-1.5 border border-border bg-card hover:bg-muted text-foreground rounded-lg text-xs font-semibold transition cursor-pointer"
-                                                    >
-                                                        Edit
-                                                    </button>
-                                                </div>
+                                            <td className="px-6 py-4 text-muted-foreground">
+                                                {log.creator?.name || "Sistem Otomatis"}
                                             </td>
                                         </tr>
-                                    )
-                                })}
-                                {itemList.length === 0 && (
-                                    <tr>
-                                        <td colSpan={7} className="py-12 text-center text-muted-foreground italic">
-                                            Tidak ada data barang inventaris yang sesuai pencarian.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                                    ))}
+                                    {logList.length === 0 && (
+                                        <tr>
+                                            <td colSpan={6} className="py-12 text-center text-muted-foreground italic">
+                                                Belum ada riwayat pergerakan stok.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
 
-                    <div className="border-t border-border/80 px-4 bg-muted/20">
-                        <DataTablePagination
-                            links={items.links}
-                            from={items.from}
-                            to={items.to}
-                            total={items.total}
-                            currentPage={items.current_page}
-                            lastPage={items.last_page}
-                        />
+                        <div className="border-t border-border/80 px-4 bg-muted/20">
+                            <DataTablePagination
+                                links={logs.links}
+                                from={logs.from}
+                                to={logs.to}
+                                total={logs.total}
+                                currentPage={logs.current_page}
+                                lastPage={logs.last_page}
+                            />
+                        </div>
                     </div>
-                </div>
-            )}
-
-            {/* Tab: Log Transaksi */}
-            {activeTab === "logs" && (
-                <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/70 backdrop-blur-md shadow-xs">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="border-b border-border/80 bg-muted/50 text-xs font-bold text-foreground">
-                                    <th className="px-6 py-4">Waktu Transaksi</th>
-                                    <th className="px-6 py-4">Barang</th>
-                                    <th className="px-6 py-4">Jumlah Mutasi</th>
-                                    <th className="px-6 py-4">Tipe Pergerakan</th>
-                                    <th className="px-6 py-4">Alasan / Referensi</th>
-                                    <th className="px-6 py-4">Petugas / PIC</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border/60 text-xs">
-                                {logList.map((log) => (
-                                    <tr key={log.id} className="hover:bg-muted/40 transition-colors">
-                                        <td className="px-6 py-4 text-muted-foreground">
-                                            {new Date(log.created_at).toLocaleString("id-ID", {
-                                                day: "numeric",
-                                                month: "short",
-                                                year: "numeric",
-                                                hour: "2-digit",
-                                                minute: "2-digit",
-                                            })}
-                                        </td>
-                                        <td className="px-6 py-4 font-bold text-foreground">
-                                            <div>{log.inventaris?.nama_barang || "Barang Terhapus"}</div>
-                                            {log.inventaris?.sku && (
-                                                <div className="text-[11px] font-mono text-muted-foreground">{log.inventaris.sku}</div>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 font-bold text-foreground">
-                                            <span className={log.tipe === "IN" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
-                                                {log.tipe === "IN" ? "+" : "-"}{log.qty} Unit
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold border ${
-                                                log.tipe === "IN"
-                                                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                                                    : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
-                                            }`}>
-                                                {log.tipe === "IN" ? <ArrowDownLeft className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
-                                                <span>{log.tipe === "IN" ? "Stock IN (Masuk)" : "Stock OUT (Keluar)"}</span>
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-muted-foreground">
-                                            {log.jamaah ? (
-                                                <span className="font-medium text-foreground">
-                                                    Distribusi Jamaah: {log.jamaah.nama_lengkap}
-                                                </span>
-                                            ) : (
-                                                log.alasan || "Penyesuaian Manual"
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 text-muted-foreground">
-                                            {log.creator?.name || "Sistem Otomatis"}
-                                        </td>
-                                    </tr>
-                                ))}
-                                {logList.length === 0 && (
-                                    <tr>
-                                        <td colSpan={6} className="py-12 text-center text-muted-foreground italic">
-                                            Belum ada riwayat pergerakan stok.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div className="border-t border-border/80 px-4 bg-muted/20">
-                        <DataTablePagination
-                            links={logs.links}
-                            from={logs.from}
-                            to={logs.to}
-                            total={logs.total}
-                            currentPage={logs.current_page}
-                            lastPage={logs.last_page}
-                        />
-                    </div>
-                </div>
-            )}
+                </TabsContent>
+            </Tabs>
 
             {/* Drawer: Tambah Barang */}
             <Sheet open={isAddOpen} onOpenChange={setIsAddOpen}>
-                <SheetContent side="right" className="w-1/2 max-w-none">
+                <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2">
                     <SheetHeader>
                         <SheetTitle>Tambah Barang Inventaris Baru</SheetTitle>
                         <SheetDescription>Lengkapi data master barang, SKU, harga pokok beli, dan penempatan gudang.</SheetDescription>
@@ -700,7 +702,7 @@ export default function Inventory({ items, logs, metrics, filters }: Props) {
 
             {/* Drawer: Edit Master Barang */}
             <Sheet open={!!editingItem} onOpenChange={(open) => { if (!open) setEditingItem(null) }}>
-                <SheetContent side="right" className="w-1/2 max-w-none">
+                <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2">
                     <SheetHeader>
                         <SheetTitle>Edit Master Barang</SheetTitle>
                         <SheetDescription>Perbarui informasi metadata, SKU, HPP, atau batas stok minimum.</SheetDescription>
@@ -805,7 +807,7 @@ export default function Inventory({ items, logs, metrics, filters }: Props) {
 
             {/* Drawer: Quick Restock / Stock Out Adjustment */}
             <Sheet open={!!adjustingItem} onOpenChange={(open) => { if (!open) setAdjustingItem(null) }}>
-                <SheetContent side="right" className="w-1/2 max-w-none">
+                <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2">
                     <SheetHeader>
                         <SheetTitle>Penyesuaian Stok Cepat (Restock / Out)</SheetTitle>
                         <SheetDescription>

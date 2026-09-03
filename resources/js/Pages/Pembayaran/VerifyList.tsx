@@ -174,7 +174,7 @@ export default function VerifyPayment({ payments }: VerifyPaymentProps) {
 
             {/* Drawer: Bukti Transfer Preview */}
             <Sheet open={!!selectedSlip} onOpenChange={(open) => { if (!open) setSelectedSlip(null) }}>
-                <SheetContent side="right" className="w-1/2 max-w-none">
+                <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2">
                     <SheetHeader>
                         <SheetTitle>Pratinjau Bukti Transfer</SheetTitle>
                     </SheetHeader>

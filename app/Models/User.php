@@ -33,7 +33,7 @@ use Illuminate\Support\Str;
  * @property-read Tenant|null $tenant
  * @property-read HierarchyLevel|null $hierarchyLevel
  */
-#[Fillable(['name', 'email', 'password', 'tenant_id', 'hierarchy_level_id', 'role', 'jabatan', 'bio', 'created_by'])]
+#[Fillable(['name', 'email', 'avatar', 'password', 'tenant_id', 'hierarchy_level_id', 'role', 'jabatan', 'nik', 'no_hp', 'kota', 'alamat', 'status_karyawan', 'nama_bank', 'nomor_rekening', 'atas_nama_rekening', 'bio', 'landing_links', 'social_links', 'created_by'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -49,6 +49,7 @@ class User extends Authenticatable
         'level',
         'level_label',
         'level_badge',
+        'avatar_url',
     ];
 
     /**
@@ -245,6 +246,18 @@ class User extends Authenticatable
     }
 
     /**
+     * Accessor for User Avatar URL.
+     */
+    public function getAvatarUrlAttribute(): string
+    {
+        if ($this->avatar && file_exists(public_path('storage/'.$this->avatar))) {
+            return asset('storage/'.$this->avatar);
+        }
+
+        return 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=6F4E37&color=fff&size=256';
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -254,6 +267,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'landing_links' => 'array',
+            'social_links' => 'array',
         ];
     }
 

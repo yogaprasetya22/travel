@@ -318,7 +318,7 @@ export default function LogisticsDistribution({ logisticsList, filters = {} }: L
 
             {/* DETAIL SLIDE-OUT DRAWER / SHEET */}
             <Sheet open={!!selectedCustomer} onOpenChange={(open) => { if (!open) setSelectedCustomer(null); }}>
-                <SheetContent side="right" className="w-1/2 max-w-none flex flex-col justify-between">
+                <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2 flex flex-col justify-between">
                     <div className="flex flex-col gap-6 p-4 flex-1 overflow-y-auto">
                         <SheetHeader className="pb-4 border-b border-border/60">
                             <div className="flex justify-between items-start gap-4">

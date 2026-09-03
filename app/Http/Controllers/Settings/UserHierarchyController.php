@@ -66,6 +66,15 @@ class UserHierarchyController extends Controller
                 $currentUser->role === 'super_admin_master' ? 'required' : 'nullable',
                 'exists:tenants,id',
             ],
+            'nik' => ['nullable', 'string', 'max:30'],
+            'no_hp' => ['nullable', 'string', 'max:30'],
+            'kota' => ['nullable', 'string', 'max:100'],
+            'alamat' => ['nullable', 'string'],
+            'status_karyawan' => ['nullable', 'string', 'max:30'],
+            'nama_bank' => ['nullable', 'string', 'max:50'],
+            'nomor_rekening' => ['nullable', 'string', 'max:50'],
+            'atas_nama_rekening' => ['nullable', 'string', 'max:150'],
+            'created_by' => ['nullable', 'exists:users,id'],
         ]);
 
         $targetTenantId = $currentUser->role === 'super_admin_master'
@@ -82,7 +91,15 @@ class UserHierarchyController extends Controller
             'password' => Hash::make($validated['password']),
             'role' => $level->role_key,
             'jabatan' => $level->nama_level,
-            'created_by' => $currentUser->id,
+            'nik' => $validated['nik'] ?? null,
+            'no_hp' => $validated['no_hp'] ?? null,
+            'kota' => $validated['kota'] ?? null,
+            'alamat' => $validated['alamat'] ?? null,
+            'status_karyawan' => $validated['status_karyawan'] ?? 'aktif',
+            'nama_bank' => $validated['nama_bank'] ?? null,
+            'nomor_rekening' => $validated['nomor_rekening'] ?? null,
+            'atas_nama_rekening' => $validated['atas_nama_rekening'] ?? null,
+            'created_by' => $validated['created_by'] ?? $currentUser->id,
         ]);
 
         return redirect()->back()->with('success', 'Akun pengguna berhasil dibuat dalam hierarki sistem.');
@@ -104,11 +121,29 @@ class UserHierarchyController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'hierarchy_level_id' => ['nullable', 'exists:hierarchy_levels,id'],
             'password' => ['nullable', 'string', 'min:6'],
+            'nik' => ['nullable', 'string', 'max:30'],
+            'no_hp' => ['nullable', 'string', 'max:30'],
+            'kota' => ['nullable', 'string', 'max:100'],
+            'alamat' => ['nullable', 'string'],
+            'status_karyawan' => ['nullable', 'string', 'max:30'],
+            'nama_bank' => ['nullable', 'string', 'max:50'],
+            'nomor_rekening' => ['nullable', 'string', 'max:50'],
+            'atas_nama_rekening' => ['nullable', 'string', 'max:150'],
+            'created_by' => ['nullable', 'exists:users,id'],
         ]);
 
         $updateData = [
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'nik' => $validated['nik'] ?? $user->nik,
+            'no_hp' => $validated['no_hp'] ?? $user->no_hp,
+            'kota' => $validated['kota'] ?? $user->kota,
+            'alamat' => $validated['alamat'] ?? $user->alamat,
+            'status_karyawan' => $validated['status_karyawan'] ?? $user->status_karyawan,
+            'nama_bank' => $validated['nama_bank'] ?? $user->nama_bank,
+            'nomor_rekening' => $validated['nomor_rekening'] ?? $user->nomor_rekening,
+            'atas_nama_rekening' => $validated['atas_nama_rekening'] ?? $user->atas_nama_rekening,
+            'created_by' => $validated['created_by'] ?? $user->created_by,
         ];
 
         if (! empty($validated['hierarchy_level_id'])) {

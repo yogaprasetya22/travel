@@ -7,6 +7,41 @@ export interface Tenant {
     updated_at?: string;
 }
 
+export interface HierarchyLevelItem {
+    id: number;
+    tenant_id?: number;
+    parent_id?: number | null;
+    nama_level: string;
+    role_key?: string;
+    urutan?: number;
+    deskripsi?: string | null;
+    wewenang_note?: string | null;
+    children?: HierarchyLevelItem[];
+}
+
+export interface LandingLinkItem {
+    id?: string;
+    title: string;
+    url: string;
+    icon?: string;
+    is_highlight?: boolean;
+}
+
+export interface SocialLinks {
+    instagram?: string;
+    tiktok?: string;
+    youtube?: string;
+    facebook?: string;
+}
+
+export interface LeaderItem {
+    id: number;
+    name: string;
+    role: string;
+    jabatan?: string | null;
+    hierarchy_level_id?: number | null;
+}
+
 export interface User {
     id: number;
     tenant_id?: number | null;
@@ -14,13 +49,38 @@ export interface User {
     name: string;
     email: string;
     email_verified_at?: string;
+    nik?: string | null;
+    no_hp?: string | null;
+    kota?: string | null;
+    alamat?: string | null;
+    status_karyawan?: string | null;
+    nama_bank?: string | null;
+    nomor_rekening?: string | null;
+    atas_nama_rekening?: string | null;
+    avatar?: string | null;
+    avatar_url?: string;
     role: string;
     jabatan?: string | null;
     bio?: string | null;
-    level: number;
+    referral_code?: string;
+    landing_links?: LandingLinkItem[] | null;
+    social_links?: SocialLinks | null;
+    created_by?: number | null;
+    created_at?: string;
+    updated_at?: string;
+    level?: number;
     level_label?: string;
     level_badge?: string;
+    jamaah_count?: number;
+    total_komisi?: number;
     tenant?: Tenant | null;
+    hierarchy_level?: HierarchyLevelItem | null;
+    creator?: {
+        id: number;
+        name: string;
+        role: string;
+        jabatan?: string | null;
+    } | null;
 }
 
 export interface RekeningTenant {
@@ -35,6 +95,23 @@ export interface RekeningTenant {
     updated_at?: string;
 }
 
+export interface BankItem {
+    id: number;
+    nama_bank: string;
+    nomor_rekening: string;
+    atas_nama: string;
+    is_active: boolean;
+}
+
+export interface Stage {
+    id: number;
+    nama_tahap: string;
+    urutan: number;
+    periode_mulai?: string | null;
+    periode_selesai?: string | null;
+    is_active?: boolean;
+}
+
 export interface CrmStage {
     id: number;
     tenant_id: number;
@@ -43,6 +120,21 @@ export interface CrmStage {
     tenant?: Tenant;
     created_at?: string;
     updated_at?: string;
+}
+
+export interface PackageItem {
+    id: number;
+    nama_paket: string;
+    harga: number;
+    komisi_flat: number;
+    komisi_persentase: number;
+    periode_mulai?: string | null;
+    periode_selesai?: string | null;
+    is_active?: boolean;
+    inventaris?: Array<{
+        id: number;
+        nama_barang: string;
+    }>;
 }
 
 export interface Paket {
@@ -57,27 +149,36 @@ export interface Paket {
     updated_at?: string;
 }
 
-export interface PaketInventaris {
+export interface Inventaris {
     id: number;
-    paket_id: number;
-    inventaris_id: number;
-    qty: number;
+    tenant_id: number;
+    nama_barang: string;
+    stok_tersedia: number;
+    stok_minimum: number;
+    tenant?: Tenant;
     created_at?: string;
     updated_at?: string;
 }
 
-export interface OverrideKomisiAgen {
+export interface InventoryItem {
     id: number;
-    tenant_id: number;
-    paket_id: number;
-    agen_id: number;
-    komisi_flat?: number | null;
-    komisi_persentase?: number | null;
-    tenant?: Tenant;
-    paket?: Paket;
-    agen?: User;
-    created_at?: string;
-    updated_at?: string;
+    nama_barang: string;
+}
+
+export interface AgentJamaahItem {
+    id: number;
+    nama_lengkap: string;
+    no_hp: string;
+    email?: string | null;
+    nik?: string | null;
+    nama_paket: string;
+    harga_paket: number;
+    total_paid: number;
+    sisa_tagihan: number;
+    status_bayar: 'Lunas' | 'DP Terbayar' | 'Belum Bayar';
+    stage: string;
+    tanggal_keberangkatan?: string | null;
+    created_at: string;
 }
 
 export interface Jamaah {
@@ -127,31 +228,6 @@ export interface KomisiAgen {
     tenant?: Tenant;
     agen?: User;
     jamaah?: Jamaah;
-    created_at?: string;
-    updated_at?: string;
-}
-
-export interface Inventaris {
-    id: number;
-    tenant_id: number;
-    nama_barang: string;
-    stok_tersedia: number;
-    stok_minimum: number;
-    tenant?: Tenant;
-    created_at?: string;
-    updated_at?: string;
-}
-
-export interface InventarisTransaksi {
-    id: number;
-    tenant_id: number;
-    inventaris_id: number;
-    jamaah_id?: number | null;
-    qty: number;
-    tipe: 'IN' | 'OUT';
-    tenant?: Tenant;
-    inventaris?: Inventaris;
-    jamaah?: Jamaah | null;
     created_at?: string;
     updated_at?: string;
 }

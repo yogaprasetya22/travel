@@ -76,31 +76,43 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     const currentUrl = usePage().url;
 
-    // 2. Map database menus to sidebar format
+    // 2. Map database menus to sidebar format with robust active path matching
     const navMain = React.useMemo(() => {
+        const cleanPath = currentUrl.split('?')[0].split('#')[0];
+
+        const isMatch = (targetUrl: string) => {
+            if (!targetUrl || targetUrl === '#') return false;
+            const cleanTarget = targetUrl.split('?')[0].split('#')[0];
+            return (
+                targetUrl === currentUrl ||
+                cleanTarget === cleanPath ||
+                (cleanTarget !== '/' && cleanPath.startsWith(cleanTarget))
+            );
+        };
+
         return (menus || []).map((menu) => {
-            const hasActiveChild = (menu.children || []).some(
-                (child) => child.url === currentUrl
-            )
+            const isMenuDirectMatch = isMatch(menu.url);
+            const hasActiveChild = (menu.children || []).some((child) => isMatch(child.url));
+
             return {
                 title: menu.title,
                 url: menu.url,
                 icon: menu.icon ? (iconMap[menu.icon] as any) : undefined,
-                isActive: menu.url === currentUrl || hasActiveChild,
+                isActive: isMenuDirectMatch || hasActiveChild,
                 items: (menu.children || []).map((child) => ({
                     title: child.title,
                     url: child.url,
-                    isActive: child.url === currentUrl,
+                    isActive: isMatch(child.url),
                 })),
-            }
-        })
-    }, [menus, currentUrl])
+            };
+        });
+    }, [menus, currentUrl]);
 
     const userData = React.useMemo(() => {
         return {
             name: user.name,
             email: user.email,
-            avatar: "", // handled via user initials inside NavUser fallback
+            avatar: user.avatar_url || (user.avatar ? `/storage/${user.avatar}` : ''),
         }
     }, [user])
 
