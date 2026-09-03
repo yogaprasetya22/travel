@@ -300,13 +300,13 @@ export default function Profile({ agent, tenant, registerUrl }: Props) {
                                         <div className="p-2 rounded-xl shrink-0 bg-black/10 dark:bg-white/10">
                                             {getLinkIcon(item.icon)}
                                         </div>
-                                        <div className="flex flex-col text-left">
+                                        <div className="flex flex-col text-left min-w-0">
                                             <span className="text-xs sm:text-sm leading-snug font-bold">{item.title}</span>
                                             {item.target_type === 'tenant_wa' && (
-                                                <span className="text-[10px] opacity-80">WhatsApp Induk Travel Resmi</span>
+                                                <span className="text-[10px] opacity-75 font-normal">➔ CS Induk Travel</span>
                                             )}
                                             {item.target_type === 'agent_wa' && (
-                                                <span className="text-[10px] opacity-80">WhatsApp Pribadi Konsultan</span>
+                                                <span className="text-[10px] opacity-75 font-normal">➔ WA Pribadi Agen</span>
                                             )}
                                         </div>
                                     </div>
