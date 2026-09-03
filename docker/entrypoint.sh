@@ -6,7 +6,22 @@ mkdir -p /var/www/html/storage/logs \
          /var/www/html/storage/framework/cache \
          /var/www/html/storage/framework/sessions \
          /var/www/html/storage/framework/views \
-         /var/www/html/bootstrap/cache
+         /var/www/html/bootstrap/cache \
+         /var/www/html/vendor
+
+# Remove legacy schema dump if present to prevent psql command error
+rm -rf /var/www/html/database/schema
+
+# Restore vendor if mounted volume is empty
+if [ ! -f /var/www/html/vendor/autoload.php ]; then
+  if [ -d /opt/vendor ]; then
+    echo "[entrypoint] Restoring vendor dependencies from image..."
+    cp -rp /opt/vendor/. /var/www/html/vendor/
+  else
+    echo "[entrypoint] Installing composer dependencies..."
+    composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction || true
+  fi
+fi
 
 # Auto-generate APP_KEY if missing
 if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "base64:" ] || [ "$APP_KEY" = "" ]; then

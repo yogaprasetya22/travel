@@ -75,10 +75,12 @@ RUN { \
     echo 'max_execution_time=60'; \
 } > /usr/local/etc/php/conf.d/limits.ini
 
-WORKDIR /var/www/html
+# Copy composer binary
+COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
 
 # Copy app and compiled frontend assets from builders
 COPY --from=composer-builder /app .
+COPY --from=composer-builder /app/vendor /opt/vendor
 COPY --from=frontend-builder /app/public/build ./public/build
 
 # Storage & cache dirs
