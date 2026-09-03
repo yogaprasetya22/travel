@@ -1,0 +1,1 @@
+import{n as e}from"./dist-Cki0ibaa.js";function t(t){return e(t.defaultTagName??`div`,t,t)}export{t};

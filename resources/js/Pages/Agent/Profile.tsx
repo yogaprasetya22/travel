@@ -284,7 +284,8 @@ export default function Profile({ agent, tenant, registerUrl }: Props) {
                         {customLinks.map((item, index) => {
                             const finalHref = resolveLinkHref(item);
                             const isInternal = finalHref.startsWith('/') || (typeof window !== 'undefined' && finalHref.includes(window.location.host));
-                            const cardClass = getLinkClass(item);
+                            const targetType = item.target_type || (finalHref.includes('wa.me') ? (rawTenantWa && finalHref.includes(formattedTenantWa) ? 'tenant_wa' : 'agent_wa') : undefined);
+                            const cardClass = getLinkClass({ ...item, target_type: targetType });
 
                             return (
                                 <motion.a
@@ -302,10 +303,10 @@ export default function Profile({ agent, tenant, registerUrl }: Props) {
                                         </div>
                                         <div className="flex flex-col text-left min-w-0">
                                             <span className="text-xs sm:text-sm leading-snug font-bold">{item.title}</span>
-                                            {item.target_type === 'tenant_wa' && (
+                                            {targetType === 'tenant_wa' && (
                                                 <span className="text-[10px] opacity-75 font-normal">➔ CS Induk Travel</span>
                                             )}
-                                            {item.target_type === 'agent_wa' && (
+                                            {targetType === 'agent_wa' && (
                                                 <span className="text-[10px] opacity-75 font-normal">➔ WA Pribadi Agen</span>
                                             )}
                                         </div>
