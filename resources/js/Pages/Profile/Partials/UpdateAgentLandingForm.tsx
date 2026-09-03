@@ -739,8 +739,11 @@ export default function UpdateAgentLandingForm({
                                     const isPrimary = link.style_type === 'primary' || link.is_highlight;
 
                                     return (
-                                        <div
+                                        <a
                                             key={link.id || i}
+                                            href={link.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
                                             className={`w-full p-2.5 rounded-xl transition-all flex items-center justify-between text-[10px] font-bold text-left shadow-2xs border ${isEmerald
                                                 ? 'bg-emerald-600/90 text-white border-emerald-500/40'
                                                 : isPrimary
@@ -763,65 +766,70 @@ export default function UpdateAgentLandingForm({
                                                 </div>
                                             </div>
                                             <ChevronRight className="w-3 h-3 shrink-0 opacity-75" />
-                                        </div>
+                                        </a>
                                     );
                                 })}
-                            </div>
+                            </div> {/* Social Media Bar */}
+                            {(data.social_links.instagram || data.social_links.tiktok || data.social_links.youtube || data.social_links.facebook) && (
+                                <div className="flex items-center justify-center gap-3 pt-2">
+                                    {data.social_links.instagram && (
+                                        <a
+                                            href={`https://instagram.com/${data.social_links.instagram.replace('@', '')}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="p-2.5 rounded-full bg-card hover:bg-muted text-muted-foreground hover:text-pink-500 border border-border/80 shadow-xs transition-colors"
+                                            title="Instagram"
+                                        >
+                                            <Share2 className="w-3.5 h-3.5" />
+                                        </a>
+                                    )}
+                                    {data.social_links.tiktok && (
+                                        <a
+                                            href={`https://tiktok.com/@${data.social_links.tiktok.replace('@', '')}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="p-2.5 rounded-full bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border/80 shadow-xs transition-colors"
+                                            title="TikTok"
+                                        >
+                                            <Globe className="w-3.5 h-3.5" />
+                                        </a>
+                                    )}
+                                    {data.social_links.youtube && (
+                                        <a
+                                            href={data.social_links.youtube.startsWith('http') ? data.social_links.youtube : `https://youtube.com/@${data.social_links.youtube}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="p-2.5 rounded-full bg-card hover:bg-muted text-muted-foreground hover:text-red-500 border border-border/80 shadow-xs transition-colors"
+                                            title="YouTube"
+                                        >
+                                            <Video className="w-3.5 h-3.5" />
+                                        </a>
+                                    )}
+                                    {data.social_links.facebook && (
+                                        <a
+                                            href={data.social_links.facebook.startsWith('http') ? data.social_links.facebook : `https://facebook.com/${data.social_links.facebook}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="p-2.5 rounded-full bg-card hover:bg-muted text-muted-foreground hover:text-blue-500 border border-border/80 shadow-xs transition-colors"
+                                            title="Facebook"
+                                        >
+                                            <Globe className="w-3.5 h-3.5" />
+                                        </a>
+                                    )}
+                                </div>
+                            )}
                         </div>
-                        {/* Social Media Bar */}
-                        {(data.social_links.instagram || data.social_links.tiktok || data.social_links.youtube || data.social_links.facebook) && (
-                            <div className="flex items-center justify-center gap-3 pt-2">
-                                {data.social_links.instagram && (
-                                    <a
-                                        href={`https://instagram.com/${data.social_links.instagram.replace('@', '')}`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="p-2.5 rounded-full bg-card hover:bg-muted text-muted-foreground hover:text-pink-500 border border-border/80 shadow-xs transition-colors"
-                                        title="Instagram"
-                                    >
-                                        <Share2 className="w-3.5 h-3.5" />
-                                    </a>
-                                )}
-                                {data.social_links.tiktok && (
-                                    <a
-                                        href={`https://tiktok.com/@${data.social_links.tiktok.replace('@', '')}`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="p-2.5 rounded-full bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border/80 shadow-xs transition-colors"
-                                        title="TikTok"
-                                    >
-                                        <Globe className="w-3.5 h-3.5" />
-                                    </a>
-                                )}
-                                {data.social_links.youtube && (
-                                    <a
-                                        href={data.social_links.youtube.startsWith('http') ? data.social_links.youtube : `https://youtube.com/@${data.social_links.youtube}`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="p-2.5 rounded-full bg-card hover:bg-muted text-muted-foreground hover:text-red-500 border border-border/80 shadow-xs transition-colors"
-                                        title="YouTube"
-                                    >
-                                        <Video className="w-3.5 h-3.5" />
-                                    </a>
-                                )}
-                                {data.social_links.facebook && (
-                                    <a
-                                        href={data.social_links.facebook.startsWith('http') ? data.social_links.facebook : `https://facebook.com/${data.social_links.facebook}`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="p-2.5 rounded-full bg-card hover:bg-muted text-muted-foreground hover:text-blue-500 border border-border/80 shadow-xs transition-colors"
-                                        title="Facebook"
-                                    >
-                                        <Globe className="w-3.5 h-3.5" />
-                                    </a>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                        <br />
                         {/* Footer inside Phone */}
-                        <div className="w-full pt-3 pb-1 border-t border-border/40 text-[8px] text-muted-foreground z-10">
-                            &copy; {new Date().getFullYear()} {tenant?.nama_travel || 'Travel'}. All rights reserved.
-                        </div>
+                        <footer className="pt-3 pb-2 flex flex-col items-center gap-1 text-center">
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/40 border border-border/50 text-[8px] font-medium text-muted-foreground">
+                                <ShieldCheck className="w-3 h-3 text-primary" />
+                                <span>Layanan Konsultasi Resmi &amp; Amanah</span>
+                            </div>
+                            <p className="text-[8px] text-muted-foreground/60">
+                                &copy; {new Date().getFullYear()} {tenant?.nama_travel || 'Travel'}. Semoga menjadi langkah awal ibadah yang mabrur.
+                            </p>
+                        </footer>
                     </div>
                 </div>
             </div>

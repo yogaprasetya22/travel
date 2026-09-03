@@ -36,7 +36,7 @@ export default function Profile({ agent, tenant, registerUrl }: Props) {
 
     // WhatsApp phone resolution: Agent Personal & Tenant Business Phone
     const rawAgentWa = agent.no_hp ? agent.no_hp.replace(/[^0-9]/g, '') : '';
-    const formattedAgentWa = rawAgentWa ? (rawAgentWa.startsWith('0') ? '62' + rawAgentWa.slice(1) : rawAgentWa) : '6288969991215';
+    const formattedAgentWa = rawAgentWa ? (rawAgentWa.startsWith('0') ? '62' + rawAgentWa.slice(1) : rawAgentWa) : '628123456789';
 
     const rawTenantWa = tenant?.no_telepon ? tenant.no_telepon.replace(/[^0-9]/g, '') : '';
     const formattedTenantWa = rawTenantWa ? (rawTenantWa.startsWith('0') ? '62' + rawTenantWa.slice(1) : rawTenantWa) : formattedAgentWa;
@@ -124,7 +124,7 @@ export default function Profile({ agent, tenant, registerUrl }: Props) {
                 title: `Konsultan Bimbingan Umroh - ${agent.name}`,
                 text: `Bimbingan Ibadah Umroh & Haji Amanah bersama ${agent.name} (${tenant?.nama_travel || 'Travel Resmi'})`,
                 url: window.location.href,
-            }).catch(() => {});
+            }).catch(() => { });
         } else {
             await copyToClipboard(window.location.href);
             alert('Tautan halaman berhasil disalin.');
@@ -135,7 +135,7 @@ export default function Profile({ agent, tenant, registerUrl }: Props) {
         <>
             <Head title={`Bimbingan Ibadah Umroh - ${agent.name} (${tenant?.nama_travel || 'Travel'})`} />
 
-            <div 
+            <div
                 className="min-h-screen bg-background text-foreground font-sans flex flex-col items-center justify-between selection:bg-primary selection:text-primary-foreground relative px-4 py-8 sm:py-12"
                 style={(themeData.themes[(tenant?.theme_name as keyof typeof themeData.themes) || 'coffee']?.variables || themeData.themes['coffee'].variables) as React.CSSProperties}
             >
@@ -215,7 +215,7 @@ export default function Profile({ agent, tenant, registerUrl }: Props) {
                         <div className="w-full p-4.5 rounded-2xl bg-gradient-to-b from-card/90 to-card/60 backdrop-blur-md border border-border/80 shadow-xs text-left relative overflow-hidden group">
                             {/* Subtle Background Watermark */}
                             <Quote className="absolute top-2 right-3 w-10 h-10 text-primary/10 -rotate-12 pointer-events-none transition-transform group-hover:scale-110" />
-                            
+
                             <div className="flex items-start gap-2.5 relative z-10 p-5">
                                 <div className="p-1 rounded-md bg-primary/10 text-primary shrink-0 mt-0.5">
                                     <Quote className="w-3.5 h-3.5" />
