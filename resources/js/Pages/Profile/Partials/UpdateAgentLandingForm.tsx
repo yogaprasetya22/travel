@@ -167,6 +167,9 @@ export default function UpdateAgentLandingForm({
 
     // Formatted phone numbers for simulation in live preview
     const cleanAgentPhone = data.no_hp.replace(/[^0-9]/g, '');
+    const formattedAgentWa = cleanAgentPhone
+        ? (cleanAgentPhone.startsWith('0') ? '62' + cleanAgentPhone.slice(1) : cleanAgentPhone)
+        : '628123456789';
     const cleanTenantPhone = (tenant?.no_telepon || '6281234567890').replace(/[^0-9]/g, '');
 
     const getIconComponent = (iconName?: string) => {
@@ -376,10 +379,10 @@ export default function UpdateAgentLandingForm({
                                         <div
                                             key={link.id || idx}
                                             className={`p-4 rounded-2xl border transition-all flex flex-col gap-3 ${link.target_type === 'tenant_wa'
-                                                    ? 'bg-emerald-500/5 border-emerald-500/30 dark:bg-emerald-950/10'
-                                                    : link.target_type === 'agent_wa'
-                                                        ? 'bg-blue-500/5 border-blue-500/30 dark:bg-blue-950/10'
-                                                        : 'bg-card/90 border-border/80'
+                                                ? 'bg-emerald-500/5 border-emerald-500/30 dark:bg-emerald-950/10'
+                                                : link.target_type === 'agent_wa'
+                                                    ? 'bg-blue-500/5 border-blue-500/30 dark:bg-blue-950/10'
+                                                    : 'bg-card/90 border-border/80'
                                                 }`}
                                         >
                                             {/* Header Card: Judul & Action */}
@@ -413,8 +416,8 @@ export default function UpdateAgentLandingForm({
                                                     type="button"
                                                     onClick={() => handleLinkChange(idx, 'target_type', 'agent_wa')}
                                                     className={`p-2.5 rounded-xl border text-left text-[11px] font-semibold flex flex-col gap-1 cursor-pointer transition-all ${link.target_type === 'agent_wa'
-                                                            ? 'border-blue-500 bg-blue-500/15 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/30'
-                                                            : 'border-border/70 bg-background/60 text-muted-foreground hover:border-foreground/30'
+                                                        ? 'border-blue-500 bg-blue-500/15 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/30'
+                                                        : 'border-border/70 bg-background/60 text-muted-foreground hover:border-foreground/30'
                                                         }`}
                                                 >
                                                     <span className="font-bold flex items-center gap-1.5">
@@ -430,8 +433,8 @@ export default function UpdateAgentLandingForm({
                                                     type="button"
                                                     onClick={() => handleLinkChange(idx, 'target_type', 'tenant_wa')}
                                                     className={`p-2.5 rounded-xl border text-left text-[11px] font-semibold flex flex-col gap-1 cursor-pointer transition-all ${link.target_type === 'tenant_wa'
-                                                            ? 'border-emerald-500 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/30'
-                                                            : 'border-border/70 bg-background/60 text-muted-foreground hover:border-foreground/30'
+                                                        ? 'border-emerald-500 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/30'
+                                                        : 'border-border/70 bg-background/60 text-muted-foreground hover:border-foreground/30'
                                                         }`}
                                                 >
                                                     <span className="font-bold flex items-center gap-1.5">
@@ -447,8 +450,8 @@ export default function UpdateAgentLandingForm({
                                                     type="button"
                                                     onClick={() => handleLinkChange(idx, 'target_type', 'custom_url')}
                                                     className={`p-2.5 rounded-xl border text-left text-[11px] font-semibold flex flex-col gap-1 cursor-pointer transition-all ${link.target_type === 'custom_url' || !link.target_type
-                                                            ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary/30'
-                                                            : 'border-border/70 bg-background/60 text-muted-foreground hover:border-foreground/30'
+                                                        ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary/30'
+                                                        : 'border-border/70 bg-background/60 text-muted-foreground hover:border-foreground/30'
                                                         }`}
                                                 >
                                                     <span className="font-bold flex items-center gap-1.5">
@@ -672,20 +675,42 @@ export default function UpdateAgentLandingForm({
                             </div>
 
                             {/* Bio Card */}
-                            <div className="w-full p-2.5 rounded-xl bg-card/60 backdrop-blur-xs border border-border/70 text-left text-[10px] leading-relaxed relative">
-                                <Quote className="w-3 h-3 text-primary/30 mb-1" />
-                                <p className="text-foreground/80">
-                                    {data.bio || 'Setiap langkah Anda menuju Tanah Suci adalah perjalanan hati yang berharga.'}
-                                </p>
+                            <div className="w-full p-4.5 rounded-2xl bg-gradient-to-b from-card/90 to-card/60 backdrop-blur-md border border-border/80 shadow-xs text-left relative overflow-hidden group">
+                                {/* Subtle Background Watermark */}
+                                <Quote className="absolute top-2 right-3 w-10 h-10 text-primary/10 -rotate-12 pointer-events-none transition-transform group-hover:scale-110" />
+
+                                <div className="flex items-start gap-2.5 relative z-10 p-5">
+                                    <div className="p-1 rounded-md bg-primary/10 text-primary shrink-0 mt-0.5">
+                                        <Quote className="w-3.5 h-3.5" />
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <p className="text-xs text-foreground/85 font-normal leading-relaxed">
+                                            {data.bio && data.bio.trim() !== '' ? data.bio : 'Setiap langkah Anda menuju Tanah Suci adalah perjalanan hati yang berharga.'}
+                                        </p>
+                                        <div className="flex items-center gap-2 pt-0.5">
+                                            <div className="h-px w-5 bg-primary/40" />
+                                            <span className="text-[10px] font-semibold text-primary tracking-wide">
+                                                Komitmen Pelayanan Konsultan
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Main Emerald Contact */}
-                            <div className="w-full p-2.5 rounded-xl bg-emerald-600 text-white font-bold text-[11px] flex items-center justify-between shadow-xs">
-                                <div className="flex items-center gap-2">
-                                    <MessageCircle className="w-3.5 h-3.5 fill-white" />
-                                    <span>Konsultasi Bimbingan Ibadah</span>
+                            <div
+                                className="w-full p-3.5 rounded-2xl bg-emerald-700/90 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm flex items-center justify-between shadow-sm transition-all border border-emerald-600/40"
+                            >
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className="p-2 rounded-xl bg-white/15 text-white shrink-0">
+                                        <MessageCircle className="w-4 h-4 fill-white" />
+                                    </div>
+                                    <div className="flex flex-col text-left">
+                                        <span className="font-bold text-xs sm:text-sm">Konsultasi &amp; Tanya Jawab Bimbingan</span>
+                                        <span className="text-[10px] text-emerald-100 font-normal">Hubungi langsung via WhatsApp (+{formattedAgentWa})</span>
+                                    </div>
                                 </div>
-                                <ChevronRight className="w-3 h-3 opacity-80" />
+                                <ChevronRight className="w-4 h-4 text-white/80 shrink-0" />
                             </div>
 
                             {/* Action Cards List */}
@@ -698,10 +723,10 @@ export default function UpdateAgentLandingForm({
                                         <div
                                             key={link.id || i}
                                             className={`w-full p-2.5 rounded-xl transition-all flex items-center justify-between text-[10px] font-bold text-left shadow-2xs border ${isEmerald
-                                                    ? 'bg-emerald-600/90 text-white border-emerald-500/40'
-                                                    : isPrimary
-                                                        ? 'bg-primary text-primary-foreground border-primary/30'
-                                                        : 'bg-card/80 text-foreground border-border/80'
+                                                ? 'bg-emerald-600/90 text-white border-emerald-500/40'
+                                                : isPrimary
+                                                    ? 'bg-primary text-primary-foreground border-primary/30'
+                                                    : 'bg-card/80 text-foreground border-border/80'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-2 min-w-0">
