@@ -1,11 +1,19 @@
 
 # ─────────────────────────────────────────
+# Stage 1: Frontend (Node/Vite builder)
+# ─────────────────────────────────────────
+FROM node:20-alpine AS frontend-builder
+WORKDIR /app
+COPY package.json package-lock.json* bun.lock* ./
+RUN npm ci || npm install
+COPY . .
+RUN npm run build
+
+# ─────────────────────────────────────────
 # Stage 2: PHP/Composer builder
 # ─────────────────────────────────────────
 FROM composer:2.8 AS composer-builder
-
 WORKDIR /app
-
 COPY composer.json composer.lock ./
 RUN composer install \
     --no-dev \
@@ -13,7 +21,6 @@ RUN composer install \
     --no-autoloader \
     --ignore-platform-reqs \
     --prefer-dist
-
 COPY . .
 RUN composer dump-autoload --optimize --no-dev
 
@@ -31,9 +38,9 @@ RUN apk add --no-cache \
     git \
     supervisor
 
-# Install PHP extensions using mlocati for pre-compiled binaries (faster than compiling from source)
+# Install PHP extensions using mlocati installer
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
-RUN install-php-extensions gd pdo_pgsql pgsql zip intl opcache pcntl bcmath
+RUN install-php-extensions gd pdo_pgsql pgsql pdo_mysql zip intl opcache pcntl bcmath redis
 
 # OPcache tuning for production
 RUN { \
@@ -69,8 +76,9 @@ RUN { \
 
 WORKDIR /var/www/html
 
-# Copy app from builders
+# Copy app and compiled frontend assets from builders
 COPY --from=composer-builder /app .
+COPY --from=frontend-builder /app/public/build ./public/build
 
 # Storage & cache dirs
 RUN mkdir -p storage/logs \
@@ -78,7 +86,7 @@ RUN mkdir -p storage/logs \
               storage/framework/sessions \
               storage/framework/views \
               bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache public/build \
     && chmod -R 775 storage bootstrap/cache
 
 # Supervisor config
