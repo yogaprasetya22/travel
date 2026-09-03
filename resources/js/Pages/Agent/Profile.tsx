@@ -102,7 +102,7 @@ export default function Profile({ agent, tenant, registerUrl }: Props) {
     };
 
     const getLinkClass = (item: LandingLinkItem) => {
-        if (item.style_type === 'emerald' || item.target_type === 'tenant_wa' || (item.target_type === 'agent_wa' && item.is_highlight)) {
+        if (item.style_type === 'emerald') {
             return 'bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-sm border border-emerald-500/40';
         }
         if (item.style_type === 'primary' || item.is_highlight) {
@@ -285,7 +285,7 @@ export default function Profile({ agent, tenant, registerUrl }: Props) {
                             const finalHref = resolveLinkHref(item);
                             const isInternal = finalHref.startsWith('/') || (typeof window !== 'undefined' && finalHref.includes(window.location.host));
                             const targetType = item.target_type || (finalHref.includes('wa.me') ? (rawTenantWa && finalHref.includes(formattedTenantWa) ? 'tenant_wa' : 'agent_wa') : undefined);
-                            const cardClass = getLinkClass({ ...item, target_type: targetType });
+                            const cardClass = getLinkClass(item);
 
                             return (
                                 <motion.a
