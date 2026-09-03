@@ -7,26 +7,42 @@ export function cn(...inputs: ClassValue[]) {
 
 /**
  * Membangun URL Bio Link Agen dengan subdomain tenant yang sesuai.
- * Contoh: http://barokah.localhost:8000/agen/AG-DXPP4B
+ * Mendukung nip.io, raw IP, localhost, dan custom domain.
+ * Contoh: http://hajjflow.72.62.125.68.nip.io:8085/agen/AG-06063D
  */
 export function getAgentBioUrl(referralCode?: string | null, tenantSubdomain?: string | null): string {
     if (!referralCode || typeof window === 'undefined') return '';
 
-    const subdomain = tenantSubdomain || 'barokah';
+    const subdomain = tenantSubdomain || 'hajjflow';
     const { protocol, hostname, port } = window.location;
     const portSuffix = port ? `:${port}` : '';
 
-    // Jika hostname sudah diawali dengan subdomain tenant
+    // 1. Jika sudah berada di subdomain yang tepat
     if (hostname.startsWith(`${subdomain}.`)) {
         return `${protocol}//${hostname}${portSuffix}/agen/${referralCode}`;
     }
 
-    // Jika di localhost / IP lokal
+    // 2. Jika di localhost / 127.0.0.1
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return `${protocol}//${subdomain}.localhost${portSuffix}/agen/${referralCode}`;
     }
 
-    // Jika di domain production
+    // 3. Jika menggunakan wildcard DNS nip.io / sslip.io (misal: 72.62.125.68.nip.io atau tenant.72.62.125.68.nip.io)
+    if (hostname.includes('.nip.io') || hostname.includes('.sslip.io')) {
+        // Ambil root IP + nip.io (misal: 72.62.125.68.nip.io)
+        const nipMatch = hostname.match(/(\d+\.\d+\.\d+\.\d+\.(?:nip|sslip)\.io)/);
+        if (nipMatch) {
+            return `${protocol}//${subdomain}.${nipMatch[1]}${portSuffix}/agen/${referralCode}`;
+        }
+    }
+
+    // 4. Jika hostname adalah angka IPv4 mentah (misal: 72.62.125.68)
+    const isRawIp = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname);
+    if (isRawIp) {
+        return `${protocol}//${subdomain}.${hostname}.nip.io${portSuffix}/agen/${referralCode}`;
+    }
+
+    // 5. Jika custom domain biasa (misal: travelumroh.com atau app.travelumroh.com)
     const parts = hostname.split('.');
     if (parts.length >= 2) {
         const domainRoot = parts.slice(-2).join('.');
