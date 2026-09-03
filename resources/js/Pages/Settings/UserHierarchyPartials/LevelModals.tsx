@@ -69,7 +69,7 @@ export function LevelFormModal({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (mode === 'create') {
-            post(route('settings.user-hierarchy.levels.store'), {
+            post(route('settings.users.levels.store'), {
                 preserveScroll: true,
                 onSuccess: () => {
                     reset();
@@ -77,7 +77,7 @@ export function LevelFormModal({
                 },
             });
         } else if (mode === 'edit' && editingLevel) {
-            put(route('settings.user-hierarchy.levels.update', editingLevel.id), {
+            put(route('settings.users.levels.update', editingLevel.id), {
                 preserveScroll: true,
                 onSuccess: () => {
                     reset();
@@ -232,7 +232,7 @@ export function DeleteLevelModal({
         e.preventDefault();
         if (!deletingLevel) return;
 
-        router.delete(route('settings.user-hierarchy.levels.destroy', deletingLevel.id), {
+        router.delete(route('settings.users.levels.destroy', deletingLevel.id), {
             data: {
                 reassign_to_level_id: data.reassign_to_level_id || null,
             },

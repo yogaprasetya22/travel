@@ -76,7 +76,7 @@ export function AddUserSheet({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('settings.user-hierarchy.users.store'), {
+        post(route('settings.users.store'), {
             preserveScroll: true,
             onSuccess: () => {
                 reset();
@@ -420,7 +420,7 @@ export function EditUserSheet({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingUser) return;
-        put(route('settings.user-hierarchy.users.update', editingUser.id), {
+        put(route('settings.users.update', editingUser.id), {
             preserveScroll: true,
             onSuccess: () => {
                 reset();

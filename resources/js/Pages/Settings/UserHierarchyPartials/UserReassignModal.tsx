@@ -39,7 +39,7 @@ export function UserReassignModal({
         e.preventDefault();
         if (!reassigningUser) return;
 
-        post(route('settings.user-hierarchy.users.reassign', reassigningUser.id), {
+        post(route('settings.users.reassign', reassigningUser.id), {
             preserveScroll: true,
             onSuccess: () => {
                 reset();
