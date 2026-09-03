@@ -36,7 +36,8 @@ RUN apk add --no-cache \
     bash \
     curl \
     git \
-    supervisor
+    supervisor \
+    postgresql-client
 
 # Install PHP extensions using mlocati installer
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
