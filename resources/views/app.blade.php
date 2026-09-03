@@ -15,11 +15,15 @@
             (function() {
                 try {
                     var themes = @json($themeData);
-                    var pref = localStorage.getItem('theme_preference') || 'dark';
+                    var pref = localStorage.getItem('theme_preference') || 'luxury';
                     if (pref === 'system') {
-                        pref = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                        pref = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'luxury' : 'caramellatte';
+                    } else if (pref === 'dark') {
+                        pref = 'luxury';
+                    } else if (pref === 'light') {
+                        pref = 'caramellatte';
                     }
-                    var activeTheme = themes[pref] || themes['dark'] || themes['light'];
+                    var activeTheme = themes[pref] || themes['luxury'] || themes['caramellatte'];
                     if (activeTheme) {
                         var root = document.documentElement;
                         if (activeTheme.type === 'dark') {

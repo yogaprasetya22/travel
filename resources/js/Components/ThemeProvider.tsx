@@ -30,7 +30,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
                 return saved;
             }
         }
-        return 'dark';
+        return 'luxury';
     });
 
     const applyTheme = (t: ThemeKey) => {
@@ -39,10 +39,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
         if (t === 'system') {
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            activeKey = prefersDark ? 'dark' : 'light';
+            activeKey = prefersDark ? 'luxury' : 'caramellatte';
+        } else if (t === 'dark') {
+            activeKey = 'luxury';
+        } else if (t === 'light') {
+            activeKey = 'caramellatte';
         }
 
-        const themeDef = allThemes[activeKey] || allThemes['dark'] || allThemes['light'];
+        const themeDef = allThemes[activeKey] || allThemes['luxury'] || allThemes['caramellatte'];
 
         if (themeDef) {
             // Apply all CSS variables defined for the theme

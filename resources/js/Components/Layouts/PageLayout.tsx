@@ -49,9 +49,9 @@ export default function PageLayout({
 
     const toggleQuickTheme = () => {
         if (currentThemeDef?.type === 'dark') {
-            setTheme('light');
+            setTheme('caramellatte');
         } else {
-            setTheme('dark');
+            setTheme('luxury');
         }
     };
 
