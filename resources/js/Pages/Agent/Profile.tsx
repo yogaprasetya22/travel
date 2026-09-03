@@ -105,10 +105,10 @@ export default function Profile({ agent, tenant, registerUrl }: Props) {
         if (item.style_type === 'emerald') {
             return 'bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-sm border border-emerald-500/40';
         }
-        if (item.style_type === 'primary' || item.is_highlight) {
+        if (item.style_type === 'primary') {
             return 'bg-primary text-primary-foreground font-semibold shadow-xs border border-primary/30 hover:bg-primary/95';
         }
-        return 'bg-card/85 hover:bg-muted text-foreground border border-border/80 hover:border-primary/40 font-medium';
+        return 'bg-card/85 hover:bg-card text-foreground border border-border/80 hover:border-primary/40 font-medium';
     };
 
     const socials: SocialLinks = agent.social_links || {};

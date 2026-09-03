@@ -1,0 +1,1 @@
+import{n as e}from"./dist-Bq_ipKR-.js";function t(t){return e(t.defaultTagName??`div`,t,t)}export{t};

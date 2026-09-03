@@ -735,8 +735,8 @@ export default function UpdateAgentLandingForm({
                             {/* Action Cards List */}
                             <div className="w-full flex flex-col gap-2 pt-1">
                                 {data.landing_links.map((link, i) => {
-                                    const isEmerald = link.style_type === 'emerald' || link.target_type === 'tenant_wa';
-                                    const isPrimary = link.style_type === 'primary' || link.is_highlight;
+                                    const isEmerald = link.style_type === 'emerald';
+                                    const isPrimary = link.style_type === 'primary';
 
                                     return (
                                         <a
@@ -745,10 +745,10 @@ export default function UpdateAgentLandingForm({
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className={`w-full p-2.5 rounded-xl transition-all flex items-center justify-between text-[10px] font-bold text-left shadow-2xs border ${isEmerald
-                                                ? 'bg-emerald-600/90 text-white border-emerald-500/40'
+                                                ? 'bg-emerald-600 text-white border-emerald-500/40'
                                                 : isPrimary
                                                     ? 'bg-primary text-primary-foreground border-primary/30'
-                                                    : 'bg-card/80 text-foreground border-border/80'
+                                                    : 'bg-card/90 text-foreground border-border/80'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-2 min-w-0">
@@ -756,9 +756,9 @@ export default function UpdateAgentLandingForm({
                                                     {getIconComponent(link.icon)}
                                                 </div>
                                                 <div className="flex flex-col min-w-0">
-                                                    <span className="truncate">{link.title || 'Tautan Tanpa Judul'}</span>
+                                                    <span className="truncate -mb-2">{link.title || 'Tautan Tanpa Judul'}</span>
                                                     {link.target_type === 'tenant_wa' && (
-                                                        <span className="text-[8px] opacity-75 font-normal">➔ CS Induk Travel</span>
+                                                        <span className="text-[8px] opacity-75 font-normal ">➔ CS Induk Travel</span>
                                                     )}
                                                     {link.target_type === 'agent_wa' && (
                                                         <span className="text-[8px] opacity-75 font-normal">➔ WA Pribadi Agen</span>
