@@ -317,6 +317,9 @@ class TenantDatasetSeeder extends Seeder
                     $email = $isPrimaryDemo ? 'budi@example.com' : "agent{$agentNum}.t".($tIndex + 1).'@travel.com';
                     $referral = $isPrimaryDemo ? 'AG-DXPP4B' : 'AG-'.strtoupper(substr(md5("ag-{$tIndex}-{$agentNum}"), 0, 6));
 
+                    $agentPhoneRaw = '08'.($isPrimaryDemo ? '88969991215' : (rand(11, 19).rand(1000000, 9999999)));
+                    $agentPhoneWa = '62'.substr($agentPhoneRaw, 1);
+
                     $agents[] = User::create([
                         'tenant_id' => $tenant->id,
                         'hierarchy_level_id' => $agentLevel->id,
@@ -326,7 +329,7 @@ class TenantDatasetSeeder extends Seeder
                         'role' => 'agen',
                         'jabatan' => 'Konsultan Bimbingan Umroh',
                         'nik' => '32'.str_pad((string) (73000000000000 + ($tIndex * 100) + $agentNum), 14, '0', STR_PAD_LEFT),
-                        'no_hp' => '08'.($isPrimaryDemo ? '81234567890' : (rand(11, 19).rand(1000000, 9999999))),
+                        'no_hp' => $agentPhoneRaw,
                         'kota' => $cities[($agentNum * 3) % count($cities)],
                         'alamat' => "Jl. Dahlia Indah No. {$agentNum}, RT 04/RW 02",
                         'status_karyawan' => 'aktif',
@@ -339,21 +342,21 @@ class TenantDatasetSeeder extends Seeder
                             [
                                 'id' => 'link-1',
                                 'title' => 'Daftar Paket Umroh Reguler Promo',
-                                'url' => 'https://wa.me/6281234567890?text=Halo%20saya%20tertarik%20paket%20Umroh%20Reguler',
+                                'url' => "https://wa.me/{$agentPhoneWa}?text=Halo%20saya%20tertarik%20paket%20Umroh%20Reguler",
                                 'icon' => 'plane',
                                 'is_highlight' => true,
                             ],
                             [
                                 'id' => 'link-2',
                                 'title' => 'Download Brosur & Jadwal Keberangkatan',
-                                'url' => 'https://wa.me/6281234567890?text=Mohon%20kirimkan%20brosur%20paket%20terbaru',
+                                'url' => "https://wa.me/{$agentPhoneWa}?text=Mohon%20kirimkan%20brosur%20paket%20terbaru",
                                 'icon' => 'file',
                                 'is_highlight' => false,
                             ],
                             [
                                 'id' => 'link-3',
                                 'title' => 'Konsultasi Tabungan Porsi Haji Furoda',
-                                'url' => 'https://wa.me/6281234567890?text=Konsultasi%20Haji%20Furoda',
+                                'url' => "https://wa.me/{$agentPhoneWa}?text=Konsultasi%20Haji%20Furoda",
                                 'icon' => 'chat',
                                 'is_highlight' => false,
                             ],

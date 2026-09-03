@@ -165,7 +165,7 @@ export function CreateTenantSheet({
 
                         <div>
                             <label className="block text-xs font-bold text-foreground mb-1.5">
-                                Nomor WhatsApp / CS Resmi Travel
+                                WhatsApp Business
                             </label>
                             <input
                                 type="text"
@@ -174,7 +174,7 @@ export function CreateTenantSheet({
                                 onChange={(e) => setCreateForm({ ...createForm, no_telepon: e.target.value })}
                                 className="w-full px-4 py-2.5 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground shadow-2xs"
                             />
-                            <p className="text-[10px] text-muted-foreground mt-1">Digunakan untuk tombol konsultasi WhatsApp calon jamaah pada landing page publik.</p>
+                            <p className="text-[10px] text-muted-foreground mt-1">Digunakan untuk whatsapp bisnis travel </p>
                             {createErrors.no_telepon && (
                                 <p className="text-[11px] text-rose-500 mt-1 font-medium">{createErrors.no_telepon}</p>
                             )}
@@ -264,9 +264,8 @@ export function CreateTenantSheet({
                                             key={t.name}
                                             type="button"
                                             onClick={() => setCreateForm({ ...createForm, theme_name: t.name })}
-                                            className={`p-2.5 rounded-xl border text-left text-xs font-bold capitalize transition-all flex items-center justify-between gap-1 cursor-pointer ${
-                                                isSelected ? 'border-primary ring-2 ring-primary/30 shadow-xs' : 'border-border hover:border-foreground/30'
-                                            }`}
+                                            className={`p-2.5 rounded-xl border text-left text-xs font-bold capitalize transition-all flex items-center justify-between gap-1 cursor-pointer ${isSelected ? 'border-primary ring-2 ring-primary/30 shadow-xs' : 'border-border hover:border-foreground/30'
+                                                }`}
                                             style={{ backgroundColor: bgStyle, color: fgStyle }}
                                         >
                                             <span>{t.name}</span>
@@ -406,7 +405,7 @@ export function EditTenantSheet({
 
                     <div>
                         <label className="block text-xs font-bold text-foreground mb-1.5">
-                            Nomor WhatsApp / CS Resmi Travel
+                            WhatsApp Business
                         </label>
                         <input
                             type="text"
@@ -415,7 +414,7 @@ export function EditTenantSheet({
                             onChange={(e) => setEditForm({ ...editForm, no_telepon: e.target.value })}
                             className="w-full px-4 py-2.5 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground shadow-2xs"
                         />
-                        <p className="text-[10px] text-muted-foreground mt-1">Digunakan untuk tombol konsultasi WhatsApp calon jamaah pada landing page publik.</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">Digunakan untuk whatsapp bisnis travel </p>
                         {editErrors.no_telepon && (
                             <p className="text-[11px] text-rose-500 mt-1 font-medium">{editErrors.no_telepon}</p>
                         )}
@@ -441,9 +440,8 @@ export function EditTenantSheet({
                                         key={t.name}
                                         type="button"
                                         onClick={() => setEditForm({ ...editForm, theme_name: t.name })}
-                                        className={`p-2.5 rounded-xl border text-left text-xs font-bold capitalize transition-all flex items-center justify-between gap-1 cursor-pointer ${
-                                            isSelected ? 'border-primary ring-2 ring-primary/30 shadow-xs' : 'border-border hover:border-foreground/30'
-                                        }`}
+                                        className={`p-2.5 rounded-xl border text-left text-xs font-bold capitalize transition-all flex items-center justify-between gap-1 cursor-pointer ${isSelected ? 'border-primary ring-2 ring-primary/30 shadow-xs' : 'border-border hover:border-foreground/30'
+                                            }`}
                                         style={{ backgroundColor: bgStyle, color: fgStyle }}
                                     >
                                         <span>{t.name}</span>

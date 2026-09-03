@@ -32,13 +32,16 @@ interface Props extends PageProps {
 export default function Profile({ agent, tenant, registerUrl }: Props) {
     const defaultQuote = "Setiap langkah Anda menuju Tanah Suci adalah perjalanan hati yang berharga. Saya berkomitmen hadir di setiap momennya—menyiapkan yang terbaik, menjaga kenyamanan, dan memastikan Anda dapat beribadah dengan tenang dan khusyuk. Bersama-sama, kita wujudkan perjalanan spiritual yang tak terlupakan.";
 
-    // WhatsApp Contact Handler with graceful fallback
+    // WhatsApp Contact Handler with graceful fallback to tenant business phone
     const rawWa = agent.no_hp ? agent.no_hp.replace(/[^0-9]/g, '') : '';
-    const formattedWa = rawWa ? (rawWa.startsWith('0') ? '62' + rawWa.slice(1) : rawWa) : '6281234567890';
+    const tenantWa = tenant?.no_telepon ? tenant.no_telepon.replace(/[^0-9]/g, '') : '';
+    const formattedWa = rawWa
+        ? (rawWa.startsWith('0') ? '62' + rawWa.slice(1) : rawWa)
+        : (tenantWa ? (tenantWa.startsWith('0') ? '62' + tenantWa.slice(1) : tenantWa) : '6288969991215');
     const waUrl = `https://wa.me/${formattedWa}?text=${encodeURIComponent(`Assalamu'alaikum ${agent.name}, saya ingin bersilaturahmi dan menanyakan informasi seputar bimbingan ibadah Umroh & Haji di ${tenant?.nama_travel || 'Travel'}.`)}`;
 
-    // Custom landing links or respectful fallback defaults
-    const customLinks: LandingLinkItem[] = agent.landing_links && agent.landing_links.length > 0
+    // Custom landing links or respectful fallback defaults (dynamically resolving agent phone)
+    const rawCustomLinks: LandingLinkItem[] = agent.landing_links && agent.landing_links.length > 0
         ? agent.landing_links
         : [
             {
@@ -54,6 +57,16 @@ export default function Profile({ agent, tenant, registerUrl }: Props) {
                 is_highlight: false,
             },
         ];
+
+    const customLinks = rawCustomLinks.map((link) => {
+        if (link.url && link.url.includes('wa.me/6281234567890')) {
+            return {
+                ...link,
+                url: link.url.replace('wa.me/6281234567890', `wa.me/${formattedWa}`),
+            };
+        }
+        return link;
+    });
 
     const socials: SocialLinks = agent.social_links || {};
 
