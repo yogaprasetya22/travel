@@ -53,8 +53,8 @@ interface TenantItem {
     id: number;
     nama_travel: string;
     domain_atau_subdomain?: string;
+    no_telepon?: string | null;
     theme_name?: string | null;
-    
     logo?: string | null;
 }
 
@@ -73,6 +73,9 @@ export default function Welcome({
     canLogin = true,
 }: Props) {
     const travelName = tenant?.nama_travel || 'HajjFlow Umroh & Haji';
+    const rawPhone = tenant?.no_telepon || '6281234567890';
+    const cleanPhone = rawPhone.replace(/[^0-9]/g, '').replace(/^0/, '62');
+    const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Assalamu'alaikum CS ${travelName}, saya ingin konsultasi seputar informasi paket Umroh & Haji.`)}`;
 
     return (
         <div 
@@ -453,9 +456,31 @@ export default function Welcome({
                                 Daftar Sekarang Secara Online
                             </Button>
                         </Link>
+                        <a href={waUrl} target="_blank" rel="noopener noreferrer">
+                            <Button
+                                size="lg"
+                                variant="outline"
+                                className="border-border hover:bg-muted text-foreground rounded-2xl px-6 py-6 font-bold text-sm gap-2"
+                            >
+                                <MessageCircle className="w-4 h-4 text-emerald-500" />
+                                Konsultasi CS ({cleanPhone.replace(/^62/, '+62 ')})
+                            </Button>
+                        </a>
                     </div>
                 </div>
             </section>
+
+            {/* Floating WhatsApp Action Button */}
+            <a
+                href={waUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm px-4 py-3 rounded-full shadow-2xl hover:scale-105 transition-all duration-200"
+                title="Chat WhatsApp CS Resmi"
+            >
+                <MessageCircle className="w-5 h-5 fill-white" />
+                <span className="hidden sm:inline">Hubungi CS WhatsApp</span>
+            </a>
 
             {/* Footer (#kontak) */}
             <footer id="kontak" className="bg-card text-foreground py-12 border-t border-border">
@@ -470,6 +495,10 @@ export default function Welcome({
                     <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-foreground/70">
                         <a href="#paket" className="hover:text-primary transition-colors">Paket Umroh</a>
                         <a href="#keunggulan" className="hover:text-primary transition-colors">Keunggulan</a>
+                        <a href={waUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1">
+                            <PhoneCall className="w-3.5 h-3.5 text-emerald-500" />
+                            WhatsApp: +{cleanPhone}
+                        </a>
                         <Link href={route('login')} className="hover:text-primary transition-colors">Login Staf / Agen</Link>
                     </div>
 

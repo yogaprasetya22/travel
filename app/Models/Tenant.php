@@ -13,6 +13,8 @@ use Illuminate\Support\Carbon;
  * @property string $nama_travel
  * @property string $domain_atau_subdomain
  * @property string|null $logo
+ * @property string|null $no_telepon
+ * @property string|null $theme_name
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Collection|User[] $users
@@ -25,6 +27,7 @@ class Tenant extends Model
         'nama_travel',
         'domain_atau_subdomain',
         'logo',
+        'no_telepon',
         'theme_name',
     ];
 

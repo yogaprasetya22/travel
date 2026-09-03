@@ -66,6 +66,7 @@ class TenantDatasetSeeder extends Seeder
             $tenant = Tenant::create([
                 'nama_travel' => $tData['name'],
                 'domain_atau_subdomain' => $tData['subdomain'],
+                'no_telepon' => $tData['no_telepon'] ?? '6281234567890',
                 'logo' => null,
             ]);
 

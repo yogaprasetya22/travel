@@ -98,6 +98,7 @@ class TenantController extends Controller
         $validated = $request->validate([
             'nama_travel' => ['required', 'string', 'max:255'],
             'domain_atau_subdomain' => ['required', 'string', 'max:100', 'unique:tenants,domain_atau_subdomain'],
+            'no_telepon' => ['nullable', 'string', 'max:30'],
             'logo' => ['nullable', 'string', 'max:255'],
             'owner_name' => ['required', 'string', 'max:255'],
             'owner_email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
@@ -110,8 +111,9 @@ class TenantController extends Controller
             $tenant = Tenant::create([
                 'nama_travel' => $validated['nama_travel'],
                 'domain_atau_subdomain' => strtolower(preg_replace('/[^a-zA-Z0-9.-]/', '', $validated['domain_atau_subdomain'])),
+                'no_telepon' => $validated['no_telepon'] ?? '6281234567890',
                 'logo' => $validated['logo'] ?? null,
-                'theme_name' => $validated['theme_name'] ?? 'coffee',
+                'theme_name' => $validated['theme_name'] ?? 'luxury',
             ]);
 
             // 2. Create Default Hierarchy Levels
@@ -192,6 +194,7 @@ class TenantController extends Controller
         $validated = $request->validate([
             'nama_travel' => ['required', 'string', 'max:255'],
             'domain_atau_subdomain' => ['required', 'string', 'max:100', Rule::unique('tenants', 'domain_atau_subdomain')->ignore($tenant->id)],
+            'no_telepon' => ['nullable', 'string', 'max:30'],
             'logo' => ['nullable', 'string', 'max:255'],
             'theme_name' => ['nullable', 'string', 'max:50'],
         ]);
@@ -199,6 +202,7 @@ class TenantController extends Controller
         $tenant->update([
             'nama_travel' => $validated['nama_travel'],
             'domain_atau_subdomain' => strtolower(preg_replace('/[^a-zA-Z0-9.-]/', '', $validated['domain_atau_subdomain'])),
+            'no_telepon' => $validated['no_telepon'] ?? $tenant->no_telepon,
             'logo' => $validated['logo'] ?? $tenant->logo,
             'theme_name' => $validated['theme_name'] ?? $tenant->theme_name,
         ]);

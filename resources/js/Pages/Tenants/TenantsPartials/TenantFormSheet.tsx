@@ -27,6 +27,7 @@ export interface TenantItem {
     nama_travel: string;
     domain_atau_subdomain: string;
     logo?: string | null;
+    no_telepon?: string | null;
     theme_name?: string | null;
     created_at?: string;
     users_count: number;
@@ -58,10 +59,11 @@ export function CreateTenantSheet({
     const [createForm, setCreateForm] = useState({
         nama_travel: '',
         domain_atau_subdomain: '',
+        no_telepon: '6281234567890',
         owner_name: '',
         owner_email: '',
         owner_password: '',
-        theme_name: 'coffee',
+        theme_name: 'luxury',
     });
     const [createErrors, setCreateErrors] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,10 +73,11 @@ export function CreateTenantSheet({
             setCreateForm({
                 nama_travel: '',
                 domain_atau_subdomain: '',
+                no_telepon: '6281234567890',
                 owner_name: '',
                 owner_email: '',
                 owner_password: '',
-                theme_name: 'coffee',
+                theme_name: 'luxury',
             });
             setCreateErrors({});
         }
@@ -157,6 +160,23 @@ export function CreateTenantSheet({
                             </div>
                             {createErrors.domain_atau_subdomain && (
                                 <p className="text-[11px] text-rose-500 mt-1 font-medium">{createErrors.domain_atau_subdomain}</p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-foreground mb-1.5">
+                                Nomor WhatsApp / CS Resmi Travel
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="6281234567890"
+                                value={createForm.no_telepon}
+                                onChange={(e) => setCreateForm({ ...createForm, no_telepon: e.target.value })}
+                                className="w-full px-4 py-2.5 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground shadow-2xs"
+                            />
+                            <p className="text-[10px] text-muted-foreground mt-1">Digunakan untuk tombol konsultasi WhatsApp calon jamaah pada landing page publik.</p>
+                            {createErrors.no_telepon && (
+                                <p className="text-[11px] text-rose-500 mt-1 font-medium">{createErrors.no_telepon}</p>
                             )}
                         </div>
 
@@ -296,6 +316,7 @@ export function EditTenantSheet({
     const [editForm, setEditForm] = useState({
         nama_travel: '',
         domain_atau_subdomain: '',
+        no_telepon: '',
         theme_name: '',
     });
     const [editErrors, setEditErrors] = useState<Record<string, string>>({});
@@ -306,7 +327,8 @@ export function EditTenantSheet({
             setEditForm({
                 nama_travel: selectedTenant.nama_travel,
                 domain_atau_subdomain: selectedTenant.domain_atau_subdomain,
-                theme_name: selectedTenant.theme_name || 'coffee',
+                no_telepon: selectedTenant.no_telepon || '6281234567890',
+                theme_name: selectedTenant.theme_name || 'luxury',
             });
             setEditErrors({});
         }
@@ -379,6 +401,23 @@ export function EditTenantSheet({
                         </div>
                         {editErrors.domain_atau_subdomain && (
                             <p className="text-[11px] text-rose-500 mt-1 font-medium">{editErrors.domain_atau_subdomain}</p>
+                        )}
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-foreground mb-1.5">
+                            Nomor WhatsApp / CS Resmi Travel
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="6281234567890"
+                            value={editForm.no_telepon}
+                            onChange={(e) => setEditForm({ ...editForm, no_telepon: e.target.value })}
+                            className="w-full px-4 py-2.5 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground shadow-2xs"
+                        />
+                        <p className="text-[10px] text-muted-foreground mt-1">Digunakan untuk tombol konsultasi WhatsApp calon jamaah pada landing page publik.</p>
+                        {editErrors.no_telepon && (
+                            <p className="text-[11px] text-rose-500 mt-1 font-medium">{editErrors.no_telepon}</p>
                         )}
                     </div>
 
