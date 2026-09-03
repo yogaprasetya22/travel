@@ -53,6 +53,7 @@ interface TenantItem {
     id: number;
     nama_travel: string;
     domain_atau_subdomain?: string;
+    no_telepon?: string | null;
 }
 
 interface Props extends PageProps {
@@ -63,10 +64,12 @@ interface Props extends PageProps {
 export default function RegisterSuccess({ tenant, jamaah }: Props) {
     const travelName = tenant?.nama_travel || 'HajjFlow Umroh & Haji';
     const regCode = `REG-${String(jamaah?.id || 1).padStart(5, '0')}`;
+    const cleanPhone = (tenant?.no_telepon || '6281234567890').replace(/[^0-9]/g, '').replace(/^0/, '62');
 
     const waMessage = encodeURIComponent(
-        `Assalamu'alaikum, saya telah mendaftar online di ${travelName} dengan Kode Registrasi *${regCode}* atas nama *${jamaah?.nama_lengkap}* untuk paket *${jamaah?.paket?.nama_paket}*. Mohon informasi panduan selanjutnya.`
+        `Assalamu'alaikum CS ${travelName}, saya telah mendaftar online dengan Kode Registrasi *${regCode}* atas nama *${jamaah?.nama_lengkap}* untuk paket *${jamaah?.paket?.nama_paket || 'Umroh'}*. Mohon informasi panduan selanjutnya.`
     );
+    const waTargetUrl = `https://wa.me/${cleanPhone}?text=${waMessage}`;
 
     return (
         <div className="min-h-screen bg-[#FAF7F2] text-[#2C1A14] selection:bg-[#6F4E37] selection:text-white py-12 px-4 sm:px-6 lg:px-8 font-sans flex flex-col items-center justify-center">
@@ -135,14 +138,14 @@ export default function RegisterSuccess({ tenant, jamaah }: Props) {
                     {/* Next Steps CTA */}
                     <div className="w-full flex flex-col gap-3">
                         <a
-                            href={`https://wa.me/?text=${waMessage}`}
+                            href={waTargetUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full"
                         >
                             <Button className="w-full bg-[#10b981] hover:bg-[#059669] text-white rounded-2xl py-6 font-extrabold text-sm gap-2 shadow-lg shadow-emerald-600/20">
                                 <MessageCircle className="w-5 h-5" />
-                                <span>Konfirmasi ke WhatsApp Admin Travel</span>
+                                <span>Konfirmasi ke WhatsApp Admin Travel (+{cleanPhone})</span>
                             </Button>
                         </a>
 
