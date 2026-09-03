@@ -19,7 +19,7 @@ import {
     Share2,
     Check,
 } from 'lucide-react';
-import { getAgentBioUrl } from '@/lib/utils';
+import { getAgentBioUrl, copyToClipboard } from '@/lib/utils';
 import { Agent, AgentJamaahItem } from './types';
 
 interface AgentJamaahDrawerProps {
@@ -55,10 +55,10 @@ export function AgentJamaahDrawer({
 }: AgentJamaahDrawerProps) {
     const [isCopied, setIsCopied] = React.useState(false);
 
-    const handleCopyBioLink = (agent: Agent) => {
+    const handleCopyBioLink = async (agent: Agent) => {
         const url = getAgentBioUrl(agent.referral_code, agent.tenant?.domain_atau_subdomain);
         if (!url) return;
-        navigator.clipboard.writeText(url);
+        await copyToClipboard(url);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2500);
     };

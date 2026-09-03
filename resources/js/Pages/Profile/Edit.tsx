@@ -11,7 +11,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
-import { getAgentBioUrl } from '@/lib/utils';
+import { getAgentBioUrl, copyToClipboard } from '@/lib/utils';
 import {
     Mail,
     Building2,
@@ -46,9 +46,9 @@ export default function Edit({
 
     const agentProfileUrl = getAgentBioUrl(user.referral_code, user.tenant?.domain_atau_subdomain);
 
-    const handleCopy = () => {
+    const handleCopy = async () => {
         if (!agentProfileUrl) return;
-        navigator.clipboard.writeText(agentProfileUrl);
+        await copyToClipboard(agentProfileUrl);
         setCopied(true);
         setTimeout(() => setCopied(false), 2500);
     };

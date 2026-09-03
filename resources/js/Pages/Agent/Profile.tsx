@@ -1,4 +1,5 @@
 import React from 'react';
+import { copyToClipboard } from '@/lib/utils';
 import themeData from '@/lib/theme-colors.json';
 import { Head } from '@inertiajs/react';
 import { motion } from 'framer-motion';
@@ -61,15 +62,15 @@ export default function Profile({ agent, tenant, registerUrl }: Props) {
         ? 'Konsultan Bimbingan Umroh'
         : agent.jabatan;
 
-    const handleShare = () => {
+    const handleShare = async () => {
         if (typeof navigator !== 'undefined' && navigator.share) {
             navigator.share({
                 title: `Konsultan Bimbingan Umroh - ${agent.name}`,
                 text: `Bimbingan Ibadah Umroh & Haji Amanah bersama ${agent.name} (${tenant?.nama_travel || 'Travel Resmi'})`,
                 url: window.location.href,
             }).catch(() => {});
-        } else if (typeof navigator !== 'undefined') {
-            navigator.clipboard.writeText(window.location.href);
+        } else {
+            await copyToClipboard(window.location.href);
             alert('Tautan halaman berhasil disalin.');
         }
     };

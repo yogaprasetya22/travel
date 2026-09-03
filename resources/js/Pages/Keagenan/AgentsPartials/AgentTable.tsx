@@ -16,7 +16,7 @@ import {
 import { Badge } from '@/Components/ui/badge';
 import DataTablePagination, { PaginatedData } from '@/Components/DataTablePagination';
 import PerPageSelector from '@/Components/PerPageSelector';
-import { getAgentBioUrl } from '@/lib/utils';
+import { getAgentBioUrl, copyToClipboard } from '@/lib/utils';
 import { Agent } from './types';
 
 interface AgentTableProps {
@@ -42,10 +42,10 @@ export function AgentTable({
 }: AgentTableProps) {
     const [copiedAgentId, setCopiedAgentId] = React.useState<number | null>(null);
 
-    const handleCopyBioLink = (agent: Agent) => {
+    const handleCopyBioLink = async (agent: Agent) => {
         const url = getAgentBioUrl(agent.referral_code, agent.tenant?.domain_atau_subdomain);
         if (!url) return;
-        navigator.clipboard.writeText(url);
+        await copyToClipboard(url);
         setCopiedAgentId(agent.id);
         setTimeout(() => setCopiedAgentId(null), 2500);
     };
