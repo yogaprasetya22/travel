@@ -3,6 +3,8 @@ export interface Tenant {
     nama_travel: string;
     domain_atau_subdomain: string;
     logo?: string | null;
+    no_telepon?: string | null;
+    theme_name?: string | null;
     created_at?: string;
     updated_at?: string;
 }
@@ -25,6 +27,9 @@ export interface LandingLinkItem {
     url: string;
     icon?: string;
     is_highlight?: boolean;
+    target_type?: 'agent_wa' | 'tenant_wa' | 'custom_url';
+    wa_message?: string;
+    style_type?: 'default' | 'primary' | 'emerald';
 }
 
 export interface SocialLinks {

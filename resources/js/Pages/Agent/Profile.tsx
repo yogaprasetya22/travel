@@ -18,6 +18,8 @@ import {
     HeartHandshake,
     Video,
     Quote,
+    Plane,
+    PhoneCall,
 } from 'lucide-react';
 import { PageProps, LandingLinkItem, SocialLinks } from '@/Types';
 import { Badge } from '@/Components/ui/badge';
@@ -32,41 +34,82 @@ interface Props extends PageProps {
 export default function Profile({ agent, tenant, registerUrl }: Props) {
     const defaultQuote = "Setiap langkah Anda menuju Tanah Suci adalah perjalanan hati yang berharga. Saya berkomitmen hadir di setiap momennya—menyiapkan yang terbaik, menjaga kenyamanan, dan memastikan Anda dapat beribadah dengan tenang dan khusyuk. Bersama-sama, kita wujudkan perjalanan spiritual yang tak terlupakan.";
 
-    // WhatsApp Contact Handler with graceful fallback to tenant business phone
-    const rawWa = agent.no_hp ? agent.no_hp.replace(/[^0-9]/g, '') : '';
-    const tenantWa = tenant?.no_telepon ? tenant.no_telepon.replace(/[^0-9]/g, '') : '';
-    const formattedWa = rawWa
-        ? (rawWa.startsWith('0') ? '62' + rawWa.slice(1) : rawWa)
-        : (tenantWa ? (tenantWa.startsWith('0') ? '62' + tenantWa.slice(1) : tenantWa) : '6288969991215');
-    const waUrl = `https://wa.me/${formattedWa}?text=${encodeURIComponent(`Assalamu'alaikum ${agent.name}, saya ingin bersilaturahmi dan menanyakan informasi seputar bimbingan ibadah Umroh & Haji di ${tenant?.nama_travel || 'Travel'}.`)}`;
+    // WhatsApp phone resolution: Agent Personal & Tenant Business Phone
+    const rawAgentWa = agent.no_hp ? agent.no_hp.replace(/[^0-9]/g, '') : '';
+    const formattedAgentWa = rawAgentWa ? (rawAgentWa.startsWith('0') ? '62' + rawAgentWa.slice(1) : rawAgentWa) : '6288969991215';
 
-    // Custom landing links or respectful fallback defaults (dynamically resolving agent phone)
-    const rawCustomLinks: LandingLinkItem[] = agent.landing_links && agent.landing_links.length > 0
+    const rawTenantWa = tenant?.no_telepon ? tenant.no_telepon.replace(/[^0-9]/g, '') : '';
+    const formattedTenantWa = rawTenantWa ? (rawTenantWa.startsWith('0') ? '62' + rawTenantWa.slice(1) : rawTenantWa) : formattedAgentWa;
+
+    const mainWaUrl = `https://wa.me/${formattedAgentWa}?text=${encodeURIComponent(`Assalamu'alaikum ${agent.name}, saya ingin bersilaturahmi dan menanyakan informasi seputar bimbingan ibadah Umroh & Haji di ${tenant?.nama_travel || 'Travel'}.`)}`;
+
+    // Custom landing links or respectful fallback defaults
+    const customLinks: LandingLinkItem[] = agent.landing_links && agent.landing_links.length > 0
         ? agent.landing_links
         : [
             {
                 title: 'Pendaftaran & Formulir Calon Jamaah',
                 url: registerUrl,
                 icon: 'form',
-                is_highlight: false,
+                target_type: 'custom_url',
+                style_type: 'primary',
+                is_highlight: true,
             },
             {
                 title: 'Informasi Jadwal & Panduan Manasik',
                 url: `${typeof window !== 'undefined' ? window.location.origin : ''}/#paket`,
                 icon: 'guide',
+                target_type: 'custom_url',
+                style_type: 'default',
                 is_highlight: false,
             },
         ];
 
-    const customLinks = rawCustomLinks.map((link) => {
-        if (link.url && link.url.includes('wa.me/6281234567890')) {
-            return {
-                ...link,
-                url: link.url.replace('wa.me/6281234567890', `wa.me/${formattedWa}`),
-            };
+    const resolveLinkHref = (item: LandingLinkItem) => {
+        if (item.target_type === 'agent_wa') {
+            const msg = item.wa_message || `Assalamu'alaikum ${agent.name}, saya ingin konsultasi seputar bimbingan ibadah Umroh.`;
+            return `https://wa.me/${formattedAgentWa}?text=${encodeURIComponent(msg)}`;
         }
-        return link;
-    });
+        if (item.target_type === 'tenant_wa') {
+            const msg = item.wa_message || `Assalamu'alaikum CS ${tenant?.nama_travel || 'Travel'}, saya calon jamaah dari agen ${agent.name} ingin konsultasi paket Umroh.`;
+            return `https://wa.me/${formattedTenantWa}?text=${encodeURIComponent(msg)}`;
+        }
+        if (item.url && item.url.includes('wa.me/6281234567890')) {
+            return item.url.replace('wa.me/6281234567890', `wa.me/${formattedAgentWa}`);
+        }
+        return item.url || '#';
+    };
+
+    const getLinkIcon = (iconName?: string) => {
+        switch (iconName) {
+            case 'whatsapp':
+            case 'chat':
+                return <MessageCircle className="w-4 h-4" />;
+            case 'form':
+                return <FileText className="w-4 h-4" />;
+            case 'plane':
+                return <Plane className="w-4 h-4" />;
+            case 'file':
+            case 'guide':
+                return <BookOpen className="w-4 h-4" />;
+            case 'star':
+                return <Sparkles className="w-4 h-4" />;
+            case 'phone':
+                return <PhoneCall className="w-4 h-4" />;
+            default:
+                return <Globe className="w-4 h-4" />;
+        }
+    };
+
+    const getLinkClass = (item: LandingLinkItem) => {
+        if (item.style_type === 'emerald' || item.target_type === 'tenant_wa' || (item.target_type === 'agent_wa' && item.is_highlight)) {
+            return 'bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-sm border border-emerald-500/40';
+        }
+        if (item.style_type === 'primary' || item.is_highlight) {
+            return 'bg-primary text-primary-foreground font-semibold shadow-xs border border-primary/30 hover:bg-primary/95';
+        }
+        return 'bg-card/85 hover:bg-muted text-foreground border border-border/80 hover:border-primary/40 font-medium';
+    };
 
     const socials: SocialLinks = agent.social_links || {};
 
@@ -212,7 +255,7 @@ export default function Profile({ agent, tenant, registerUrl }: Props) {
 
                     {/* WhatsApp Serene Emerald Button (Kontak Utama) */}
                     <motion.a
-                        href={waUrl}
+                        href={mainWaUrl}
                         target="_blank"
                         rel="noreferrer"
                         whileHover={{ scale: 1.015 }}
@@ -225,7 +268,7 @@ export default function Profile({ agent, tenant, registerUrl }: Props) {
                             </div>
                             <div className="flex flex-col text-left">
                                 <span className="font-bold text-xs sm:text-sm">Konsultasi &amp; Tanya Jawab Bimbingan</span>
-                                <span className="text-[10px] text-emerald-100 font-normal">Hubungi langsung melalui WhatsApp</span>
+                                <span className="text-[10px] text-emerald-100 font-normal">Hubungi langsung via WhatsApp (+{formattedAgentWa})</span>
                             </div>
                         </div>
                         <ChevronRight className="w-4 h-4 text-white/80 shrink-0" />
@@ -239,36 +282,35 @@ export default function Profile({ agent, tenant, registerUrl }: Props) {
                         className="w-full flex flex-col gap-2.5"
                     >
                         {customLinks.map((item, index) => {
-                            const isInternal = item.url.startsWith('/') || (typeof window !== 'undefined' && item.url.includes(window.location.host));
-                            const isHighlight = item.is_highlight;
+                            const finalHref = resolveLinkHref(item);
+                            const isInternal = finalHref.startsWith('/') || (typeof window !== 'undefined' && finalHref.includes(window.location.host));
+                            const cardClass = getLinkClass(item);
 
                             return (
                                 <motion.a
                                     key={index}
-                                    href={item.url}
+                                    href={finalHref}
                                     target={isInternal ? '_self' : '_blank'}
                                     rel="noreferrer"
                                     whileHover={{ scale: 1.01 }}
                                     whileTap={{ scale: 0.99 }}
-                                    className={`w-full p-3.5 rounded-2xl transition-all flex items-center justify-between gap-3 shadow-xs ${
-                                        isHighlight
-                                            ? 'bg-primary text-primary-foreground font-semibold shadow-xs border border-primary/30 hover:bg-primary/95'
-                                            : 'bg-card/85 hover:bg-muted text-foreground border border-border/80 hover:border-primary/40 font-medium'
-                                    }`}
+                                    className={`w-full p-3.5 rounded-2xl transition-all flex items-center justify-between gap-3 shadow-xs ${cardClass}`}
                                 >
                                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                                        <div className={`p-2 rounded-xl shrink-0 ${isHighlight ? 'bg-black/15 text-primary-foreground' : 'bg-primary/10 text-primary'}`}>
-                                            {item.icon === 'whatsapp' ? (
-                                                <MessageCircle className="w-4 h-4" />
-                                            ) : item.icon === 'form' ? (
-                                                <FileText className="w-4 h-4" />
-                                            ) : (
-                                                <Sparkles className="w-4 h-4" />
+                                        <div className="p-2 rounded-xl shrink-0 bg-black/10 dark:bg-white/10">
+                                            {getLinkIcon(item.icon)}
+                                        </div>
+                                        <div className="flex flex-col text-left">
+                                            <span className="text-xs sm:text-sm leading-snug font-bold">{item.title}</span>
+                                            {item.target_type === 'tenant_wa' && (
+                                                <span className="text-[10px] opacity-80">WhatsApp Induk Travel Resmi</span>
+                                            )}
+                                            {item.target_type === 'agent_wa' && (
+                                                <span className="text-[10px] opacity-80">WhatsApp Pribadi Konsultan</span>
                                             )}
                                         </div>
-                                        <span className="text-xs sm:text-sm leading-snug">{item.title}</span>
                                     </div>
-                                    <ChevronRight className={`w-4 h-4 shrink-0 ${isHighlight ? 'text-primary-foreground/80' : 'text-muted-foreground'}`} />
+                                    <ChevronRight className="w-4 h-4 shrink-0 opacity-80" />
                                 </motion.a>
                             );
                         })}
