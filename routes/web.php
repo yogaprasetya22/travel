@@ -11,6 +11,7 @@ use App\Http\Controllers\CRM\UpdateJamaahController;
 use App\Http\Controllers\CRM\UpdateStageController;
 use App\Http\Controllers\CRM\ViewKanbanController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocsController;
 use App\Http\Controllers\Inventaris\InventarisController;
 use App\Http\Controllers\Keagenan\MitraAgenController;
 use App\Http\Controllers\Keagenan\PembagianKomisiController;
@@ -34,6 +35,10 @@ Route::post('/daftar', [PublicLandingController::class, 'registerSubmit'])->name
 Route::get('/daftar/sukses', [PublicLandingController::class, 'registerSuccess'])->name('public.register.success');
 
 Route::get('/agen/{referral_code}', [AgentProfileController::class, 'show'])->name('public.agent.profile');
+
+// Documentation & Manual Guide Routes (Public & In-App)
+Route::get('/docs/assets/{role}/screenshots/{file}', [DocsController::class, 'asset'])->name('docs.asset');
+Route::get('/docs/{role?}/{slug?}', [DocsController::class, 'index'])->name('docs.index');
 
 Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])

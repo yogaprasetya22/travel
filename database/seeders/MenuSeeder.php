@@ -196,5 +196,14 @@ class MenuSeeder extends Seeder
             'roles' => ['super_admin_master', 'owner_travel'],
             'urutan' => 6,
         ]);
+
+        // 8. Dokumentasi & Panduan Pengguna
+        Menu::create([
+            'title' => 'Buku Panduan',
+            'url' => '/docs',
+            'icon' => 'BookOpen',
+            'roles' => ['super_admin_master', 'owner_travel', 'supervisor', 'team_leader', 'admin_travel', 'agen'],
+            'urutan' => 8,
+        ]);
     }
 }

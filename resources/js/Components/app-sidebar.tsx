@@ -11,6 +11,7 @@ import {
     Users,
     Package,
     Settings,
+    BookOpen,
     Command,
     AudioWaveform,
 } from "lucide-react"
@@ -35,6 +36,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
     Users,
     Package,
     Settings,
+    BookOpen,
 }
 
 interface DBMenu {
