@@ -118,7 +118,7 @@ export default function AgentLandingTemplate({
     };
 
     const getLinkIcon = (iconName?: string) => {
-        const iconClass = isPreview ? 'w-3.5 h-3.5' : 'w-4 h-4';
+        const iconClass = isPreview ? 'w-3 h-3' : 'w-4 h-4 sm:w-5 sm:h-5';
         switch (iconName) {
             case 'whatsapp':
             case 'chat':
@@ -179,18 +179,18 @@ export default function AgentLandingTemplate({
         `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.name || 'Agent')}&background=6F4E37&color=fff&size=256`;
 
     return (
-        <div className={`w-full flex flex-col items-center gap-4 text-center select-none ${className}`}>
+        <div className={`w-full flex flex-col items-center ${isPreview ? 'gap-2.5 text-center select-none' : 'gap-5 text-center select-none'} ${className}`}>
             {/* Top Travel Info & Share */}
-            <div className="w-full flex items-center justify-between pb-1 border-b border-border/40">
+            <div className={`w-full flex items-center justify-between pb-1 border-b border-border/40 ${isPreview ? 'text-[9px]' : 'text-xs'}`}>
                 <div className="flex items-center gap-2 text-left min-w-0">
-                    <div className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs border border-primary/20 shrink-0">
-                        <Building2 className="w-3.5 h-3.5" />
+                    <div className={`${isPreview ? 'w-5 h-5 rounded-md text-[10px]' : 'w-7 h-7 rounded-xl text-xs'} bg-primary/10 text-primary flex items-center justify-center font-bold border border-primary/20 shrink-0`}>
+                        <Building2 className={isPreview ? 'w-3 h-3' : 'w-4 h-4'} />
                     </div>
                     <div className="flex flex-col min-w-0">
-                        <span className="text-[11px] font-bold text-foreground leading-tight truncate">
+                        <span className={`${isPreview ? 'text-[10px]' : 'text-xs sm:text-sm'} font-bold text-foreground leading-tight truncate`}>
                             {tenant?.nama_travel || 'Official Travel'}
                         </span>
-                        <span className="text-[8.5px] text-muted-foreground truncate">
+                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[9.5px]'} text-muted-foreground truncate`}>
                             Penyelenggara Resmi Umroh &amp; Haji
                         </span>
                     </div>
@@ -199,51 +199,51 @@ export default function AgentLandingTemplate({
                 <button
                     type="button"
                     onClick={handleShare}
-                    className="p-1.5 rounded-full bg-card hover:bg-muted border border-border/80 shadow-xs text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer"
+                    className={`${isPreview ? 'p-1' : 'p-2'} rounded-full bg-card hover:bg-muted border border-border/80 shadow-xs text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer`}
                     title="Bagikan Tautan"
                 >
-                    <Share2 className="w-3.5 h-3.5" />
+                    <Share2 className={isPreview ? 'w-3 h-3' : 'w-3.5 h-3.5'} />
                 </button>
             </div>
 
             {/* Agent Profile Details */}
-            <div className="flex flex-col items-center text-center gap-2.5 w-full">
+            <div className={`flex flex-col items-center text-center ${isPreview ? 'gap-1.5' : 'gap-3'} w-full`}>
                 {/* Avatar with Sacred Ring & Shield */}
                 <div className="relative">
-                    <div className="p-1 rounded-full ring-4 ring-primary/20 bg-card shadow-md">
+                    <div className={`p-1 rounded-full ${isPreview ? 'ring-2' : 'ring-4'} ring-primary/20 bg-card shadow-md`}>
                         <img
                             src={avatarSrc}
                             alt={agent.name}
-                            className={`${isPreview ? 'w-20 h-20' : 'w-24 h-24 sm:w-28 sm:h-28'} rounded-full object-cover border-2 border-background bg-background`}
+                            className={`${isPreview ? 'w-16 h-16' : 'w-24 h-24 sm:w-28 sm:h-28'} rounded-full object-cover border-2 border-background bg-background`}
                         />
                     </div>
                     <div
-                        className="absolute bottom-0.5 right-0.5 bg-primary text-primary-foreground rounded-full p-1 shadow-md border-2 border-background"
+                        className={`absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full ${isPreview ? 'p-0.5' : 'p-1.5'} shadow-md border-2 border-background`}
                         title="Konsultan Bimbingan Terverifikasi"
                     >
-                        <ShieldCheck className="w-3 h-3" />
+                        <ShieldCheck className={isPreview ? 'w-2.5 h-2.5' : 'w-3.5 h-3.5'} />
                     </div>
                 </div>
 
                 {/* Name & Title Badges */}
-                <div className="flex flex-col items-center gap-1">
-                    <h1 className={`${isPreview ? 'text-base' : 'text-xl sm:text-2xl'} font-bold text-foreground tracking-tight leading-tight`}>
+                <div className="flex flex-col items-center gap-0.5">
+                    <h1 className={`${isPreview ? 'text-xs sm:text-sm' : 'text-xl sm:text-2xl'} font-bold text-foreground tracking-tight leading-tight`}>
                         {agent.name}
                     </h1>
 
-                    <div className="flex flex-wrap items-center justify-center gap-1.5 pt-0.5">
+                    <div className="flex flex-wrap items-center justify-center gap-1 pt-0.5">
                         <Badge
                             variant="secondary"
-                            className="bg-primary/10 text-primary border-primary/20 font-semibold text-[9.5px] tracking-wide px-2.5 py-0.5"
+                            className={`bg-primary/10 text-primary border-primary/20 font-semibold ${isPreview ? 'text-[7.5px] px-1.5 py-0.5' : 'text-[10px] sm:text-xs px-2.5 py-0.5'} tracking-wide`}
                         >
                             {displayTitle}
                         </Badge>
                         {agent.kota && (
                             <Badge
                                 variant="outline"
-                                className="text-[9.5px] font-medium border-border/80 gap-1 text-muted-foreground"
+                                className={`${isPreview ? 'text-[7.5px] px-1.5 py-0.5' : 'text-[10px] sm:text-xs px-2.5 py-0.5'} font-medium border-border/80 gap-1 text-muted-foreground`}
                             >
-                                <MapPin className="w-2.5 h-2.5 text-primary" />
+                                <MapPin className={isPreview ? 'w-2 h-2 text-primary' : 'w-3 h-3 text-primary'} />
                                 <span>{agent.kota}</span>
                             </Badge>
                         )}
@@ -251,20 +251,20 @@ export default function AgentLandingTemplate({
                 </div>
 
                 {/* Bio Card with Sacred Quote */}
-                <div className="w-full p-3.5 rounded-2xl bg-gradient-to-b from-card/90 to-card/60 backdrop-blur-md border border-border/80 shadow-xs text-left relative overflow-hidden group">
-                    <Quote className="absolute top-2 right-3 w-8 h-8 text-primary/10 -rotate-12 pointer-events-none" />
+                <div className={`w-full ${isPreview ? 'p-2.5 rounded-xl' : 'p-4.5 rounded-2xl'} bg-gradient-to-b from-card/90 to-card/60 backdrop-blur-md border border-border/80 shadow-xs text-left relative overflow-hidden group`}>
+                    <Quote className={`absolute top-2 right-3 ${isPreview ? 'w-5 h-5' : 'w-10 h-10'} text-primary/10 -rotate-12 pointer-events-none`} />
 
-                    <div className="flex items-start gap-2.5 relative z-10">
-                        <div className="p-1 rounded-md bg-primary/10 text-primary shrink-0 mt-0.5">
-                            <Quote className="w-3 h-3" />
+                    <div className={`flex items-start ${isPreview ? 'gap-1.5' : 'gap-2.5'} relative z-10`}>
+                        <div className={`p-1 rounded-md bg-primary/10 text-primary shrink-0 mt-0.5`}>
+                            <Quote className={isPreview ? 'w-2.5 h-2.5' : 'w-3.5 h-3.5'} />
                         </div>
-                        <div className="flex flex-col gap-1.5">
-                            <p className="text-[11px] sm:text-xs text-foreground/85 font-normal leading-relaxed">
+                        <div className="flex flex-col gap-1">
+                            <p className={`${isPreview ? 'text-[8.5px] leading-tight' : 'text-xs sm:text-sm leading-relaxed'} text-foreground/85 font-normal`}>
                                 {agent.bio && agent.bio.trim() !== '' ? agent.bio : defaultQuote}
                             </p>
-                            <div className="flex items-center gap-1.5 pt-0.5">
-                                <div className="h-px w-4 bg-primary/40" />
-                                <span className="text-[9.5px] font-semibold text-primary tracking-wide">
+                            <div className="flex items-center gap-1 pt-0.5">
+                                <div className={`h-px ${isPreview ? 'w-3' : 'w-5'} bg-primary/40`} />
+                                <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] font-semibold'} text-primary tracking-wide`}>
                                     Komitmen Pelayanan Konsultan
                                 </span>
                             </div>
@@ -273,20 +273,20 @@ export default function AgentLandingTemplate({
                 </div>
 
                 {/* Trust Points */}
-                <div className="grid grid-cols-3 gap-1.5 w-full pt-0.5">
-                    <div className="p-2 rounded-xl bg-card/40 border border-border/50 flex flex-col items-center text-center">
-                        <HeartHandshake className="w-3.5 h-3.5 text-primary mb-0.5" />
-                        <span className="text-[9px] font-medium text-foreground">Pendampingan Khusyuk</span>
+                <div className={`grid grid-cols-3 ${isPreview ? 'gap-1' : 'gap-2'} w-full pt-0.5`}>
+                    <div className={`${isPreview ? 'p-1.5 rounded-lg' : 'p-2.5 rounded-xl'} bg-card/40 border border-border/50 flex flex-col items-center text-center`}>
+                        <HeartHandshake className={`${isPreview ? 'w-3 h-3 mb-0.5' : 'w-4 h-4 sm:w-5 sm:h-5 mb-1'} text-primary`} />
+                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-xs'} font-medium text-foreground`}>Pendampingan Khusyuk</span>
                     </div>
 
-                    <div className="p-2 rounded-xl bg-card/40 border border-border/50 flex flex-col items-center text-center">
-                        <BookOpen className="w-3.5 h-3.5 text-primary mb-0.5" />
-                        <span className="text-[9px] font-medium text-foreground">Sesuai Sunnah</span>
+                    <div className={`${isPreview ? 'p-1.5 rounded-lg' : 'p-2.5 rounded-xl'} bg-card/40 border border-border/50 flex flex-col items-center text-center`}>
+                        <BookOpen className={`${isPreview ? 'w-3 h-3 mb-0.5' : 'w-4 h-4 sm:w-5 sm:h-5 mb-1'} text-primary`} />
+                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-xs'} font-medium text-foreground`}>Sesuai Sunnah</span>
                     </div>
 
-                    <div className="p-2 rounded-xl bg-card/40 border border-border/50 flex flex-col items-center text-center">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-primary mb-0.5" />
-                        <span className="text-[9px] font-medium text-foreground">Resmi Kemenag</span>
+                    <div className={`${isPreview ? 'p-1.5 rounded-lg' : 'p-2.5 rounded-xl'} bg-card/40 border border-border/50 flex flex-col items-center text-center`}>
+                        <CheckCircle2 className={`${isPreview ? 'w-3 h-3 mb-0.5' : 'w-4 h-4 sm:w-5 sm:h-5 mb-1'} text-primary`} />
+                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-xs'} font-medium text-foreground`}>Resmi Kemenag</span>
                     </div>
                 </div>
             </div>
@@ -298,26 +298,26 @@ export default function AgentLandingTemplate({
                 rel="noreferrer"
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
-                className="w-full p-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold flex items-center justify-between shadow-xs transition-all border border-emerald-500/40"
+                className={`w-full ${isPreview ? 'p-2 rounded-xl text-[9.5px]' : 'p-3.5 sm:p-4 rounded-2xl text-xs sm:text-sm'} bg-emerald-600 hover:bg-emerald-500 text-white font-semibold flex items-center justify-between shadow-xs transition-all border border-emerald-500/40`}
             >
-                <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="p-1.5 rounded-xl bg-white/20 text-white shrink-0">
-                        <MessageCircle className="w-4 h-4 fill-white" />
+                <div className={`flex items-center ${isPreview ? 'gap-2' : 'gap-3'} min-w-0`}>
+                    <div className={`${isPreview ? 'p-1 rounded-lg' : 'p-2 rounded-xl'} bg-white/20 text-white shrink-0`}>
+                        <MessageCircle className={`${isPreview ? 'w-3.5 h-3.5' : 'w-4 h-4 sm:w-5 sm:h-5'} fill-white`} />
                     </div>
                     <div className="flex flex-col text-left min-w-0">
-                        <span className="text-xs sm:text-sm font-bold leading-tight truncate">
+                        <span className={`${isPreview ? 'text-[9.5px]' : 'text-xs sm:text-sm'} font-bold leading-tight truncate`}>
                             Konsultasi &amp; Tanya Jawab Bimbingan
                         </span>
-                        <span className="text-[9px] text-emerald-100 font-normal">
+                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-xs'} text-emerald-100 font-normal`}>
                             Hubungi langsung via WhatsApp (+{formattedAgentWa})
                         </span>
                     </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-white/80 shrink-0" />
+                <ChevronRight className={`${isPreview ? 'w-3 h-3' : 'w-4 h-4'} text-white/80 shrink-0`} />
             </motion.a>
 
             {/* Action Cards List */}
-            <div className="w-full flex flex-col gap-2">
+            <div className={`w-full flex flex-col ${isPreview ? 'gap-1.5' : 'gap-2.5'}`}>
                 {customLinks.map((item, index) => {
                     const finalHref = resolveLinkHref(item);
                     const isInternal =
@@ -340,45 +340,45 @@ export default function AgentLandingTemplate({
                             rel="noreferrer"
                             whileHover={{ scale: 1.01 }}
                             whileTap={{ scale: 0.99 }}
-                            className={`w-full p-3 rounded-2xl transition-all flex items-center justify-between gap-2.5 shadow-xs ${cardClass}`}
+                            className={`w-full ${isPreview ? 'p-2 rounded-xl' : 'p-3.5 sm:p-4 rounded-2xl'} transition-all flex items-center justify-between gap-2 shadow-xs ${cardClass}`}
                         >
-                            <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                                <div className="p-1.5 rounded-xl shrink-0 bg-black/10 dark:bg-white/10">
+                            <div className={`flex items-center ${isPreview ? 'gap-2' : 'gap-3'} flex-1 min-w-0`}>
+                                <div className={`${isPreview ? 'p-1 rounded-lg' : 'p-2 rounded-xl'} shrink-0 bg-black/10 dark:bg-white/10`}>
                                     {getLinkIcon(item.icon)}
                                 </div>
                                 <div className="flex flex-col text-left min-w-0">
-                                    <span className="text-xs sm:text-sm leading-snug font-bold truncate">
+                                    <span className={`${isPreview ? 'text-[9.5px]' : 'text-xs sm:text-sm'} leading-snug font-bold truncate`}>
                                         {item.title || 'Tautan Tanpa Judul'}
                                     </span>
                                     {targetType === 'tenant_wa' && (
-                                        <span className="text-[9px] opacity-75 font-normal">➔ CS Induk Travel</span>
+                                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px]'} opacity-75 font-normal`}>➔ CS Induk Travel</span>
                                     )}
                                     {targetType === 'agent_wa' && (
-                                        <span className="text-[9px] opacity-75 font-normal">➔ WA Pribadi Agen</span>
+                                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px]'} opacity-75 font-normal`}>➔ WA Pribadi Agen</span>
                                     )}
                                 </div>
                             </div>
-                            <ChevronRight className="w-3.5 h-3.5 shrink-0 opacity-80" />
+                            <ChevronRight className={`${isPreview ? 'w-3 h-3' : 'w-4 h-4'} shrink-0 opacity-80`} />
                         </motion.a>
                     );
                 })}
             </div>
 
             {/* Social Media Bar */}
-            <div className="flex items-center justify-center gap-2.5 pt-2">
+            <div className={`flex items-center justify-center ${isPreview ? 'gap-2 pt-1' : 'gap-3 pt-2'}`}>
                 {socials.instagram ? (
                     <a
                         href={`https://instagram.com/${socials.instagram.replace('@', '')}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="p-2 rounded-full bg-card hover:bg-muted text-pink-500 border border-border/80 shadow-2xs transition-transform hover:scale-110"
+                        className={`${isPreview ? 'p-1.5' : 'p-2.5'} rounded-full bg-card hover:bg-muted text-pink-500 border border-border/80 shadow-2xs transition-transform hover:scale-110`}
                         title={`Instagram: ${socials.instagram}`}
                     >
-                        <Share2 className="w-3.5 h-3.5" />
+                        <Share2 className={isPreview ? 'w-3 h-3' : 'w-4 h-4'} />
                     </a>
                 ) : isPreview ? (
-                    <div className="p-2 rounded-full bg-card/60 text-muted-foreground/40 border border-border/40" title="Instagram (Belum diisi)">
-                        <Share2 className="w-3.5 h-3.5" />
+                    <div className="p-1.5 rounded-full bg-card/60 text-muted-foreground/40 border border-border/40" title="Instagram (Belum diisi)">
+                        <Share2 className="w-3 h-3" />
                     </div>
                 ) : null}
 
@@ -387,14 +387,14 @@ export default function AgentLandingTemplate({
                         href={`https://tiktok.com/@${socials.tiktok.replace('@', '')}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="p-2 rounded-full bg-card hover:bg-muted text-foreground border border-border/80 shadow-2xs transition-transform hover:scale-110"
+                        className={`${isPreview ? 'p-1.5' : 'p-2.5'} rounded-full bg-card hover:bg-muted text-foreground border border-border/80 shadow-2xs transition-transform hover:scale-110`}
                         title={`TikTok: ${socials.tiktok}`}
                     >
-                        <Globe className="w-3.5 h-3.5" />
+                        <Globe className={isPreview ? 'w-3 h-3' : 'w-4 h-4'} />
                     </a>
                 ) : isPreview ? (
-                    <div className="p-2 rounded-full bg-card/60 text-muted-foreground/40 border border-border/40" title="TikTok (Belum diisi)">
-                        <Globe className="w-3.5 h-3.5" />
+                    <div className="p-1.5 rounded-full bg-card/60 text-muted-foreground/40 border border-border/40" title="TikTok (Belum diisi)">
+                        <Globe className="w-3 h-3" />
                     </div>
                 ) : null}
 
@@ -403,14 +403,14 @@ export default function AgentLandingTemplate({
                         href={socials.youtube.startsWith('http') ? socials.youtube : `https://youtube.com/@${socials.youtube}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="p-2 rounded-full bg-card hover:bg-muted text-red-500 border border-border/80 shadow-2xs transition-transform hover:scale-110"
+                        className={`${isPreview ? 'p-1.5' : 'p-2.5'} rounded-full bg-card hover:bg-muted text-red-500 border border-border/80 shadow-2xs transition-transform hover:scale-110`}
                         title={`YouTube: ${socials.youtube}`}
                     >
-                        <Video className="w-3.5 h-3.5" />
+                        <Video className={isPreview ? 'w-3 h-3' : 'w-4 h-4'} />
                     </a>
                 ) : isPreview ? (
-                    <div className="p-2 rounded-full bg-card/60 text-muted-foreground/40 border border-border/40" title="YouTube (Belum diisi)">
-                        <Video className="w-3.5 h-3.5" />
+                    <div className="p-1.5 rounded-full bg-card/60 text-muted-foreground/40 border border-border/40" title="YouTube (Belum diisi)">
+                        <Video className="w-3 h-3" />
                     </div>
                 ) : null}
 
@@ -419,25 +419,25 @@ export default function AgentLandingTemplate({
                         href={socials.facebook.startsWith('http') ? socials.facebook : `https://facebook.com/${socials.facebook}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="p-2 rounded-full bg-card hover:bg-muted text-blue-500 border border-border/80 shadow-2xs transition-transform hover:scale-110"
+                        className={`${isPreview ? 'p-1.5' : 'p-2.5'} rounded-full bg-card hover:bg-muted text-blue-500 border border-border/80 shadow-2xs transition-transform hover:scale-110`}
                         title={`Facebook: ${socials.facebook}`}
                     >
-                        <Globe className="w-3.5 h-3.5" />
+                        <Globe className={isPreview ? 'w-3 h-3' : 'w-4 h-4'} />
                     </a>
                 ) : isPreview ? (
-                    <div className="p-2 rounded-full bg-card/60 text-muted-foreground/40 border border-border/40" title="Facebook (Belum diisi)">
-                        <Globe className="w-3.5 h-3.5" />
+                    <div className="p-1.5 rounded-full bg-card/60 text-muted-foreground/40 border border-border/40" title="Facebook (Belum diisi)">
+                        <Globe className="w-3 h-3" />
                     </div>
                 ) : null}
             </div>
 
             {/* Footer */}
-            <footer className="pt-3 pb-2 flex flex-col items-center gap-1 text-center w-full">
-                <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted/40 border border-border/50 text-[8px] font-medium text-muted-foreground">
-                    <ShieldCheck className="w-3 h-3 text-primary" />
+            <footer className={`pt-2 pb-1 flex flex-col items-center gap-1 text-center w-full`}>
+                <div className={`inline-flex items-center gap-1 ${isPreview ? 'px-2 py-0.5 text-[7px]' : 'px-3 py-1 text-[9px]'} rounded-full bg-muted/40 border border-border/50 font-medium text-muted-foreground`}>
+                    <ShieldCheck className={isPreview ? 'w-2.5 h-2.5 text-primary' : 'w-3 h-3 text-primary'} />
                     <span>Layanan Konsultasi Resmi &amp; Amanah</span>
                 </div>
-                <p className="text-[8px] text-muted-foreground/60 leading-tight">
+                <p className={`${isPreview ? 'text-[7px]' : 'text-[9.5px]'} text-muted-foreground/60 leading-tight`}>
                     &copy; {new Date().getFullYear()} {tenant?.nama_travel || 'Travel'}. Semoga menjadi langkah awal ibadah yang mabrur.
                 </p>
             </footer>
