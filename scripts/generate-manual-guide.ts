@@ -228,6 +228,8 @@ const MODULES: StepGuide[] = [
             'Gunakan tombol "Reassign / Pindahkan Bawahan" jika ada perubahan struktur mutasi staf.'
         ]
     }
+];
+
 async function run() {
     console.log(`\n🚀 Memulai Otomasi Scraper Manual Guide...`);
     console.log(`📍 Target Server: ${BASE_URL}`);

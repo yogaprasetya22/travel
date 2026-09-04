@@ -1,6 +1,7 @@
 # Panduan Login & Dashboard Utama
 
-> **Kategori**: `Umum & Dashboard` | **Rute Halaman**: `/dashboard`
+> **Target Peran**: `Semua Role` | **Tahapan Alur**: `1. Setup & Master Data`
+> **Kategori Modul**: `Umum & Dashboard` | **Rute Halaman**: `/dashboard`
 
 ## 📋 Deskripsi Fitur
 Dashboard memberikan visibilitas menyeluruh terhadap kinerja travel, akumulasi omzet, jumlah jamaah, dan grafik tren keberangkatan.
