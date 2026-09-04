@@ -20,8 +20,11 @@ import {
     Users,
     Briefcase,
     Home,
+    Sun,
+    Moon,
+    Palette,
 } from "lucide-react";
-import ThemeToggle from "@/Components/ThemeToggle";
+import { useTheme } from "@/Components/ThemeProvider";
 
 interface NavItem {
     title: string;
@@ -153,6 +156,8 @@ export default function DocsIndex({
 
     const travelName = tenant?.nama_travel || "Hajj & Umroh System";
 
+    const { theme, setTheme } = useTheme();
+
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col antialiased selection:bg-primary/20 selection:text-primary">
             <Head title={`${activeDoc?.title || "Buku Panduan"} - ${travelName} Docs`} />
@@ -237,7 +242,18 @@ export default function DocsIndex({
 
                     {/* Right Action Buttons */}
                     <div className="flex items-center gap-2.5">
-                        <ThemeToggle />
+                        <button
+                            type="button"
+                            onClick={() => setTheme(theme === 'luxury' || theme === 'dark' ? 'caramellatte' : 'luxury')}
+                            className="p-2 rounded-xl border border-border bg-card hover:bg-accent text-foreground transition-colors"
+                            title="Ganti Tema Warna"
+                        >
+                            {theme === 'caramellatte' || theme === 'light' ? (
+                                <Moon className="w-4 h-4 text-amber-500" />
+                            ) : (
+                                <Sun className="w-4 h-4 text-amber-400" />
+                            )}
+                        </button>
 
                         {isAuthenticated ? (
                             <Link
