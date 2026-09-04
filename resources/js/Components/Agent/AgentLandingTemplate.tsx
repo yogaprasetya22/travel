@@ -18,6 +18,7 @@ import {
     Quote,
     Plane,
     PhoneCall,
+    UserPlus,
 } from 'lucide-react';
 import { LandingLinkItem, SocialLinks, Tenant } from '@/Types';
 import { Badge } from '@/Components/ui/badge';
@@ -73,7 +74,7 @@ export default function AgentLandingTemplate({
     )}`;
 
     const effectiveRegisterUrl =
-        registerUrl || (agent.referral_code ? `/register?ref=${agent.referral_code}` : '/register');
+        registerUrl || (agent.referral_code ? `/daftar?ref=${encodeURIComponent(agent.referral_code)}` : '/daftar');
 
     // Default links if none configured
     const customLinks: LandingLinkItem[] =
@@ -81,16 +82,16 @@ export default function AgentLandingTemplate({
             ? agent.landing_links
             : [
                   {
-                      title: 'Pendaftaran & Formulir Calon Jamaah',
-                      url: effectiveRegisterUrl,
-                      icon: 'form',
+                      title: 'Informasi Jadwal Paket & Biaya Umroh',
+                      url: `${typeof window !== 'undefined' ? window.location.origin : ''}/#paket`,
+                      icon: 'plane',
                       target_type: 'custom_url',
-                      style_type: 'primary',
-                      is_highlight: true,
+                      style_type: 'default',
+                      is_highlight: false,
                   },
                   {
-                      title: 'Informasi Jadwal & Panduan Manasik',
-                      url: `${typeof window !== 'undefined' ? window.location.origin : ''}/#paket`,
+                      title: 'Buku Panduan & Dokumentasi Sistem',
+                      url: '/docs/agent',
                       icon: 'guide',
                       target_type: 'custom_url',
                       style_type: 'default',
@@ -291,30 +292,61 @@ export default function AgentLandingTemplate({
                 </div>
             </div>
 
-            {/* Main Emerald Contact WA Button */}
-            <motion.a
-                href={mainWaUrl}
-                target="_blank"
-                rel="noreferrer"
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                className={`w-full ${isPreview ? 'p-2 rounded-xl text-[9.5px]' : 'py-3 px-3.5 sm:py-3.5 sm:px-4 rounded-xl sm:rounded-2xl text-xs sm:text-sm'} bg-emerald-600 hover:bg-emerald-500 text-white font-semibold flex items-center justify-between shadow-xs transition-all border border-emerald-500/40`}
-            >
-                <div className={`flex items-center ${isPreview ? 'gap-2' : 'gap-3'} min-w-0`}>
-                    <div className={`${isPreview ? 'p-1 rounded-lg' : 'p-1.5 sm:p-2 rounded-lg sm:rounded-xl'} bg-white/20 text-white shrink-0`}>
-                        <MessageCircle className={`${isPreview ? 'w-3.5 h-3.5' : 'w-4 h-4 sm:w-5 sm:h-5'} fill-white`} />
+            {/* Primary Action Buttons: Register & WhatsApp */}
+            <div className={`w-full flex flex-col ${isPreview ? 'gap-1.5' : 'gap-2 sm:gap-2.5'}`}>
+                {/* 1. Dedicated Registration / Booking Button with Referral Code */}
+                <motion.a
+                    href={effectiveRegisterUrl}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    className={`w-full ${isPreview ? 'p-2 rounded-xl text-[9.5px]' : 'py-3 px-3.5 sm:py-3.5 sm:px-4 rounded-xl sm:rounded-2xl text-xs sm:text-sm'} bg-primary text-primary-foreground font-semibold flex items-center justify-between shadow-xs transition-all border border-primary/30 hover:bg-primary/95 group`}
+                >
+                    <div className={`flex items-center ${isPreview ? 'gap-2' : 'gap-3'} min-w-0`}>
+                        <div className={`${isPreview ? 'p-1 rounded-lg' : 'p-1.5 sm:p-2 rounded-lg sm:rounded-xl'} bg-white/20 text-white shrink-0`}>
+                            <UserPlus className={`${isPreview ? 'w-3.5 h-3.5' : 'w-4 h-4 sm:w-5 sm:h-5'}`} />
+                        </div>
+                        <div className="flex flex-col text-left min-w-0">
+                            <span className={`${isPreview ? 'text-[9.5px]' : 'text-xs sm:text-sm'} font-bold leading-tight truncate flex items-center gap-1.5`}>
+                                <span>Pendaftaran &amp; Formulir Calon Jamaah</span>
+                                {agent.referral_code && (
+                                    <span className="text-[9px] sm:text-[10px] bg-white/20 px-1.5 py-0.5 rounded font-mono font-bold shrink-0">
+                                        {agent.referral_code}
+                                    </span>
+                                )}
+                            </span>
+                            <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-xs'} text-primary-foreground/80 font-normal truncate`}>
+                                Daftar online langsung terhubung bimbingan {agent.name}
+                            </span>
+                        </div>
                     </div>
-                    <div className="flex flex-col text-left min-w-0">
-                        <span className={`${isPreview ? 'text-[9.5px]' : 'text-xs sm:text-sm'} font-bold leading-tight truncate`}>
-                            Konsultasi &amp; Tanya Jawab Bimbingan
-                        </span>
-                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-xs'} text-emerald-100 font-normal`}>
-                            Hubungi langsung via WhatsApp (+{formattedAgentWa})
-                        </span>
+                    <ChevronRight className={`${isPreview ? 'w-3 h-3' : 'w-4 h-4'} text-primary-foreground/80 shrink-0 group-hover:translate-x-0.5 transition-transform`} />
+                </motion.a>
+
+                {/* 2. Main Emerald Contact WA Button */}
+                <motion.a
+                    href={mainWaUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    className={`w-full ${isPreview ? 'p-2 rounded-xl text-[9.5px]' : 'py-3 px-3.5 sm:py-3.5 sm:px-4 rounded-xl sm:rounded-2xl text-xs sm:text-sm'} bg-emerald-600 hover:bg-emerald-500 text-white font-semibold flex items-center justify-between shadow-xs transition-all border border-emerald-500/40 group`}
+                >
+                    <div className={`flex items-center ${isPreview ? 'gap-2' : 'gap-3'} min-w-0`}>
+                        <div className={`${isPreview ? 'p-1 rounded-lg' : 'p-1.5 sm:p-2 rounded-lg sm:rounded-xl'} bg-white/20 text-white shrink-0`}>
+                            <MessageCircle className={`${isPreview ? 'w-3.5 h-3.5' : 'w-4 h-4 sm:w-5 sm:h-5'} fill-white`} />
+                        </div>
+                        <div className="flex flex-col text-left min-w-0">
+                            <span className={`${isPreview ? 'text-[9.5px]' : 'text-xs sm:text-sm'} font-bold leading-tight truncate`}>
+                                Konsultasi &amp; Tanya Jawab Bimbingan
+                            </span>
+                            <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-xs'} text-emerald-100 font-normal truncate`}>
+                                Hubungi langsung via WhatsApp (+{formattedAgentWa})
+                            </span>
+                        </div>
                     </div>
-                </div>
-                <ChevronRight className={`${isPreview ? 'w-3 h-3' : 'w-4 h-4'} text-white/80 shrink-0`} />
-            </motion.a>
+                    <ChevronRight className={`${isPreview ? 'w-3 h-3' : 'w-4 h-4'} text-white/80 shrink-0 group-hover:translate-x-0.5 transition-transform`} />
+                </motion.a>
+            </div>
 
             {/* Action Cards List */}
             <div className={`w-full flex flex-col ${isPreview ? 'gap-1.5' : 'gap-2 sm:gap-2.5'}`}>
