@@ -907,7 +907,7 @@ export default function DocsIndex({
                             </div>
                         </div>
                     ) : (
-                        <div className="space-y-5 max-h-[calc(100vh-8rem)] overflow-y-auto pr-1 no-scrollbar">
+                        <div className="space-y-5 max-h-[calc(100vh-20rem)] overflow-y-auto pr-1 no-scrollbar">
                             {Object.entries(groupedNavItems).map(([category, items]) => (
                                 <div key={category} className="space-y-1">
                                     <div className="flex items-center gap-1.5 px-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
