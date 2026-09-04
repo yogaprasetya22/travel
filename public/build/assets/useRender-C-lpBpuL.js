@@ -1,0 +1,1 @@
+import{n as e}from"./dist-D05q7gr1.js";function t(t){return e(t.defaultTagName??`div`,t,t)}export{t};

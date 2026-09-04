@@ -673,7 +673,7 @@ export default function UpdateAgentLandingForm({
                         style={(themeData.themes[(tenant?.theme_name as keyof typeof themeData.themes) || 'luxury']?.variables || themeData.themes['luxury'].variables) as React.CSSProperties}
                     >
                         {/* Fixed Status Bar (Inside Screen, Themed Background + Backdrop Blur) */}
-                        <div className="sticky top-0 left-0 right-0 h-9 px-6 pt-1 flex items-center justify-between text-[9px] font-semibold text-foreground/80 bg-background/85 backdrop-blur-md z-30 select-none border-b border-border/20 rounded-t-[30px]">
+                        <div className="sticky top-1 left-0 right-0 h-6 px-6 pt-1 flex items-center justify-between text-[9px] font-semibold text-foreground/80 bg-gray-50/20 backdrop-blur-lg z-30 select-none border-b border-border/20 rounded-t-[30px]">
                             <span>{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                             <div className="flex items-center gap-1">
                                 <span className="text-[8px] font-mono font-bold">5G</span>
@@ -684,7 +684,7 @@ export default function UpdateAgentLandingForm({
                         </div>
 
                         {/* Scrollable Content */}
-                        <div className="w-full flex-1 overflow-y-auto no-scrollbar px-3 pb-4 pt-2 relative">
+                        <div className="w-full flex-1 overflow-y-auto no-scrollbar px-3 pb-4 pt-4 relative">
                             {/* Background Radial Glow */}
                             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
 
