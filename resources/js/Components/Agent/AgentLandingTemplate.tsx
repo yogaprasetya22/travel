@@ -179,18 +179,18 @@ export default function AgentLandingTemplate({
         `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.name || 'Agent')}&background=6F4E37&color=fff&size=256`;
 
     return (
-        <div className={`w-full flex flex-col items-center ${isPreview ? 'gap-2.5 text-center select-none' : 'gap-5 text-center select-none'} ${className}`}>
+        <div className={`w-full flex flex-col items-center ${isPreview ? 'gap-2.5 text-center select-none' : 'gap-4 sm:gap-5 text-center select-none'} ${className}`}>
             {/* Top Travel Info & Share */}
-            <div className={`w-full flex items-center justify-between pb-1 border-b border-border/40 ${isPreview ? 'text-[9px]' : 'text-xs'}`}>
+            <div className={`w-full flex items-center justify-between pb-1.5 border-b border-border/40 ${isPreview ? 'text-[9px]' : 'text-xs'}`}>
                 <div className="flex items-center gap-2 text-left min-w-0">
-                    <div className={`${isPreview ? 'w-5 h-5 rounded-md text-[10px]' : 'w-7 h-7 rounded-xl text-xs'} bg-primary/10 text-primary flex items-center justify-center font-bold border border-primary/20 shrink-0`}>
+                    <div className={`${isPreview ? 'w-5 h-5 rounded-md text-[10px]' : 'w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-xs'} bg-primary/10 text-primary flex items-center justify-center font-bold border border-primary/20 shrink-0`}>
                         <Building2 className={isPreview ? 'w-3 h-3' : 'w-4 h-4'} />
                     </div>
                     <div className="flex flex-col min-w-0">
                         <span className={`${isPreview ? 'text-[10px]' : 'text-xs sm:text-sm'} font-bold text-foreground leading-tight truncate`}>
                             {tenant?.nama_travel || 'Official Travel'}
                         </span>
-                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[9.5px]'} text-muted-foreground truncate`}>
+                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px]'} text-muted-foreground truncate`}>
                             Penyelenggara Resmi Umroh &amp; Haji
                         </span>
                     </div>
@@ -199,10 +199,10 @@ export default function AgentLandingTemplate({
                 <button
                     type="button"
                     onClick={handleShare}
-                    className={`${isPreview ? 'p-1' : 'p-2'} rounded-full bg-card hover:bg-muted border border-border/80 shadow-xs text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer`}
+                    className={`${isPreview ? 'p-1' : 'p-1.5 sm:p-2'} rounded-full bg-card hover:bg-muted border border-border/80 shadow-xs text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer`}
                     title="Bagikan Tautan"
                 >
-                    <Share2 className={isPreview ? 'w-3 h-3' : 'w-3.5 h-3.5'} />
+                    <Share2 className={isPreview ? 'w-3 h-3' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'} />
                 </button>
             </div>
 
@@ -210,7 +210,7 @@ export default function AgentLandingTemplate({
             <div className={`flex flex-col items-center text-center ${isPreview ? 'gap-1.5' : 'gap-3'} w-full`}>
                 {/* Avatar with Sacred Ring & Shield */}
                 <div className="relative">
-                    <div className={`p-1 rounded-full ${isPreview ? 'ring-2' : 'ring-4'} ring-primary/20 bg-card shadow-md`}>
+                    <div className={`p-1 rounded-full ${isPreview ? 'ring-2' : 'ring-3 sm:ring-4'} ring-primary/20 bg-card shadow-md`}>
                         <img
                             src={avatarSrc}
                             alt={agent.name}
@@ -218,30 +218,30 @@ export default function AgentLandingTemplate({
                         />
                     </div>
                     <div
-                        className={`absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full ${isPreview ? 'p-0.5' : 'p-1.5'} shadow-md border-2 border-background`}
+                        className={`absolute bottom-0.5 right-0.5 bg-primary text-primary-foreground rounded-full ${isPreview ? 'p-0.5' : 'p-1 sm:p-1.5'} shadow-md border-2 border-background`}
                         title="Konsultan Bimbingan Terverifikasi"
                     >
-                        <ShieldCheck className={isPreview ? 'w-2.5 h-2.5' : 'w-3.5 h-3.5'} />
+                        <ShieldCheck className={isPreview ? 'w-2.5 h-2.5' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'} />
                     </div>
                 </div>
 
                 {/* Name & Title Badges */}
-                <div className="flex flex-col items-center gap-0.5">
-                    <h1 className={`${isPreview ? 'text-xs sm:text-sm' : 'text-xl sm:text-2xl'} font-bold text-foreground tracking-tight leading-tight`}>
+                <div className="flex flex-col items-center gap-1">
+                    <h1 className={`${isPreview ? 'text-xs sm:text-sm' : 'text-lg sm:text-xl font-bold'} font-bold text-foreground tracking-tight leading-tight`}>
                         {agent.name}
                     </h1>
 
-                    <div className="flex flex-wrap items-center justify-center gap-1 pt-0.5">
+                    <div className="flex flex-wrap items-center justify-center gap-1.5 pt-0.5">
                         <Badge
                             variant="secondary"
-                            className={`bg-primary/10 text-primary border-primary/20 font-semibold ${isPreview ? 'text-[7.5px] px-1.5 py-0.5' : 'text-[10px] sm:text-xs px-2.5 py-0.5'} tracking-wide`}
+                            className={`bg-primary/10 text-primary border-primary/20 font-semibold ${isPreview ? 'text-[7.5px] px-1.5 py-0.5' : 'text-[11px] sm:text-xs px-2.5 py-0.5'} tracking-wide`}
                         >
                             {displayTitle}
                         </Badge>
                         {agent.kota && (
                             <Badge
                                 variant="outline"
-                                className={`${isPreview ? 'text-[7.5px] px-1.5 py-0.5' : 'text-[10px] sm:text-xs px-2.5 py-0.5'} font-medium border-border/80 gap-1 text-muted-foreground`}
+                                className={`${isPreview ? 'text-[7.5px] px-1.5 py-0.5' : 'text-[11px] sm:text-xs px-2.5 py-0.5'} font-medium border-border/80 gap-1 text-muted-foreground`}
                             >
                                 <MapPin className={isPreview ? 'w-2 h-2 text-primary' : 'w-3 h-3 text-primary'} />
                                 <span>{agent.kota}</span>
@@ -251,8 +251,8 @@ export default function AgentLandingTemplate({
                 </div>
 
                 {/* Bio Card with Sacred Quote */}
-                <div className={`w-full ${isPreview ? 'p-2.5 rounded-xl' : 'p-4.5 rounded-2xl'} bg-gradient-to-b from-card/90 to-card/60 backdrop-blur-md border border-border/80 shadow-xs text-left relative overflow-hidden group`}>
-                    <Quote className={`absolute top-2 right-3 ${isPreview ? 'w-5 h-5' : 'w-10 h-10'} text-primary/10 -rotate-12 pointer-events-none`} />
+                <div className={`w-full ${isPreview ? 'p-2.5 rounded-xl' : 'p-3.5 sm:p-4 rounded-xl sm:rounded-2xl'} bg-gradient-to-b from-card/90 to-card/60 backdrop-blur-md border border-border/80 shadow-xs text-left relative overflow-hidden group`}>
+                    <Quote className={`absolute top-2 right-3 ${isPreview ? 'w-5 h-5' : 'w-8 h-8 sm:w-10 sm:h-10'} text-primary/10 -rotate-12 pointer-events-none`} />
 
                     <div className={`flex items-start ${isPreview ? 'gap-1.5' : 'gap-2.5'} relative z-10`}>
                         <div className={`p-1 rounded-md bg-primary/10 text-primary shrink-0 mt-0.5`}>
@@ -274,17 +274,17 @@ export default function AgentLandingTemplate({
 
                 {/* Trust Points */}
                 <div className={`grid grid-cols-3 ${isPreview ? 'gap-1' : 'gap-2'} w-full pt-0.5`}>
-                    <div className={`${isPreview ? 'p-1.5 rounded-lg' : 'p-2.5 rounded-xl'} bg-card/40 border border-border/50 flex flex-col items-center text-center`}>
+                    <div className={`${isPreview ? 'p-1.5 rounded-lg' : 'py-2 px-1.5 sm:py-2.5 sm:px-2 rounded-xl'} bg-card/50 border border-border/60 flex flex-col items-center text-center shadow-2xs`}>
                         <HeartHandshake className={`${isPreview ? 'w-3 h-3 mb-0.5' : 'w-4 h-4 sm:w-5 sm:h-5 mb-1'} text-primary`} />
                         <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-xs'} font-medium text-foreground`}>Pendampingan Khusyuk</span>
                     </div>
 
-                    <div className={`${isPreview ? 'p-1.5 rounded-lg' : 'p-2.5 rounded-xl'} bg-card/40 border border-border/50 flex flex-col items-center text-center`}>
+                    <div className={`${isPreview ? 'p-1.5 rounded-lg' : 'py-2 px-1.5 sm:py-2.5 sm:px-2 rounded-xl'} bg-card/50 border border-border/60 flex flex-col items-center text-center shadow-2xs`}>
                         <BookOpen className={`${isPreview ? 'w-3 h-3 mb-0.5' : 'w-4 h-4 sm:w-5 sm:h-5 mb-1'} text-primary`} />
                         <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-xs'} font-medium text-foreground`}>Sesuai Sunnah</span>
                     </div>
 
-                    <div className={`${isPreview ? 'p-1.5 rounded-lg' : 'p-2.5 rounded-xl'} bg-card/40 border border-border/50 flex flex-col items-center text-center`}>
+                    <div className={`${isPreview ? 'p-1.5 rounded-lg' : 'py-2 px-1.5 sm:py-2.5 sm:px-2 rounded-xl'} bg-card/50 border border-border/60 flex flex-col items-center text-center shadow-2xs`}>
                         <CheckCircle2 className={`${isPreview ? 'w-3 h-3 mb-0.5' : 'w-4 h-4 sm:w-5 sm:h-5 mb-1'} text-primary`} />
                         <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-xs'} font-medium text-foreground`}>Resmi Kemenag</span>
                     </div>
@@ -298,10 +298,10 @@ export default function AgentLandingTemplate({
                 rel="noreferrer"
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
-                className={`w-full ${isPreview ? 'p-2 rounded-xl text-[9.5px]' : 'p-3.5 sm:p-4 rounded-2xl text-xs sm:text-sm'} bg-emerald-600 hover:bg-emerald-500 text-white font-semibold flex items-center justify-between shadow-xs transition-all border border-emerald-500/40`}
+                className={`w-full ${isPreview ? 'p-2 rounded-xl text-[9.5px]' : 'py-3 px-3.5 sm:py-3.5 sm:px-4 rounded-xl sm:rounded-2xl text-xs sm:text-sm'} bg-emerald-600 hover:bg-emerald-500 text-white font-semibold flex items-center justify-between shadow-xs transition-all border border-emerald-500/40`}
             >
                 <div className={`flex items-center ${isPreview ? 'gap-2' : 'gap-3'} min-w-0`}>
-                    <div className={`${isPreview ? 'p-1 rounded-lg' : 'p-2 rounded-xl'} bg-white/20 text-white shrink-0`}>
+                    <div className={`${isPreview ? 'p-1 rounded-lg' : 'p-1.5 sm:p-2 rounded-lg sm:rounded-xl'} bg-white/20 text-white shrink-0`}>
                         <MessageCircle className={`${isPreview ? 'w-3.5 h-3.5' : 'w-4 h-4 sm:w-5 sm:h-5'} fill-white`} />
                     </div>
                     <div className="flex flex-col text-left min-w-0">
@@ -317,7 +317,7 @@ export default function AgentLandingTemplate({
             </motion.a>
 
             {/* Action Cards List */}
-            <div className={`w-full flex flex-col ${isPreview ? 'gap-1.5' : 'gap-2.5'}`}>
+            <div className={`w-full flex flex-col ${isPreview ? 'gap-1.5' : 'gap-2 sm:gap-2.5'}`}>
                 {customLinks.map((item, index) => {
                     const finalHref = resolveLinkHref(item);
                     const isInternal =
@@ -340,10 +340,10 @@ export default function AgentLandingTemplate({
                             rel="noreferrer"
                             whileHover={{ scale: 1.01 }}
                             whileTap={{ scale: 0.99 }}
-                            className={`w-full ${isPreview ? 'p-2 rounded-xl' : 'p-3.5 sm:p-4 rounded-2xl'} transition-all flex items-center justify-between gap-2 shadow-xs ${cardClass}`}
+                            className={`w-full ${isPreview ? 'p-2 rounded-xl' : 'py-3 px-3.5 sm:py-3.5 sm:px-4 rounded-xl sm:rounded-2xl'} transition-all flex items-center justify-between gap-2 shadow-xs ${cardClass}`}
                         >
                             <div className={`flex items-center ${isPreview ? 'gap-2' : 'gap-3'} flex-1 min-w-0`}>
-                                <div className={`${isPreview ? 'p-1 rounded-lg' : 'p-2 rounded-xl'} shrink-0 bg-black/10 dark:bg-white/10`}>
+                                <div className={`${isPreview ? 'p-1 rounded-lg' : 'p-1.5 sm:p-2 rounded-lg sm:rounded-xl'} shrink-0 bg-black/10 dark:bg-white/10`}>
                                     {getLinkIcon(item.icon)}
                                 </div>
                                 <div className="flex flex-col text-left min-w-0">
@@ -351,10 +351,10 @@ export default function AgentLandingTemplate({
                                         {item.title || 'Tautan Tanpa Judul'}
                                     </span>
                                     {targetType === 'tenant_wa' && (
-                                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px]'} opacity-75 font-normal`}>➔ CS Induk Travel</span>
+                                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-[11px]'} opacity-75 font-normal`}>➔ CS Induk Travel</span>
                                     )}
                                     {targetType === 'agent_wa' && (
-                                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px]'} opacity-75 font-normal`}>➔ WA Pribadi Agen</span>
+                                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-[11px]'} opacity-75 font-normal`}>➔ WA Pribadi Agen</span>
                                     )}
                                 </div>
                             </div>
@@ -365,13 +365,13 @@ export default function AgentLandingTemplate({
             </div>
 
             {/* Social Media Bar */}
-            <div className={`flex items-center justify-center ${isPreview ? 'gap-2 pt-1' : 'gap-3 pt-2'}`}>
+            <div className={`flex items-center justify-center ${isPreview ? 'gap-2 pt-0.5' : 'gap-3 pt-1 sm:pt-2'}`}>
                 {socials.instagram ? (
                     <a
                         href={`https://instagram.com/${socials.instagram.replace('@', '')}`}
                         target="_blank"
                         rel="noreferrer"
-                        className={`${isPreview ? 'p-1.5' : 'p-2.5'} rounded-full bg-card hover:bg-muted text-pink-500 border border-border/80 shadow-2xs transition-transform hover:scale-110`}
+                        className={`${isPreview ? 'p-1.5' : 'p-2 sm:p-2.5'} rounded-full bg-card hover:bg-muted text-pink-500 border border-border/80 shadow-2xs transition-transform hover:scale-110`}
                         title={`Instagram: ${socials.instagram}`}
                     >
                         <Share2 className={isPreview ? 'w-3 h-3' : 'w-4 h-4'} />
@@ -387,7 +387,7 @@ export default function AgentLandingTemplate({
                         href={`https://tiktok.com/@${socials.tiktok.replace('@', '')}`}
                         target="_blank"
                         rel="noreferrer"
-                        className={`${isPreview ? 'p-1.5' : 'p-2.5'} rounded-full bg-card hover:bg-muted text-foreground border border-border/80 shadow-2xs transition-transform hover:scale-110`}
+                        className={`${isPreview ? 'p-1.5' : 'p-2 sm:p-2.5'} rounded-full bg-card hover:bg-muted text-foreground border border-border/80 shadow-2xs transition-transform hover:scale-110`}
                         title={`TikTok: ${socials.tiktok}`}
                     >
                         <Globe className={isPreview ? 'w-3 h-3' : 'w-4 h-4'} />
@@ -403,7 +403,7 @@ export default function AgentLandingTemplate({
                         href={socials.youtube.startsWith('http') ? socials.youtube : `https://youtube.com/@${socials.youtube}`}
                         target="_blank"
                         rel="noreferrer"
-                        className={`${isPreview ? 'p-1.5' : 'p-2.5'} rounded-full bg-card hover:bg-muted text-red-500 border border-border/80 shadow-2xs transition-transform hover:scale-110`}
+                        className={`${isPreview ? 'p-1.5' : 'p-2 sm:p-2.5'} rounded-full bg-card hover:bg-muted text-red-500 border border-border/80 shadow-2xs transition-transform hover:scale-110`}
                         title={`YouTube: ${socials.youtube}`}
                     >
                         <Video className={isPreview ? 'w-3 h-3' : 'w-4 h-4'} />
@@ -419,7 +419,7 @@ export default function AgentLandingTemplate({
                         href={socials.facebook.startsWith('http') ? socials.facebook : `https://facebook.com/${socials.facebook}`}
                         target="_blank"
                         rel="noreferrer"
-                        className={`${isPreview ? 'p-1.5' : 'p-2.5'} rounded-full bg-card hover:bg-muted text-blue-500 border border-border/80 shadow-2xs transition-transform hover:scale-110`}
+                        className={`${isPreview ? 'p-1.5' : 'p-2 sm:p-2.5'} rounded-full bg-card hover:bg-muted text-blue-500 border border-border/80 shadow-2xs transition-transform hover:scale-110`}
                         title={`Facebook: ${socials.facebook}`}
                     >
                         <Globe className={isPreview ? 'w-3 h-3' : 'w-4 h-4'} />
@@ -432,12 +432,12 @@ export default function AgentLandingTemplate({
             </div>
 
             {/* Footer */}
-            <footer className={`pt-2 pb-1 flex flex-col items-center gap-1 text-center w-full`}>
-                <div className={`inline-flex items-center gap-1 ${isPreview ? 'px-2 py-0.5 text-[7px]' : 'px-3 py-1 text-[9px]'} rounded-full bg-muted/40 border border-border/50 font-medium text-muted-foreground`}>
+            <footer className={`pt-1 sm:pt-2 pb-1 flex flex-col items-center gap-1 text-center w-full`}>
+                <div className={`inline-flex items-center gap-1 ${isPreview ? 'px-2 py-0.5 text-[7px]' : 'px-3 py-1 text-[9.5px] sm:text-[10px]'} rounded-full bg-muted/40 border border-border/50 font-medium text-muted-foreground`}>
                     <ShieldCheck className={isPreview ? 'w-2.5 h-2.5 text-primary' : 'w-3 h-3 text-primary'} />
                     <span>Layanan Konsultasi Resmi &amp; Amanah</span>
                 </div>
-                <p className={`${isPreview ? 'text-[7px]' : 'text-[9.5px]'} text-muted-foreground/60 leading-tight`}>
+                <p className={`${isPreview ? 'text-[7px]' : 'text-[9.5px] sm:text-[10px]'} text-muted-foreground/60 leading-tight`}>
                     &copy; {new Date().getFullYear()} {tenant?.nama_travel || 'Travel'}. Semoga menjadi langkah awal ibadah yang mabrur.
                 </p>
             </footer>
