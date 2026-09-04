@@ -142,12 +142,12 @@ export default function AgentLandingTemplate({
 
     const getLinkClass = (item: LandingLinkItem) => {
         if (item.style_type === 'emerald') {
-            return 'bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-sm border border-emerald-500/40';
+            return 'bg-emerald-600/15 hover:bg-emerald-600/25 text-emerald-600 dark:text-emerald-400 font-bold shadow-2xs border border-emerald-500/30';
         }
         if (item.style_type === 'primary') {
-            return 'bg-primary text-primary-foreground font-semibold shadow-xs border border-primary/30 hover:bg-primary/95';
+            return 'bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-xs border border-primary/30';
         }
-        return 'bg-card/85 hover:bg-card text-foreground border border-border/80 hover:border-primary/40 font-medium';
+        return 'bg-card/90 hover:bg-card text-foreground border border-border/80 hover:border-primary/40 font-medium shadow-2xs';
     };
 
     const socials: SocialLinks = agent.social_links || {};
@@ -182,7 +182,7 @@ export default function AgentLandingTemplate({
     return (
         <div className={`w-full flex flex-col items-center ${isPreview ? 'gap-2.5 text-center select-none' : 'gap-4 sm:gap-5 text-center select-none'} ${className}`}>
             {/* Top Travel Info & Share */}
-            <div className={`w-full flex items-center justify-between pb-1.5 border-b border-border/40 ${isPreview ? 'text-[9px]' : 'text-xs'}`}>
+            <div className={`w-full flex items-center justify-between pb-2 border-b border-border/60 ${isPreview ? 'text-[9px]' : 'text-xs'}`}>
                 <div className="flex items-center gap-2 text-left min-w-0">
                     <div className={`${isPreview ? 'w-5 h-5 rounded-md text-[10px]' : 'w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-xs'} bg-primary/10 text-primary flex items-center justify-center font-bold border border-primary/20 shrink-0`}>
                         <Building2 className={isPreview ? 'w-3 h-3' : 'w-4 h-4'} />
@@ -209,7 +209,7 @@ export default function AgentLandingTemplate({
 
             {/* Agent Profile Details */}
             <div className={`flex flex-col items-center text-center ${isPreview ? 'gap-1.5' : 'gap-3'} w-full`}>
-                {/* Avatar with Sacred Ring & Shield */}
+                {/* Avatar with Ring & Shield */}
                 <div className="relative">
                     <div className={`p-1 rounded-full ${isPreview ? 'ring-2' : 'ring-3 sm:ring-4'} ring-primary/20 bg-card shadow-md`}>
                         <img
@@ -228,14 +228,14 @@ export default function AgentLandingTemplate({
 
                 {/* Name & Title Badges */}
                 <div className="flex flex-col items-center gap-1">
-                    <h1 className={`${isPreview ? 'text-xs sm:text-sm' : 'text-lg sm:text-xl font-bold'} font-bold text-foreground tracking-tight leading-tight`}>
+                    <h1 className={`${isPreview ? 'text-xs sm:text-sm' : 'text-lg sm:text-xl font-bold'} font-extrabold text-foreground tracking-tight leading-tight`}>
                         {agent.name}
                     </h1>
 
                     <div className="flex flex-wrap items-center justify-center gap-1.5 pt-0.5">
                         <Badge
                             variant="secondary"
-                            className={`bg-primary/10 text-primary border-primary/20 font-semibold ${isPreview ? 'text-[7.5px] px-1.5 py-0.5' : 'text-[11px] sm:text-xs px-2.5 py-0.5'} tracking-wide`}
+                            className={`bg-primary/10 text-primary border-primary/20 font-bold ${isPreview ? 'text-[7.5px] px-1.5 py-0.5' : 'text-[11px] sm:text-xs px-2.5 py-0.5'} tracking-wide`}
                         >
                             {displayTitle}
                         </Badge>
@@ -251,8 +251,8 @@ export default function AgentLandingTemplate({
                     </div>
                 </div>
 
-                {/* Bio Card with Sacred Quote */}
-                <div className={`w-full ${isPreview ? 'p-2.5 rounded-xl' : 'p-3.5 sm:p-4 rounded-xl sm:rounded-2xl'} bg-gradient-to-b from-card/90 to-card/60 backdrop-blur-md border border-border/80 shadow-xs text-left relative overflow-hidden group`}>
+                {/* Bio Card */}
+                <div className={`w-full ${isPreview ? 'p-2.5 rounded-xl' : 'p-3.5 sm:p-4 rounded-xl sm:rounded-2xl'} bg-card/80 backdrop-blur-sm border border-border/80 shadow-xs text-left relative overflow-hidden group`}>
                     <Quote className={`absolute top-2 right-3 ${isPreview ? 'w-5 h-5' : 'w-8 h-8 sm:w-10 sm:h-10'} text-primary/10 -rotate-12 pointer-events-none`} />
 
                     <div className={`flex items-start ${isPreview ? 'gap-1.5' : 'gap-2.5'} relative z-10`}>
@@ -260,12 +260,12 @@ export default function AgentLandingTemplate({
                             <Quote className={isPreview ? 'w-2.5 h-2.5' : 'w-3.5 h-3.5'} />
                         </div>
                         <div className="flex flex-col gap-1">
-                            <p className={`${isPreview ? 'text-[8.5px] leading-tight' : 'text-xs sm:text-sm leading-relaxed'} text-foreground/85 font-normal`}>
+                            <p className={`${isPreview ? 'text-[8.5px] leading-tight' : 'text-xs sm:text-sm leading-relaxed'} text-muted-foreground font-normal`}>
                                 {agent.bio && agent.bio.trim() !== '' ? agent.bio : defaultQuote}
                             </p>
                             <div className="flex items-center gap-1 pt-0.5">
                                 <div className={`h-px ${isPreview ? 'w-3' : 'w-5'} bg-primary/40`} />
-                                <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] font-semibold'} text-primary tracking-wide`}>
+                                <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] font-bold'} text-primary tracking-wide`}>
                                     Komitmen Pelayanan Konsultan
                                 </span>
                             </div>
@@ -275,17 +275,17 @@ export default function AgentLandingTemplate({
 
                 {/* Trust Points */}
                 <div className={`grid grid-cols-3 ${isPreview ? 'gap-1' : 'gap-1.5 sm:gap-2'} w-full pt-0.5`}>
-                    <div className={`${isPreview ? 'py-1 px-1 rounded-lg' : 'py-1.5 px-2 sm:py-2 sm:px-2 rounded-xl'} bg-card/50 border border-border/60 flex flex-col items-center justify-center text-center shadow-2xs`}>
+                    <div className={`${isPreview ? 'py-1 px-1 rounded-lg' : 'py-1.5 px-2 sm:py-2 sm:px-2 rounded-xl'} bg-card/80 border border-border/80 flex flex-col items-center justify-center text-center shadow-2xs`}>
                         <HeartHandshake className={`${isPreview ? 'w-2.5 h-2.5 mb-0.5' : 'w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5'} text-primary`} />
                         <span className={`${isPreview ? 'text-[7px] leading-tight' : 'text-[9.5px] sm:text-xs leading-tight'} font-medium text-foreground`}>Pendampingan Khusyuk</span>
                     </div>
 
-                    <div className={`${isPreview ? 'py-1 px-1 rounded-lg' : 'py-1.5 px-2 sm:py-2 sm:px-2 rounded-xl'} bg-card/50 border border-border/60 flex flex-col items-center justify-center text-center shadow-2xs`}>
+                    <div className={`${isPreview ? 'py-1 px-1 rounded-lg' : 'py-1.5 px-2 sm:py-2 sm:px-2 rounded-xl'} bg-card/80 border border-border/80 flex flex-col items-center justify-center text-center shadow-2xs`}>
                         <BookOpen className={`${isPreview ? 'w-2.5 h-2.5 mb-0.5' : 'w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5'} text-primary`} />
                         <span className={`${isPreview ? 'text-[7px] leading-tight' : 'text-[9.5px] sm:text-xs leading-tight'} font-medium text-foreground`}>Sesuai Sunnah</span>
                     </div>
 
-                    <div className={`${isPreview ? 'py-1 px-1 rounded-lg' : 'py-1.5 px-2 sm:py-2 sm:px-2 rounded-xl'} bg-card/50 border border-border/60 flex flex-col items-center justify-center text-center shadow-2xs`}>
+                    <div className={`${isPreview ? 'py-1 px-1 rounded-lg' : 'py-1.5 px-2 sm:py-2 sm:px-2 rounded-xl'} bg-card/80 border border-border/80 flex flex-col items-center justify-center text-center shadow-2xs`}>
                         <CheckCircle2 className={`${isPreview ? 'w-2.5 h-2.5 mb-0.5' : 'w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5'} text-primary`} />
                         <span className={`${isPreview ? 'text-[7px] leading-tight' : 'text-[9.5px] sm:text-xs leading-tight'} font-medium text-foreground`}>Resmi Kemenag</span>
                     </div>
@@ -297,9 +297,9 @@ export default function AgentLandingTemplate({
                 {/* 1. Dedicated Registration / Booking Button with Referral Code */}
                 <motion.a
                     href={effectiveRegisterUrl}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    className={`w-full ${isPreview ? 'p-2 rounded-xl text-[9.5px]' : 'py-3 px-3.5 sm:py-3.5 sm:px-4 rounded-xl sm:rounded-2xl text-xs sm:text-sm'} bg-primary text-primary-foreground font-semibold flex items-center justify-between shadow-xs transition-all border border-primary/30 hover:bg-primary/95 group`}
+                    whileHover={{ scale: 1.005 }}
+                    whileTap={{ scale: 0.995 }}
+                    className={`w-full ${isPreview ? 'p-2 rounded-xl text-[9.5px]' : 'py-3 px-3.5 sm:py-3.5 sm:px-4 rounded-xl sm:rounded-2xl text-xs sm:text-sm'} bg-primary hover:bg-primary/90 text-primary-foreground font-bold flex items-center justify-between shadow-lg shadow-primary/15 transition-all border border-primary/30 group cursor-pointer`}
                 >
                     <div className={`flex items-center ${isPreview ? 'gap-2' : 'gap-3'} min-w-0`}>
                         <div className={`${isPreview ? 'p-1 rounded-lg' : 'p-1.5 sm:p-2 rounded-lg sm:rounded-xl'} bg-white/20 text-white shrink-0`}>
@@ -322,29 +322,29 @@ export default function AgentLandingTemplate({
                     <ChevronRight className={`${isPreview ? 'w-3 h-3' : 'w-4 h-4'} text-primary-foreground/80 shrink-0 group-hover:translate-x-0.5 transition-transform`} />
                 </motion.a>
 
-                {/* 2. Main Emerald Contact WA Button */}
+                {/* 2. Main Contact WA Button */}
                 <motion.a
                     href={mainWaUrl}
                     target="_blank"
                     rel="noreferrer"
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    className={`w-full ${isPreview ? 'p-2 rounded-xl text-[9.5px]' : 'py-3 px-3.5 sm:py-3.5 sm:px-4 rounded-xl sm:rounded-2xl text-xs sm:text-sm'} bg-emerald-600 hover:bg-emerald-500 text-white font-semibold flex items-center justify-between shadow-xs transition-all border border-emerald-500/40 group`}
+                    whileHover={{ scale: 1.005 }}
+                    whileTap={{ scale: 0.995 }}
+                    className={`w-full ${isPreview ? 'p-2 rounded-xl text-[9.5px]' : 'py-3 px-3.5 sm:py-3.5 sm:px-4 rounded-xl sm:rounded-2xl text-xs sm:text-sm'} bg-card/90 hover:bg-card text-foreground font-semibold flex items-center justify-between shadow-2xs transition-all border border-border/80 hover:border-emerald-500/50 group cursor-pointer`}
                 >
                     <div className={`flex items-center ${isPreview ? 'gap-2' : 'gap-3'} min-w-0`}>
-                        <div className={`${isPreview ? 'p-1 rounded-lg' : 'p-1.5 sm:p-2 rounded-lg sm:rounded-xl'} bg-white/20 text-white shrink-0`}>
-                            <MessageCircle className={`${isPreview ? 'w-3.5 h-3.5' : 'w-4 h-4 sm:w-5 sm:h-5'} fill-white`} />
+                        <div className={`${isPreview ? 'p-1 rounded-lg' : 'p-1.5 sm:p-2 rounded-lg sm:rounded-xl'} bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0 border border-emerald-500/20`}>
+                            <MessageCircle className={`${isPreview ? 'w-3.5 h-3.5' : 'w-4 h-4 sm:w-5 sm:h-5'}`} />
                         </div>
                         <div className="flex flex-col text-left min-w-0">
                             <span className={`${isPreview ? 'text-[9.5px]' : 'text-xs sm:text-sm'} font-bold leading-tight truncate`}>
                                 Konsultasi &amp; Tanya Jawab Bimbingan
                             </span>
-                            <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-xs'} text-emerald-100 font-normal truncate`}>
+                            <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-xs'} text-muted-foreground font-normal truncate`}>
                                 Hubungi langsung via WhatsApp (+{formattedAgentWa})
                             </span>
                         </div>
                     </div>
-                    <ChevronRight className={`${isPreview ? 'w-3 h-3' : 'w-4 h-4'} text-white/80 shrink-0 group-hover:translate-x-0.5 transition-transform`} />
+                    <ChevronRight className={`${isPreview ? 'w-3 h-3' : 'w-4 h-4'} text-muted-foreground group-hover:translate-x-0.5 group-hover:text-emerald-500 transition-all shrink-0`} />
                 </motion.a>
             </div>
 
