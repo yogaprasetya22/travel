@@ -8,6 +8,7 @@ import { Label } from '@/Components/ui/label';
 import { Button } from '@/Components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
+import AgentLandingTemplate from '@/Components/Agent/AgentLandingTemplate';
 import { Transition } from '@headlessui/react';
 import {
     Camera,
@@ -668,211 +669,27 @@ export default function UpdateAgentLandingForm({
 
                     {/* Inside Screen with Tenant Theme */}
                     <div
-                        className="w-full h-full rounded-[32px] overflow-y-auto no-scrollbar bg-background text-foreground p-4 pt-8 flex flex-col items-center justify-between text-center relative"
+                        className="w-full h-full rounded-[32px] overflow-y-auto no-scrollbar bg-background text-foreground p-3 pt-6 relative"
                         style={(themeData.themes[(tenant?.theme_name as keyof typeof themeData.themes) || 'luxury']?.variables || themeData.themes['luxury'].variables) as React.CSSProperties}
                     >
                         {/* Background Radial Glow */}
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
 
-                        {/* Top Bar inside Phone */}
-                        <div className="w-full flex items-center justify-between pb-2 text-[10px] font-bold z-10 border-b border-border/50">
-                            <div className="flex items-center gap-1.5 text-left">
-                                <div className="w-5 h-5 rounded-md bg-primary/20 text-primary flex items-center justify-center">
-                                    <Building2 className="w-3 h-3" />
-                                </div>
-                                <span className="truncate max-w-[150px]">{tenant?.nama_travel || 'Travel'}</span>
-                            </div>
-                            <Share2 className="w-3.5 h-3.5 text-muted-foreground" />
-                        </div>
-
-                        {/* Agent Profile Details */}
-                        <div className="flex flex-col items-center gap-2 pt-2 w-full z-10">
-                            {/* Avatar */}
-                            <div className="relative">
-                                <div className="p-1 rounded-full ring-2 ring-primary/30 bg-card shadow-sm">
-                                    <img
-                                        src={avatarPreview || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=6F4E37&color=fff&size=256`}
-                                        alt={data.name}
-                                        className="w-16 h-16 rounded-full object-cover border border-background bg-background"
-                                    />
-                                </div>
-                                <div className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-1 shadow-xs border border-background">
-                                    <ShieldCheck className="w-2.5 h-2.5" />
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col items-center">
-                                <h4 className="text-sm font-bold text-foreground tracking-tight leading-tight">{data.name}</h4>
-                                <div className="flex items-center gap-1 pt-0.5">
-                                    <span className="text-[9px] font-semibold text-primary px-2 py-0.5 rounded-full bg-primary/10">
-                                        Konsultan Bimbingan Umroh
-                                    </span>
-                                    {data.kota && (
-                                        <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
-                                            <MapPin className="w-2.5 h-2.5 text-primary" />
-                                            {data.kota}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Bio Card */}
-                            <div className="w-full p-4.5 rounded-2xl bg-gradient-to-b from-card/90 to-card/60 backdrop-blur-md border border-border/80 shadow-xs text-left relative overflow-hidden group">
-                                {/* Subtle Background Watermark */}
-                                <Quote className="absolute top-2 right-3 w-10 h-10 text-primary/10 -rotate-12 pointer-events-none transition-transform group-hover:scale-110" />
-
-                                <div className="flex items-start gap-2.5 relative z-10 p-5">
-                                    <div className="p-1 rounded-md bg-primary/10 text-primary shrink-0 mt-0.5">
-                                        <Quote className="w-3.5 h-3.5" />
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <p className="text-[10px] text-foreground/85 font-normal leading-relaxed">
-                                            {data.bio && data.bio.trim() !== '' ? data.bio : 'Setiap langkah Anda menuju Tanah Suci adalah perjalanan hati yang berharga.'}
-                                        </p>
-                                        <div className="flex items-center gap-2 pt-0.5">
-                                            <div className="h-px w-5 bg-primary/40" />
-                                            <span className="text-[10px] font-semibold text-primary tracking-wide">
-                                                Komitmen Pelayanan Konsultan
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Main Emerald Contact */}
-                            <div
-                                className="w-full p-2.5 rounded-xl bg-emerald-600 text-white font-semibold flex items-center justify-between shadow-xs transition-all border border-emerald-500/40"
-                            >
-                                <div className="flex items-center gap-2.5 min-w-0">
-                                    <div className="p-1.5 rounded-lg bg-white/20 text-white shrink-0">
-                                        <MessageCircle className="w-3.5 h-3.5 fill-white" />
-                                    </div>
-                                    <div className="flex flex-col text-left min-w-0">
-                                        <span className="font-bold text-[10px] leading-snug">Konsultasi &amp; Tanya Jawab Bimbingan</span>
-                                        <span className="text-[8px] text-emerald-100 font-normal">Hubungi langsung via WhatsApp (+{formattedAgentWa})</span>
-                                    </div>
-                                </div>
-                                <ChevronRight className="w-3.5 h-3.5 text-white/80 shrink-0" />
-                            </div>
-
-                            {/* Action Cards List */}
-                            <div className="w-full flex flex-col gap-2 pt-1">
-                                {data.landing_links.map((link, i) => {
-                                    const targetType = link.target_type || (link.url && link.url.includes('wa.me') ? (rawTenantWa && link.url.includes(formattedTenantWa) ? 'tenant_wa' : 'agent_wa') : undefined);
-                                    const isEmerald = link.style_type === 'emerald';
-                                    const isPrimary = link.style_type === 'primary';
-
-                                    return (
-                                        <a
-                                            key={link.id || i}
-                                            href={link.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className={`w-full p-2.5 rounded-xl transition-all flex items-center justify-between text-[10px] font-bold text-left shadow-2xs border ${isEmerald
-                                                ? 'bg-emerald-600 text-white border-emerald-500/40'
-                                                : isPrimary
-                                                    ? 'bg-primary text-primary-foreground border-primary/30'
-                                                    : 'bg-card/90 text-foreground border-border/80'
-                                                }`}
-                                        >
-                                            <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                                                <div className="p-1.5 rounded-lg bg-black/10 dark:bg-white/10 shrink-0">
-                                                    {getIconComponent(link.icon)}
-                                                </div>
-                                                <div className="flex flex-col text-left min-w-0">
-                                                    <span className="text-[10px] leading-snug font-bold truncate -mb-1">{link.title || 'Tautan Tanpa Judul'}</span>
-                                                    {targetType === 'tenant_wa' && (
-                                                        <span className="text-[8px] opacity-75 font-normal">➔ CS Induk Travel</span>
-                                                    )}
-                                                    {targetType === 'agent_wa' && (
-                                                        <span className="text-[8px] opacity-75 font-normal">➔ WA Pribadi Agen</span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <ChevronRight className="w-3 h-3 shrink-0 opacity-75" />
-                                        </a>
-                                    );
-                                })}
-                            </div>
-
-                            {/* Social Media Bar inside Mockup */}
-                            <div className="flex items-center justify-center gap-2.5 pt-2">
-                                {data.social_links?.instagram ? (
-                                    <a
-                                        href={`https://instagram.com/${data.social_links.instagram.replace('@', '')}`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="p-2 rounded-full bg-card hover:bg-muted text-pink-500 border border-border/80 shadow-2xs transition-transform hover:scale-110"
-                                        title={`Instagram: ${data.social_links.instagram}`}
-                                    >
-                                        <Share2 className="w-3.5 h-3.5" />
-                                    </a>
-                                ) : (
-                                    <div className="p-2 rounded-full bg-card/60 text-muted-foreground/40 border border-border/40" title="Instagram (Belum diisi)">
-                                        <Share2 className="w-3.5 h-3.5" />
-                                    </div>
-                                )}
-
-                                {data.social_links?.tiktok ? (
-                                    <a
-                                        href={`https://tiktok.com/@${data.social_links.tiktok.replace('@', '')}`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="p-2 rounded-full bg-card hover:bg-muted text-foreground border border-border/80 shadow-2xs transition-transform hover:scale-110"
-                                        title={`TikTok: ${data.social_links.tiktok}`}
-                                    >
-                                        <Globe className="w-3.5 h-3.5" />
-                                    </a>
-                                ) : (
-                                    <div className="p-2 rounded-full bg-card/60 text-muted-foreground/40 border border-border/40" title="TikTok (Belum diisi)">
-                                        <Globe className="w-3.5 h-3.5" />
-                                    </div>
-                                )}
-
-                                {data.social_links?.youtube ? (
-                                    <a
-                                        href={data.social_links.youtube.startsWith('http') ? data.social_links.youtube : `https://youtube.com/@${data.social_links.youtube}`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="p-2 rounded-full bg-card hover:bg-muted text-red-500 border border-border/80 shadow-2xs transition-transform hover:scale-110"
-                                        title={`YouTube: ${data.social_links.youtube}`}
-                                    >
-                                        <Video className="w-3.5 h-3.5" />
-                                    </a>
-                                ) : (
-                                    <div className="p-2 rounded-full bg-card/60 text-muted-foreground/40 border border-border/40" title="YouTube (Belum diisi)">
-                                        <Video className="w-3.5 h-3.5" />
-                                    </div>
-                                )}
-
-                                {data.social_links?.facebook ? (
-                                    <a
-                                        href={data.social_links.facebook.startsWith('http') ? data.social_links.facebook : `https://facebook.com/${data.social_links.facebook}`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="p-2 rounded-full bg-card hover:bg-muted text-blue-500 border border-border/80 shadow-2xs transition-transform hover:scale-110"
-                                        title={`Facebook: ${data.social_links.facebook}`}
-                                    >
-                                        <Globe className="w-3.5 h-3.5" />
-                                    </a>
-                                ) : (
-                                    <div className="p-2 rounded-full bg-card/60 text-muted-foreground/40 border border-border/40" title="Facebook (Belum diisi)">
-                                        <Globe className="w-3.5 h-3.5" />
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Footer inside Phone */}
-                        <footer className="pt-2 pb-1 flex flex-col items-center gap-1 text-center w-full">
-                            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-muted/40 border border-border/50 text-[7.5px] font-medium text-muted-foreground">
-                                <ShieldCheck className="w-2.5 h-2.5 text-primary" />
-                                <span>Layanan Konsultasi Resmi &amp; Amanah</span>
-                            </div>
-                            <p className="text-[7.5px] text-muted-foreground/60 leading-tight">
-                                &copy; {new Date().getFullYear()} {tenant?.nama_travel || 'Travel'}. Semoga ibadah mabrur.
-                            </p>
-                        </footer>
+                        <AgentLandingTemplate
+                            agent={{
+                                name: data.name,
+                                avatar_url: avatarPreview,
+                                no_hp: data.no_hp,
+                                kota: data.kota,
+                                bio: data.bio,
+                                jabatan: user.jabatan,
+                                referral_code: user.referral_code,
+                                landing_links: data.landing_links,
+                                social_links: data.social_links,
+                            }}
+                            tenant={tenant}
+                            isPreview={true}
+                        />
                     </div>
                 </div>
             </div>
