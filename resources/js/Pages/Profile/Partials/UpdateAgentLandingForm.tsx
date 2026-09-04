@@ -662,27 +662,27 @@ export default function UpdateAgentLandingForm({
                 {/* Smartphone Device Frame */}
                 <div className="w-[340px] h-[680px] bg-black rounded-[42px] p-2.5 shadow-2xl border-4 border-slate-800 relative overflow-hidden flex flex-col">
                     {/* Notch & Speaker */}
-                    <div className="absolute top-3 left-1/2 -translate-x-1/2 w-28 h-4.5 bg-slate-900 rounded-full z-30 flex items-center justify-center pointer-events-none shadow-sm">
+                    <div className="absolute top-3 left-1/2 -translate-x-1/2 w-28 h-4.5 bg-slate-900 rounded-full z-40 flex items-center justify-center pointer-events-none shadow-sm">
                         <div className="w-2.5 h-2.5 rounded-full bg-slate-800 mr-2" />
                         <div className="w-8 h-1 rounded-full bg-slate-800" />
                     </div>
 
-                    {/* Inside Screen with Tenant Theme */}
-                    <div
-                        className="w-full h-full rounded-[34px] overflow-y-auto no-scrollbar bg-background text-foreground px-3 pb-4 pt-9 relative flex flex-col justify-between"
-                        style={(themeData.themes[(tenant?.theme_name as keyof typeof themeData.themes) || 'luxury']?.variables || themeData.themes['luxury'].variables) as React.CSSProperties}
-                    >
-                        {/* Status Bar (Simulated Time + Battery/Signal) */}
-                        <div className="absolute top-2 left-0 right-0 px-5 flex items-center justify-between text-[9px] font-semibold text-foreground/75 pointer-events-none z-20">
-                            <span>09:41</span>
-                            <div className="flex items-center gap-1">
-                                <span className="text-[8px] font-mono font-bold">5G</span>
-                                <div className="w-3.5 h-2 rounded-xs border border-foreground/60 p-0.5 flex items-center">
-                                    <div className="w-full h-full bg-foreground/70 rounded-2xs" />
-                                </div>
+                    {/* Fixed Status Bar (Simulated Time + Battery/Signal) */}
+                    <div className="absolute top-3.5 left-5 right-5 flex items-center justify-between text-[9px] font-semibold text-foreground/75 pointer-events-none z-30 select-none">
+                        <span>{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <div className="flex items-center gap-1">
+                            <span className="text-[8px] font-mono font-bold">5G</span>
+                            <div className="w-3.5 h-2 rounded-xs border border-foreground/60 p-0.5 flex items-center">
+                                <div className="w-full h-full bg-foreground/70 rounded-2xs" />
                             </div>
                         </div>
+                    </div>
 
+                    {/* Inside Screen with Tenant Theme */}
+                    <div
+                        className="w-full h-full rounded-[34px] overflow-y-auto no-scrollbar bg-background text-foreground px-3 pb-5 pt-9 relative flex flex-col justify-between"
+                        style={(themeData.themes[(tenant?.theme_name as keyof typeof themeData.themes) || 'luxury']?.variables || themeData.themes['luxury'].variables) as React.CSSProperties}
+                    >
                         {/* Background Radial Glow */}
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
 
