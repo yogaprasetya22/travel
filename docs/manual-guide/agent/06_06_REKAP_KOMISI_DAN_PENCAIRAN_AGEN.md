@@ -1,14 +1,14 @@
 # Rekap Komisi Penjualan & Saldo Agen
 
-> **Target Peran**: `Agen Mitra (Level 2/3)` | **Login Akun**: `agent2.t2@travel.com`
-> **Tahapan Alur**: `4. Hasil Penjualan & Payout` | **Kategori**: `Keuangan & Reward` | **Rute**: `/commissions`
+> **Target Peran**: `Mitra Agen (Level 2/3)` | **Login Akun**: `agent2.t2@travel.com`
+> **Tahapan Alur**: `4. Hasil Penjualan & Payout` | **Kategori**: `Keuangan & Reward` | **Rute / URL**: `/commissions`
 
 ## 📋 Deskripsi Fitur
 Pusat transparansi saldo komisi agen, riwayat komisi per jamaah yang telah lunas, dan status pencairan dana oleh kantor pusat.
 
 ## 🖼️ Tampilan Antarmuka
 
-![Tampilan Rekap Komisi Penjualan & Saldo Agen](screenshots/04_rekap_komisi_dan_pencairan_agen.png)
+![Tampilan Rekap Komisi Penjualan & Saldo Agen](screenshots/06_rekap_komisi_dan_pencairan_agen.png)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

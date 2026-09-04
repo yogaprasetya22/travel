@@ -1,7 +1,7 @@
 # Manajemen Staf Internal & Hierarki Pengguna
 
 > **Target Peran**: `Owner (Level 1)` | **Login Akun**: `superadmin@hajjflow.com`
-> **Tahapan Alur**: `1. Setup & Konfigurasi Awal` | **Kategori**: `Pengaturan Akun` | **Rute**: `/settings/users`
+> **Tahapan Alur**: `1. Setup & Konfigurasi Awal` | **Kategori**: `Pengaturan Akun` | **Rute / URL**: `/settings/users`
 
 ## 📋 Deskripsi Fitur
 Pengelolaan akun login staf kantor internal (Admin, Keuangan, Kasir) dan pengaturan pohon hierarki atasan-bawahan.

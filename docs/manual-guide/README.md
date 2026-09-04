@@ -8,7 +8,7 @@ Selamat datang di portal dokumentasi resmi. Dokumentasi telah dipisahkan ke dala
 > Panduan komprehensif untuk Direktur / Owner Travel, Staf Operasional, Keuangan, dan Kasir. Mencakup setup master paket umroh, rekening bank, verifikasi kasir, pembagian komisi, logistik gudang, dan hierarki keagenan.
 
 ### 🤝 [2. Buku Panduan Khusus Mitra Agen (Level 2/3)](agent/README.md)
-> Panduan praktis untuk Konsultan & Mitra Agen Umroh. Mencakup kustomisasi Bio Link landing page personal di `/profile`, penyebaran link referral, input calon jamaah, pengawalan berkas paspor di CRM, dan pemantauan komisi penjualan.
+> Panduan praktis untuk Konsultan & Mitra Agen Umroh. Mencakup kustomisasi Bio Link landing page personal di `/profile`, penyebaran link referral ke publik (`/agen/AG-XXX`), formulir pendaftaran online (`/daftar?ref=...`), input calon jamaah, pengawalan berkas paspor di CRM, dan pemantauan komisi penjualan.
 
 ---
 

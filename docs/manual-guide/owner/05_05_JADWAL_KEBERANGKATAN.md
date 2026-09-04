@@ -1,7 +1,7 @@
 # Jadwal, Maskapai & Manajemen Kuota Kursi
 
 > **Target Peran**: `Owner (Level 1)` | **Login Akun**: `superadmin@hajjflow.com`
-> **Tahapan Alur**: `4. Manajemen Kloter & Kuota Seat` | **Kategori**: `Operasional` | **Rute**: `/crm/schedules`
+> **Tahapan Alur**: `4. Manajemen Kloter & Kuota Seat` | **Kategori**: `Operasional` | **Rute / URL**: `/crm/schedules`
 
 ## 📋 Deskripsi Fitur
 Manajemen kloter keberangkatan, batas kuota kursi pesawat, hotel Makkah/Madinah, dan status ketersediaan seat.
@@ -26,9 +26,9 @@ Manajemen kloter keberangkatan, batas kuota kursi pesawat, hotel Makkah/Madinah,
 
 ## 🛠️ Langkah-Langkah Penggunaan
 
-1. Buka menu Operasional > Jadwal Keberangkatan.
-2. Klik "+ Tambah Jadwal" ➔ Masukkan Nama Keberangkatan, Tanggal Keberangkatan, Maskapai, dan Kuota Maksimal.
-3. Simpan data jadwal.
+1. Buka menu CRM > Jadwal Keberangkatan.
+2. Periksa sisa kuota kursi pada paket umroh musim aktif.
+3. Gunakan tombol "+ Tambah Jadwal" jika ingin membuka tanggal keberangkatan baru.
 
 ---
 *Buku Panduan Resmi Sistem Travel Umroh Multi-Tenant.*

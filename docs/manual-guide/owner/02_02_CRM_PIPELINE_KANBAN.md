@@ -1,10 +1,10 @@
 # Papan CRM Kanban Pipeline Jamaah (Leads to Closing)
 
 > **Target Peran**: `Owner (Level 1)` | **Login Akun**: `superadmin@hajjflow.com`
-> **Tahapan Alur**: `2. Pengawasan Pipa Penjualan` | **Kategori**: `CRM & Pipeline` | **Rute**: `/crm`
+> **Tahapan Alur**: `2. Pengawalan Leads & Prospek` | **Kategori**: `CRM & Penjualan` | **Rute / URL**: `/crm`
 
 ## 📋 Deskripsi Fitur
-Papan visual Kanban untuk memantau pergerakan seluruh prospek jamaah dari tahap pendaftaran awal, verifikasi DP, kelengkapan paspor/visa, pelunasan, hingga siap berangkat.
+Papan Kanban visual interaktif untuk mengawal alur prospek calon jamaah dari tahap Kontak Pertama, Konsultasi, Booking Kursi, Pembayaran DP, Pengumpulan Berkas, hingga Pelunasan.
 
 ## 🖼️ Tampilan Antarmuka
 
@@ -12,22 +12,29 @@ Papan visual Kanban untuk memantau pergerakan seluruh prospek jamaah dari tahap 
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 
+### ➕ Create (Tambah / Input Baru)
+- Klik "+ Tambah Leads" pada kolom tahapan manapun untuk memasukkan calon jamaah baru.
+
 ### 🔍 Read (Lihat / Pencarian / Filter Data)
-- Melihat kartu seluruh jamaah dari semua agen di masing-masing kolom tahapan.
-- Filter jamaah berdasarkan Paket Keberangkatan atau Agen Perujuk.
+- Melihat sebaran jamaah di setiap tahapan pipeline (New Leads, Follow Up, Booking, DP, Pelunasan).
+- Filter kartu jamaah berdasarkan Agen Pembina, Paket Umroh, atau Jadwal Keberangkatan.
 
 ### ✏️ Update (Edit / Pembaruan Status)
-- Drag-and-drop kartu jamaah antar-kolom tahapan secara realtime.
-- Klik kartu jamaah untuk membuka Laci Detail (Drawer) dan memperbarui data berkas.
+- Drag & Drop (geser) kartu jamaah antar-kolom status untuk memindahkan progres secara realtime.
+- Buka laci detail jamaah untuk melengkapi data paspor, foto KTP, dan buku nikah.
+
+### 🗑️ Delete (Hapus Data)
+- Arsipkan atau hapus data prospek yang batal mendaftar dari laci detail.
 
 ### ✨ Fitur Khusus & Otomasi
-- Sinkronisasi instan antar-perangkat saat status tahapan jamaah digeser.
+- Klik tombol WhatsApp pada kartu jamaah untuk mengirim pesan follow-up instan dengan template otomatis.
 
 ## 🛠️ Langkah-Langkah Penggunaan
 
-1. Masuk ke menu CRM > Pipeline Kanban.
-2. Gunakan filter di bagian atas untuk menyaring jamaah per paket atau per agen.
-3. Geser kartu jamaah ke kanan setelah jamaah menyelesaikan persyaratan tahapan (misal: DP Terbayar ➔ Berkas Paspor Lengkap).
+1. Buka menu CRM > Pipeline Kanban.
+2. Pantau kolom "New Leads" yang masuk dari formulir website atau referral agen.
+3. Tarik (drag) kartu jamaah ke kolom "Booking / DP" jika calon jamaah sudah menyetujui paket.
+4. Buka kartu untuk memverifikasi dokumen paspor dan visa.
 
 ---
 *Buku Panduan Resmi Sistem Travel Umroh Multi-Tenant.*

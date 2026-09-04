@@ -1,10 +1,10 @@
 # Monitoring Struktur Tim & Pohon Jaringan Agen
 
 > **Target Peran**: `Owner (Level 1)` | **Login Akun**: `superadmin@hajjflow.com`
-> **Tahapan Alur**: `5. Tata Kelola Mitra Penjualan` | **Kategori**: `Keagenan & Hierarki` | **Rute**: `/monitoring`
+> **Tahapan Alur**: `2. Pengawasan Jaringan Penjualan` | **Kategori**: `Keagenan & MLM Syariah` | **Rute / URL**: `/monitoring`
 
 ## 📋 Deskripsi Fitur
-Visualisasi pohon jaringan hierarki multi-tier (Master Agen / Leader Level 1 ➔ Sub-Agen Level 2 ➔ Konsultan Level 3) beserta kontribusi omzet grup.
+Visualisasi pohon jaringan (Network Tree) keagenan bertingkat untuk melihat hubungan Upline-Downline, struktur Leader, dan perolehan omzet grup.
 
 ## 🖼️ Tampilan Antarmuka
 
@@ -13,8 +13,8 @@ Visualisasi pohon jaringan hierarki multi-tier (Master Agen / Leader Level 1 ➔
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 
 ### 🔍 Read (Lihat / Pencarian / Filter Data)
-- Navigasi pohon struktur jaringan tim agen.
-- Melihat total omzet grup dan jumlah jamaah per cabang tim.
+- Melihat diagram pohon organisasi agen dari tingkat Cabang, Leader Pembina, hingga Agen Konsultan.
+- Melihat total omzet grup dan kontribusi jamaah per cabang.
 
 ## 🛠️ Langkah-Langkah Penggunaan
 

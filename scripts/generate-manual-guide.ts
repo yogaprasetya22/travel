@@ -6,7 +6,7 @@ interface StepGuide {
     id: string;
     category: string;
     title: string;
-    targetRole: 'Owner (Level 1)' | 'Agen Mitra (Level 2/3)';
+    targetRole: 'Owner (Level 1)' | 'Mitra Agen (Level 2/3)';
     loginAs: 'superadmin' | 'agent';
     workflowStage: string;
     route: string;
@@ -69,29 +69,36 @@ const OWNER_MODULES: StepGuide[] = [
     {
         id: '02_crm_pipeline_kanban',
         title: 'Papan CRM Kanban Pipeline Jamaah (Leads to Closing)',
-        category: 'CRM & Pipeline',
+        category: 'CRM & Penjualan',
         targetRole: 'Owner (Level 1)',
         loginAs: 'superadmin',
-        workflowStage: '2. Pengawasan Pipa Penjualan',
+        workflowStage: '2. Pengawalan Leads & Prospek',
         route: '/crm',
-        description: 'Papan visual Kanban untuk memantau pergerakan seluruh prospek jamaah dari tahap pendaftaran awal, verifikasi DP, kelengkapan paspor/visa, pelunasan, hingga siap berangkat.',
+        description: 'Papan Kanban visual interaktif untuk mengawal alur prospek calon jamaah dari tahap Kontak Pertama, Konsultasi, Booking Kursi, Pembayaran DP, Pengumpulan Berkas, hingga Pelunasan.',
         crudActions: {
+            create: [
+                'Klik "+ Tambah Leads" pada kolom tahapan manapun untuk memasukkan calon jamaah baru.'
+            ],
             read: [
-                'Melihat kartu seluruh jamaah dari semua agen di masing-masing kolom tahapan.',
-                'Filter jamaah berdasarkan Paket Keberangkatan atau Agen Perujuk.'
+                'Melihat sebaran jamaah di setiap tahapan pipeline (New Leads, Follow Up, Booking, DP, Pelunasan).',
+                'Filter kartu jamaah berdasarkan Agen Pembina, Paket Umroh, atau Jadwal Keberangkatan.'
             ],
             update: [
-                'Drag-and-drop kartu jamaah antar-kolom tahapan secara realtime.',
-                'Klik kartu jamaah untuk membuka Laci Detail (Drawer) dan memperbarui data berkas.'
+                'Drag & Drop (geser) kartu jamaah antar-kolom status untuk memindahkan progres secara realtime.',
+                'Buka laci detail jamaah untuk melengkapi data paspor, foto KTP, dan buku nikah.'
+            ],
+            delete: [
+                'Arsipkan atau hapus data prospek yang batal mendaftar dari laci detail.'
             ],
             special: [
-                'Sinkronisasi instan antar-perangkat saat status tahapan jamaah digeser.'
+                'Klik tombol WhatsApp pada kartu jamaah untuk mengirim pesan follow-up instan dengan template otomatis.'
             ]
         },
         steps: [
-            'Masuk ke menu CRM > Pipeline Kanban.',
-            'Gunakan filter di bagian atas untuk menyaring jamaah per paket atau per agen.',
-            'Geser kartu jamaah ke kanan setelah jamaah menyelesaikan persyaratan tahapan (misal: DP Terbayar ➔ Berkas Paspor Lengkap).'
+            'Buka menu CRM > Pipeline Kanban.',
+            'Pantau kolom "New Leads" yang masuk dari formulir website atau referral agen.',
+            'Tarik (drag) kartu jamaah ke kolom "Booking / DP" jika calon jamaah sudah menyetujui paket.',
+            'Buka kartu untuk memverifikasi dokumen paspor dan visa.'
         ]
     },
     {
@@ -181,38 +188,40 @@ const OWNER_MODULES: StepGuide[] = [
             ]
         },
         steps: [
-            'Buka menu Operasional > Jadwal Keberangkatan.',
-            'Klik "+ Tambah Jadwal" ➔ Masukkan Nama Keberangkatan, Tanggal Keberangkatan, Maskapai, dan Kuota Maksimal.',
-            'Simpan data jadwal.'
+            'Buka menu CRM > Jadwal Keberangkatan.',
+            'Periksa sisa kuota kursi pada paket umroh musim aktif.',
+            'Gunakan tombol "+ Tambah Jadwal" jika ingin membuka tanggal keberangkatan baru.'
         ]
     },
     {
         id: '06_manajemen_mitra_agen',
         title: 'Manajemen Mitra Agen & Persetujuan Akun',
-        category: 'Keagenan & Kemitraan',
+        category: 'Keagenan',
         targetRole: 'Owner (Level 1)',
         loginAs: 'superadmin',
-        workflowStage: '5. Tata Kelola Mitra Penjualan',
+        workflowStage: '2. Rekrutmen & Manajemen Kemitraan',
         route: '/agents',
-        description: 'Pusat pengelolaan mitra agen travel, pembuatan akun agen baru, verifikasi persetujuan kemitraan, dan pengaturan kode referral.',
+        description: 'Daftar seluruh agen mitra konsultan, status persetujuan akun baru, level hierarki, kode referral personal, dan penunjukan Leader/Upline.',
         crudActions: {
             create: [
-                'Klik "+ Tambah Agen" untuk mendaftarkan mitra agen / konsultan baru langsung dari kantor pusat.'
+                'Klik "Tambah Agen" untuk mendaftarkan mitra baru secara manual dari kantor.'
             ],
             read: [
-                'Melihat daftar seluruh agen, total perolehan jamaah binaan, dan nomor kontak WhatsApp aktif.'
+                'Melihat data kontak agen, kode referral, level kemitraan, dan jumlah total jamaah yang berhasil direkrut.',
+                'Melihat rincian jamaah binaan per agen melalui tombol laci data jamaah.'
             ],
             update: [
-                'Edit data profil agen, ganti nomor telepon, atau ubah status persetujuan akun (Active/Suspended).'
+                'Ubah level agen (Konsultan -> Leader -> Cabang) untuk penyesuaian tier komisi.',
+                'Ubah status akun (Aktif / Nonaktif / Suspended).'
             ],
             delete: [
-                'Hapus akun kemitraan agen yang sudah tidak aktif.'
+                'Hapus akun agen mitra yang sudah tidak bekerjasama.'
             ]
         },
         steps: [
-            'Buka menu Keagenan > Daftar Mitra Agen.',
-            'Verifikasi data agen yang baru bergabung dan pastikan statusnya Aktif.',
-            'Salin Kode Referral unik agen untuk konfirmasi.'
+            'Buka menu Keagenan > Mitra Agen.',
+            'Periksa pendaftaran agen baru yang membutuhkan persetujuan.',
+            'Klik tombol aksi untuk melihat performa atau mengedit data komisi agen.'
         ]
     },
     {
@@ -221,40 +230,41 @@ const OWNER_MODULES: StepGuide[] = [
         category: 'Keuangan & Komisi',
         targetRole: 'Owner (Level 1)',
         loginAs: 'superadmin',
-        workflowStage: '6. Payout & Pembagian Hasil',
+        workflowStage: '6. Validasi & Pembayaran Komisi',
         route: '/commissions',
-        description: 'Modul rekapitulasi dan pembayaran komisi mitra agen yang jamaahnya telah menyelesaikan pelunasan pembayaran paket.',
+        description: 'Modul keuangan untuk memvalidasi hak komisi penjualan agen atas jamaah yang telah lunas dan memproses pencairan transfer dana ke rekening bank agen.',
         crudActions: {
             read: [
-                'Melihat daftar komisi pending (belum lunas) dan komisi yang siap dicairkan.',
-                'Audit perolehan komisi langsung per jamaah dan komisi override leader.'
+                'Melihat daftar komisi per transaksi jamaah dengan status: Pending, Siap Dicairkan (*Eligible*), atau Selesai Ditransfer (*Paid*).'
             ],
             update: [
-                'Klik "Cairkan Komisi" setelah mentransfer hak komisi ke rekening bank agen.'
+                'Ubah status komisi individual menjadi "Paid" setelah bukti transfer diunggah.'
             ],
             special: [
-                'Unggah bukti transfer perbankan sebagai rekaman audit keuangan resmi.'
+                'Fitur **Batch Payout**: Cairkan komisi banyak agen sekaligus dengan sekali centang dan satu klik validasi.',
+                'Ekspor rekapitulasi pencairan komisi ke format Excel/PDF untuk arsip akuntansi.'
             ]
         },
         steps: [
-            'Buka menu Keagenan > Komisi Agen.',
-            'Filter daftar komisi dengan status "Siap Cair".',
-            'Lakukan transfer ke rekening agen ➔ Klik tombol "Cairkan Komisi" dan lampirkan referensi transfer.'
+            'Buka menu Keagenan > Pembagian Komisi.',
+            'Pilih baris komisi yang berstatus "Siap Dicairkan".',
+            'Klik tombol "Batch Payout" atau klik "Bayar" ➔ Masukkan nomor referensi transfer bank.',
+            'Simpan status pembayaran ➔ Notifikasi terkirim ke dashboard agen.'
         ]
     },
     {
         id: '08_monitoring_pohon_jaringan',
         title: 'Monitoring Struktur Tim & Pohon Jaringan Agen',
-        category: 'Keagenan & Hierarki',
+        category: 'Keagenan & MLM Syariah',
         targetRole: 'Owner (Level 1)',
         loginAs: 'superadmin',
-        workflowStage: '5. Tata Kelola Mitra Penjualan',
+        workflowStage: '2. Pengawasan Jaringan Penjualan',
         route: '/monitoring',
-        description: 'Visualisasi pohon jaringan hierarki multi-tier (Master Agen / Leader Level 1 ➔ Sub-Agen Level 2 ➔ Konsultan Level 3) beserta kontribusi omzet grup.',
+        description: 'Visualisasi pohon jaringan (Network Tree) keagenan bertingkat untuk melihat hubungan Upline-Downline, struktur Leader, dan perolehan omzet grup.',
         crudActions: {
             read: [
-                'Navigasi pohon struktur jaringan tim agen.',
-                'Melihat total omzet grup dan jumlah jamaah per cabang tim.'
+                'Melihat diagram pohon organisasi agen dari tingkat Cabang, Leader Pembina, hingga Agen Konsultan.',
+                'Melihat total omzet grup dan kontribusi jamaah per cabang.'
             ]
         },
         steps: [
@@ -347,36 +357,67 @@ const OWNER_MODULES: StepGuide[] = [
             'Klik "+ Tambah Pengguna" ➔ Masukkan Nama, Email, Password, dan Peran staf kantor.',
             'Simpan akun pengguna.'
         ]
+    },
+    {
+        id: '12_pengaturan_profil_owner',
+        title: 'Profil Akun, Tema & Keamanan Owner',
+        category: 'Profil & Keamanan',
+        targetRole: 'Owner (Level 1)',
+        loginAs: 'superadmin',
+        workflowStage: '1. Setup & Konfigurasi Akun',
+        route: '/profile',
+        description: 'Pengaturan profil personal direksi/owner travel, pembaruan kata sandi akun demi keamanan data, dan pengaturan preferensi tema tampilan antarmuka (Luxury, Emerald, Light, Dark).',
+        crudActions: {
+            read: [
+                'Melihat identitas profil login, email resmi, dan status tingkat akun Superadmin/Owner.'
+            ],
+            update: [
+                'Perbarui Nama Lengkap dan Alamat Email resmi.',
+                'Ganti Kata Sandi / Password login akun Owner.',
+                'Pilih Tema Warna Aplikasi (Coffee Luxury, Emerald Syariah, Classic Light, Modern Dark).'
+            ],
+            special: [
+                'Pergantian tema langsung diterapkan secara instan (*realtime live theme switch*).'
+            ]
+        },
+        steps: [
+            'Klik avatar/nama pengguna di pojok kanan atas ➔ Pilih "Profile".',
+            'Pada bagian Informasi Profil, perbarui data nama atau email bila diperlukan.',
+            'Pada bagian Perbarui Kata Sandi, masukkan password lama dan password baru secara berkala demi keamanan.',
+            'Klik "Simpan" untuk mengonfirmasi perubahan.'
+        ]
     }
 ];
 
 const AGENT_MODULES: StepGuide[] = [
     {
-        id: '01_setup_bio_link_landing_page',
-        title: 'Setup Profil Bio Link & Landing Page Agen',
-        category: 'Promosi & Digital Marketing',
-        targetRole: 'Agen Mitra (Level 2/3)',
+        id: '01_setup_bio_link_dan_profil_agen',
+        title: 'Setup Profil, Password & Live Customizer Bio Link',
+        category: 'Promosi & Profil Akun',
+        targetRole: 'Mitra Agen (Level 2/3)',
         loginAs: 'agent',
         workflowStage: '1. Setup Profil & Branding Mandiri',
         route: '/profile',
-        description: 'Pusat kustomisasi website mini Bio Link personal agen (Linktree Islami) yang berfungsi sebagai etalase promosi online dan media penangkap leads jamaah.',
+        description: 'Pusat pengaturan profil akun agen, ganti password, nomor WhatsApp konsultasi, bio sambutan, tautan media sosial, serta live preview tampilan mobile sebelum disebarkan ke publik.',
         crudActions: {
             read: [
                 'Melihat tampilan preview real-time landing page pada bingkai smartphone mockup di sebelah kanan layar.'
             ],
             update: [
-                'Edit Nama Konsultan, Kota Domisili, dan Kalimat Komitmen Amanah.',
+                'Edit Nama Konsultan, Kota Domisili, Nomor WA Konsultasi, dan Bio Sambutan.',
                 'Atur tombol tindakan cepat: WhatsApp Konsultasi Pribadi, WhatsApp CS Travel Pusat, atau Formulir Pendaftaran.',
-                'Tautkan akun sosial media (Instagram, TikTok, YouTube, Facebook).'
+                'Tautkan akun sosial media (Instagram, TikTok, YouTube, Facebook).',
+                'Perbarui Kata Sandi / Password login akun agen.'
             ],
             special: [
-                'Salin Tautan Bio Link Personal (contoh: `http://travel.com/agen/AG-504A79`) untuk disebarkan ke media sosial.'
+                'Live Mobile Mockup Preview interaktif.',
+                'Salin Tautan Bio Link Personal (contoh: `http://barokah.travel.com/agen/AG-504A79`) untuk dipasang di bio Instagram/TikTok/WhatsApp.'
             ]
         },
         steps: [
             'Login ke sistem menggunakan akun Mitra Agen (`agent2.t2@travel.com`).',
             'Buka menu Profil Akun > Pengaturan Bio Link Agen.',
-            'Lengkapi Foto Profil diri, Kota Domisili, dan Bio Singkat.',
+            'Lengkapi Foto Profil diri, Kota Domisili, Nomor WhatsApp, dan Bio Sambutan.',
             'Periksa hasil tampilan pada Live Mobile Preview di sisi kanan.',
             'Klik tombol "Simpan Perubahan" dan salin link landing page personal Anda.'
         ],
@@ -385,14 +426,72 @@ const AGENT_MODULES: StepGuide[] = [
         ]
     },
     {
-        id: '02_input_dan_pendaftaran_jamaah',
-        title: 'Pendaftaran & Input Data Jamaah Binaan',
+        id: '02_tampilan_landing_page_bio_link_publik',
+        title: 'Halaman Publik Bio Link Mitra Agen (Mobile Landing Page)',
+        category: 'Digital Marketing & Leads Capture',
+        targetRole: 'Mitra Agen (Level 2/3)',
+        loginAs: 'agent',
+        workflowStage: '2. Promosi & Penangkapan Leads',
+        route: 'http://barokah.localhost:8000/agen/AG-504A79',
+        description: 'Halaman web publik resmi milik agen yang diakses oleh calon jamaah melalui klik tautan di Instagram, TikTok, Facebook, atau WhatsApp. Berisi profil konsultan terverifikasi, tombol chat WhatsApp, daftar paket umroh unggulan travel, dan tombol registrasi langsung.',
+        crudActions: {
+            read: [
+                'Calon jamaah dapat membaca profil konsultan pembina resmi travel.',
+                'Melihat paket-paket umroh yang sedang dibuka beserta harga dan fasilitasnya.',
+                'Melihat ulasan dan testimoni jamaah terdahulu.'
+            ],
+            special: [
+                'Tombol direct chat WhatsApp ke nomor agen secara instan.',
+                'Tombol "Daftar Sekarang" yang otomatis mengarahkan ke formulir registrasi dengan kode referral agen (`AG-504A79`).'
+            ]
+        },
+        steps: [
+            'Sebarkan URL landing page publik Anda (`http://barokah.travel.com/agen/AG-504A79`) ke prospek jamaah.',
+            'Calon jamaah membuka halaman melalui smartphone atau browser laptop.',
+            'Calon jamaah dapat langsung berkonsultasi via WhatsApp atau mengklik tombol "Daftar Sekarang".'
+        ],
+        tips: [
+            'Halaman ini didesain mobile-first sehingga sangat ringan dan cepat saat diakses jamaah melalui smartphone.'
+        ]
+    },
+    {
+        id: '03_form_pendaftaran_jamaah_referral_publik',
+        title: 'Formulir Pendaftaran Online Mandiri Jamaah (Referral Link)',
+        category: 'Registrasi & Referral Jamaah',
+        targetRole: 'Mitra Agen (Level 2/3)',
+        loginAs: 'agent',
+        workflowStage: '2. Pendaftaran & Akuisisi Calon Jamaah',
+        route: 'http://barokah.localhost:8000/daftar?ref=AG-504A79',
+        description: 'Formulir pendaftaran mandiri calon jamaah via tautan referral agen. Memuat informasi paket yang dipilih, data diri calon jamaah, nomor paspor, pilihan kamar, dan nomor rekening resmi travel untuk transfer DP. Agen otomatis tercatat sebagai pembina jamaah.',
+        crudActions: {
+            create: [
+                'Calon jamaah mengisi formulir online: Nama Lengkap, Nomor WhatsApp, Email, NIK KTP, Alamat, Pilihan Paket, dan Pilihan Kamar (Quad/Triple/Double).'
+            ],
+            read: [
+                'Menampilkan banner verifikasi mitra agen pembina (`Referral: Aisyah Putri Azzahra - Barokah`).',
+                'Menampilkan daftar nomor rekening bank resmi travel untuk pembayaran DP.'
+            ],
+            special: [
+                'Calon jamaah otomatis terdaftar dan masuk ke tahap "Booking" di CRM sistem travel.',
+                'Notifikasi otomatis dikirimkan ke WhatsApp agen pembina dan staf travel pusat.'
+            ]
+        },
+        steps: [
+            'Calon jamaah mengklik tombol pendaftaran dari Bio Link agen atau menerima link referral langsung.',
+            'Calon jamaah mengisi data diri lengkap pada formulir online.',
+            'Calon jamaah memilih metode pembayaran dan mentransfer DP ke rekening resmi travel.',
+            'Data langsung tersimpan dan muncul di Kanban CRM agen serta travel pusat.'
+        ]
+    },
+    {
+        id: '04_input_dan_pendaftaran_jamaah_internal',
+        title: 'Pendaftaran & Input Data Jamaah Binaan (Internal Agen)',
         category: 'Penjualan & Pendaftaran',
-        targetRole: 'Agen Mitra (Level 2/3)',
+        targetRole: 'Mitra Agen (Level 2/3)',
         loginAs: 'agent',
         workflowStage: '2. Pendaftaran & Akuisisi Calon Jamaah',
         route: '/crm/customers',
-        description: 'Modul bagi agen untuk mendaftarkan calon jamaah binaannya secara langsung ke dalam sistem travel menggunakan kode referral otomatis.',
+        description: 'Modul bagi agen untuk mendaftarkan jamaah secara manual dari dashboard agen jika calon jamaah mendaftar secara tatap muka (offline) atau via chat.',
         crudActions: {
             create: [
                 'Klik "+ Tambah Jamaah" untuk menginput data calon jamaah binaan (Nama, No WA, Alamat, Pilihan Paket).'
@@ -412,10 +511,10 @@ const AGENT_MODULES: StepGuide[] = [
         ]
     },
     {
-        id: '03_monitoring_crm_pipeline_binaan',
+        id: '05_monitoring_crm_pipeline_binaan',
         title: 'Monitoring Pipeline Kanban Jamaah Binaan',
         category: 'CRM & Follow Up',
-        targetRole: 'Agen Mitra (Level 2/3)',
+        targetRole: 'Mitra Agen (Level 2/3)',
         loginAs: 'agent',
         workflowStage: '3. Pengawalan Prospek Hingga Lunas',
         route: '/crm',
@@ -435,10 +534,10 @@ const AGENT_MODULES: StepGuide[] = [
         ]
     },
     {
-        id: '04_rekap_komisi_dan_pencairan_agen',
+        id: '06_rekap_komisi_dan_pencairan_agen',
         title: 'Rekap Komisi Penjualan & Saldo Agen',
         category: 'Keuangan & Reward',
-        targetRole: 'Agen Mitra (Level 2/3)',
+        targetRole: 'Mitra Agen (Level 2/3)',
         loginAs: 'agent',
         workflowStage: '4. Hasil Penjualan & Payout',
         route: '/commissions',
@@ -486,6 +585,11 @@ async function generateRoleSection(page: any, context: any, roleKey: 'owner' | '
     const roleTitle = roleKey === 'owner' ? 'Owner Travel (Level 1)' : 'Mitra Agen (Level 2/3)';
     const targetDir = path.join(ROOT_DOCS_DIR, roleKey);
     const ssDir = path.join(targetDir, 'screenshots');
+
+    // Clean existing directory to prevent old files
+    if (fs.existsSync(targetDir)) {
+        fs.rmSync(targetDir, { recursive: true, force: true });
+    }
     fs.mkdirSync(ssDir, { recursive: true });
 
     console.log(`\n======================================================`);
@@ -509,7 +613,7 @@ async function generateRoleSection(page: any, context: any, roleKey: 'owner' | '
     } else {
         readmeContent += `### Roadmap Kerja Mitra Agen (Level 2/3):\n`;
         readmeContent += `1. **Setup Bio Link Mandiri**: Melengkapi foto profil, bio komitmen pelayanan, dan tombol WhatsApp di \`/profile\`.\n`;
-        readmeContent += `2. **Promosi & Akuisisi Leads**: Menyebarkan tautan Bio Link personal (\`/agen/AG-XXX\`) ke media sosial untuk menjaring calon jamaah secara otomatis.\n`;
+        readmeContent += `2. **Promosi & Akuisisi Leads**: Menyebarkan tautan Bio Link personal (\`/agen/AG-XXX\`) dan Link Referral Form ke media sosial untuk menjaring calon jamaah secara otomatis.\n`;
         readmeContent += `3. **Pendaftaran Jamaah**: Mendaftarkan calon jamaah langsung ke sistem atau menerima leads via referral code agen.\n`;
         readmeContent += `4. **Pengawalan CRM**: Mengawal kelengkapan berkas jamaah binaan (Paspor, KTP, Buku Nikah, Vaksin) di papan Kanban.\n`;
         readmeContent += `5. **Pembayaran & Closing**: Mengarahkan jamaah melakukan transfer ke rekening resmi travel dan mengunggah bukti bayar.\n`;
@@ -523,9 +627,13 @@ async function generateRoleSection(page: any, context: any, roleKey: 'owner' | '
         const orderNum = String(i + 1).padStart(2, '0');
         console.log(`📸 [${orderNum}/${modules.length}] [${roleKey.toUpperCase()}] Mengambil data: ${mod.title}...`);
 
-        await ensureLoggedIn(page, context, mod.loginAs, currentRole);
+        // If not a full external url, ensure user is logged in
+        if (!mod.route.startsWith('http://barokah') && !mod.route.startsWith('https://')) {
+            await ensureLoggedIn(page, context, mod.loginAs, currentRole);
+        }
 
-        await page.goto(`${BASE_URL}${mod.route}`, { waitUntil: 'networkidle' });
+        const targetUrl = mod.route.startsWith('http') ? mod.route : `${BASE_URL}${mod.route}`;
+        await page.goto(targetUrl, { waitUntil: 'networkidle' });
         await page.waitForTimeout(1200);
 
         const screenshotName = `${mod.id}.png`;
@@ -545,7 +653,7 @@ async function generateRoleSection(page: any, context: any, roleKey: 'owner' | '
 
         let docContent = `# ${mod.title}\n\n`;
         docContent += `> **Target Peran**: \`${mod.targetRole}\` | **Login Akun**: \`${USERS[mod.loginAs].email}\`\n`;
-        docContent += `> **Tahapan Alur**: \`${mod.workflowStage}\` | **Kategori**: \`${mod.category}\` | **Rute**: \`${mod.route}\`\n\n`;
+        docContent += `> **Tahapan Alur**: \`${mod.workflowStage}\` | **Kategori**: \`${mod.category}\` | **Rute / URL**: \`${mod.route}\`\n\n`;
         docContent += `## 📋 Deskripsi Fitur\n${mod.description}\n\n`;
         docContent += `## 🖼️ Tampilan Antarmuka\n\n`;
         docContent += `![Tampilan ${mod.title}](screenshots/${screenshotName})\n\n`;
@@ -638,7 +746,7 @@ async function run() {
         rootReadme += `### 🏢 [1. Buku Panduan Khusus Owner Travel (Level 1)](owner/README.md)\n`;
         rootReadme += `> Panduan komprehensif untuk Direktur / Owner Travel, Staf Operasional, Keuangan, dan Kasir. Mencakup setup master paket umroh, rekening bank, verifikasi kasir, pembagian komisi, logistik gudang, dan hierarki keagenan.\n\n`;
         rootReadme += `### 🤝 [2. Buku Panduan Khusus Mitra Agen (Level 2/3)](agent/README.md)\n`;
-        rootReadme += `> Panduan praktis untuk Konsultan & Mitra Agen Umroh. Mencakup kustomisasi Bio Link landing page personal di \`/profile\`, penyebaran link referral, input calon jamaah, pengawalan berkas paspor di CRM, dan pemantauan komisi penjualan.\n\n`;
+        rootReadme += `> Panduan praktis untuk Konsultan & Mitra Agen Umroh. Mencakup kustomisasi Bio Link landing page personal di \`/profile\`, penyebaran link referral ke publik (\`/agen/AG-XXX\`), formulir pendaftaran online (\`/daftar?ref=...\`), input calon jamaah, pengawalan berkas paspor di CRM, dan pemantauan komisi penjualan.\n\n`;
         rootReadme += `---\n\n`;
         rootReadme += `### 🔑 Akun Akses Demo:\n`;
         rootReadme += `- **Owner / Superadmin (Level 1)**: \`${USERS.superadmin.email}\` | Password: \`${USERS.superadmin.password}\`\n`;

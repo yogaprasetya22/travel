@@ -1,14 +1,14 @@
 # Monitoring Pipeline Kanban Jamaah Binaan
 
-> **Target Peran**: `Agen Mitra (Level 2/3)` | **Login Akun**: `agent2.t2@travel.com`
-> **Tahapan Alur**: `3. Pengawalan Prospek Hingga Lunas` | **Kategori**: `CRM & Follow Up` | **Rute**: `/crm`
+> **Target Peran**: `Mitra Agen (Level 2/3)` | **Login Akun**: `agent2.t2@travel.com`
+> **Tahapan Alur**: `3. Pengawalan Prospek Hingga Lunas` | **Kategori**: `CRM & Follow Up` | **Rute / URL**: `/crm`
 
 ## 📋 Deskripsi Fitur
 Papan Kanban visual khusus bagi agen untuk mengawal jamaah binaan melewati setiap tahapan: Booking ➔ DP Terbayar ➔ Berkas Lengkap ➔ Pelunasan ➔ Siap Berangkat.
 
 ## 🖼️ Tampilan Antarmuka
 
-![Tampilan Monitoring Pipeline Kanban Jamaah Binaan](screenshots/03_monitoring_crm_pipeline_binaan.png)
+![Tampilan Monitoring Pipeline Kanban Jamaah Binaan](screenshots/05_monitoring_crm_pipeline_binaan.png)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

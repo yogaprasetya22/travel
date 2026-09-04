@@ -1,7 +1,7 @@
 # Dashboard Utama & Ringkasan KPI Eksekutif
 
 > **Target Peran**: `Owner (Level 1)` | **Login Akun**: `superadmin@hajjflow.com`
-> **Tahapan Alur**: `1. Monitoring & Analitik Bisnis` | **Kategori**: `Eksekutif & Dashboard` | **Rute**: `/dashboard`
+> **Tahapan Alur**: `1. Monitoring & Analitik Bisnis` | **Kategori**: `Eksekutif & Dashboard` | **Rute / URL**: `/dashboard`
 
 ## 📋 Deskripsi Fitur
 Pusat kendali eksekutif untuk melihat performa bisnis travel, total omzet masuk, sisa piutang, keterisian kuota jamaah, dan performa penjualan seluruh agen secara makro.

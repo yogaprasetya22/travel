@@ -1,7 +1,7 @@
 # Inventaris Stok Fisik Gudang & Barang Masuk
 
 > **Target Peran**: `Owner (Level 1)` | **Login Akun**: `superadmin@hajjflow.com`
-> **Tahapan Alur**: `4. Eksekusi & Serah Terima Perlengkapan` | **Kategori**: `Gudang & Inventaris` | **Rute**: `/inventaris`
+> **Tahapan Alur**: `4. Eksekusi & Serah Terima Perlengkapan` | **Kategori**: `Gudang & Inventaris` | **Rute / URL**: `/inventaris`
 
 ## 📋 Deskripsi Fitur
 Pencatatan persediaan fisik perlengkapan travel di gudang (koper, kain ihram, mukena, seragam) beserta riwayat barang masuk dari vendor.

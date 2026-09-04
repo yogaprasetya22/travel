@@ -1,14 +1,14 @@
-# Setup Profil Bio Link & Landing Page Agen
+# Setup Profil, Password & Live Customizer Bio Link
 
-> **Target Peran**: `Agen Mitra (Level 2/3)` | **Login Akun**: `agent2.t2@travel.com`
-> **Tahapan Alur**: `1. Setup Profil & Branding Mandiri` | **Kategori**: `Promosi & Digital Marketing` | **Rute**: `/profile`
+> **Target Peran**: `Mitra Agen (Level 2/3)` | **Login Akun**: `agent2.t2@travel.com`
+> **Tahapan Alur**: `1. Setup Profil & Branding Mandiri` | **Kategori**: `Promosi & Profil Akun` | **Rute / URL**: `/profile`
 
 ## 📋 Deskripsi Fitur
-Pusat kustomisasi website mini Bio Link personal agen (Linktree Islami) yang berfungsi sebagai etalase promosi online dan media penangkap leads jamaah.
+Pusat pengaturan profil akun agen, ganti password, nomor WhatsApp konsultasi, bio sambutan, tautan media sosial, serta live preview tampilan mobile sebelum disebarkan ke publik.
 
 ## 🖼️ Tampilan Antarmuka
 
-![Tampilan Setup Profil Bio Link & Landing Page Agen](screenshots/01_setup_bio_link_landing_page.png)
+![Tampilan Setup Profil, Password & Live Customizer Bio Link](screenshots/01_setup_bio_link_dan_profil_agen.png)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 
@@ -16,18 +16,20 @@ Pusat kustomisasi website mini Bio Link personal agen (Linktree Islami) yang ber
 - Melihat tampilan preview real-time landing page pada bingkai smartphone mockup di sebelah kanan layar.
 
 ### ✏️ Update (Edit / Pembaruan Status)
-- Edit Nama Konsultan, Kota Domisili, dan Kalimat Komitmen Amanah.
+- Edit Nama Konsultan, Kota Domisili, Nomor WA Konsultasi, dan Bio Sambutan.
 - Atur tombol tindakan cepat: WhatsApp Konsultasi Pribadi, WhatsApp CS Travel Pusat, atau Formulir Pendaftaran.
 - Tautkan akun sosial media (Instagram, TikTok, YouTube, Facebook).
+- Perbarui Kata Sandi / Password login akun agen.
 
 ### ✨ Fitur Khusus & Otomasi
-- Salin Tautan Bio Link Personal (contoh: `http://travel.com/agen/AG-504A79`) untuk disebarkan ke media sosial.
+- Live Mobile Mockup Preview interaktif.
+- Salin Tautan Bio Link Personal (contoh: `http://barokah.travel.com/agen/AG-504A79`) untuk dipasang di bio Instagram/TikTok/WhatsApp.
 
 ## 🛠️ Langkah-Langkah Penggunaan
 
 1. Login ke sistem menggunakan akun Mitra Agen (`agent2.t2@travel.com`).
 2. Buka menu Profil Akun > Pengaturan Bio Link Agen.
-3. Lengkapi Foto Profil diri, Kota Domisili, dan Bio Singkat.
+3. Lengkapi Foto Profil diri, Kota Domisili, Nomor WhatsApp, dan Bio Sambutan.
 4. Periksa hasil tampilan pada Live Mobile Preview di sisi kanan.
 5. Klik tombol "Simpan Perubahan" dan salin link landing page personal Anda.
 

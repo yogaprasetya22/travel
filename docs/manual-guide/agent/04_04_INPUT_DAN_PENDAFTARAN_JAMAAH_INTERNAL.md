@@ -1,14 +1,14 @@
-# Pendaftaran & Input Data Jamaah Binaan
+# Pendaftaran & Input Data Jamaah Binaan (Internal Agen)
 
-> **Target Peran**: `Agen Mitra (Level 2/3)` | **Login Akun**: `agent2.t2@travel.com`
-> **Tahapan Alur**: `2. Pendaftaran & Akuisisi Calon Jamaah` | **Kategori**: `Penjualan & Pendaftaran` | **Rute**: `/crm/customers`
+> **Target Peran**: `Mitra Agen (Level 2/3)` | **Login Akun**: `agent2.t2@travel.com`
+> **Tahapan Alur**: `2. Pendaftaran & Akuisisi Calon Jamaah` | **Kategori**: `Penjualan & Pendaftaran` | **Rute / URL**: `/crm/customers`
 
 ## 📋 Deskripsi Fitur
-Modul bagi agen untuk mendaftarkan calon jamaah binaannya secara langsung ke dalam sistem travel menggunakan kode referral otomatis.
+Modul bagi agen untuk mendaftarkan jamaah secara manual dari dashboard agen jika calon jamaah mendaftar secara tatap muka (offline) atau via chat.
 
 ## 🖼️ Tampilan Antarmuka
 
-![Tampilan Pendaftaran & Input Data Jamaah Binaan](screenshots/02_input_dan_pendaftaran_jamaah.png)
+![Tampilan Pendaftaran & Input Data Jamaah Binaan (Internal Agen)](screenshots/04_input_dan_pendaftaran_jamaah_internal.png)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

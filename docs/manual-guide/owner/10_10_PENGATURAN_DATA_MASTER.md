@@ -1,7 +1,7 @@
 # Pengaturan Master Paket, Rekening & CRM
 
 > **Target Peran**: `Owner (Level 1)` | **Login Akun**: `superadmin@hajjflow.com`
-> **Tahapan Alur**: `1. Setup & Konfigurasi Awal` | **Kategori**: `Master Data` | **Rute**: `/settings/master`
+> **Tahapan Alur**: `1. Setup & Konfigurasi Awal` | **Kategori**: `Master Data` | **Rute / URL**: `/settings/master`
 
 ## 📋 Deskripsi Fitur
 Konfigurasi sentral paket umroh & haji, nominal komisi default, fasilitas hotel, rekening bank resmi penerima dana, dan sumber prospek leads.

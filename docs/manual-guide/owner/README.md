@@ -26,9 +26,9 @@ Panduan ini memuat seluruh panduan langkah demi langkah, operasi CRUD lengkap, d
 - **Deskripsi**: Pusat kendali eksekutif untuk melihat performa bisnis travel, total omzet masuk, sisa piutang, keterisian kuota jamaah, dan performa penjualan seluruh agen secara makro.
 
 ### 02. [Papan CRM Kanban Pipeline Jamaah (Leads to Closing)](02_02_CRM_PIPELINE_KANBAN.md)
-- **Fase**: 2. Pengawasan Pipa Penjualan
-- **Kategori**: CRM & Pipeline
-- **Deskripsi**: Papan visual Kanban untuk memantau pergerakan seluruh prospek jamaah dari tahap pendaftaran awal, verifikasi DP, kelengkapan paspor/visa, pelunasan, hingga siap berangkat.
+- **Fase**: 2. Pengawalan Leads & Prospek
+- **Kategori**: CRM & Penjualan
+- **Deskripsi**: Papan Kanban visual interaktif untuk mengawal alur prospek calon jamaah dari tahap Kontak Pertama, Konsultasi, Booking Kursi, Pembayaran DP, Pengumpulan Berkas, hingga Pelunasan.
 
 ### 03. [Master Data Jamaah, Kasir & Kuitansi Pembayaran](03_03_DATA_JAMAAH_DAN_KASIR.md)
 - **Fase**: 3. Transaksi & Validasi Pembayaran
@@ -46,19 +46,19 @@ Panduan ini memuat seluruh panduan langkah demi langkah, operasi CRUD lengkap, d
 - **Deskripsi**: Manajemen kloter keberangkatan, batas kuota kursi pesawat, hotel Makkah/Madinah, dan status ketersediaan seat.
 
 ### 06. [Manajemen Mitra Agen & Persetujuan Akun](06_06_MANAJEMEN_MITRA_AGEN.md)
-- **Fase**: 5. Tata Kelola Mitra Penjualan
-- **Kategori**: Keagenan & Kemitraan
-- **Deskripsi**: Pusat pengelolaan mitra agen travel, pembuatan akun agen baru, verifikasi persetujuan kemitraan, dan pengaturan kode referral.
+- **Fase**: 2. Rekrutmen & Manajemen Kemitraan
+- **Kategori**: Keagenan
+- **Deskripsi**: Daftar seluruh agen mitra konsultan, status persetujuan akun baru, level hierarki, kode referral personal, dan penunjukan Leader/Upline.
 
 ### 07. [Rekapitulasi & Pencairan Komisi Mitra Agen](07_07_PENCAIRAN_KOMISI_AGEN.md)
-- **Fase**: 6. Payout & Pembagian Hasil
+- **Fase**: 6. Validasi & Pembayaran Komisi
 - **Kategori**: Keuangan & Komisi
-- **Deskripsi**: Modul rekapitulasi dan pembayaran komisi mitra agen yang jamaahnya telah menyelesaikan pelunasan pembayaran paket.
+- **Deskripsi**: Modul keuangan untuk memvalidasi hak komisi penjualan agen atas jamaah yang telah lunas dan memproses pencairan transfer dana ke rekening bank agen.
 
 ### 08. [Monitoring Struktur Tim & Pohon Jaringan Agen](08_08_MONITORING_POHON_JARINGAN.md)
-- **Fase**: 5. Tata Kelola Mitra Penjualan
-- **Kategori**: Keagenan & Hierarki
-- **Deskripsi**: Visualisasi pohon jaringan hierarki multi-tier (Master Agen / Leader Level 1 ➔ Sub-Agen Level 2 ➔ Konsultan Level 3) beserta kontribusi omzet grup.
+- **Fase**: 2. Pengawasan Jaringan Penjualan
+- **Kategori**: Keagenan & MLM Syariah
+- **Deskripsi**: Visualisasi pohon jaringan (Network Tree) keagenan bertingkat untuk melihat hubungan Upline-Downline, struktur Leader, dan perolehan omzet grup.
 
 ### 09. [Inventaris Stok Fisik Gudang & Barang Masuk](09_09_INVENTARIS_DAN_STOK_BARANG.md)
 - **Fase**: 4. Eksekusi & Serah Terima Perlengkapan
@@ -74,4 +74,9 @@ Panduan ini memuat seluruh panduan langkah demi langkah, operasi CRUD lengkap, d
 - **Fase**: 1. Setup & Konfigurasi Awal
 - **Kategori**: Pengaturan Akun
 - **Deskripsi**: Pengelolaan akun login staf kantor internal (Admin, Keuangan, Kasir) dan pengaturan pohon hierarki atasan-bawahan.
+
+### 12. [Profil Akun, Tema & Keamanan Owner](12_12_PENGATURAN_PROFIL_OWNER.md)
+- **Fase**: 1. Setup & Konfigurasi Akun
+- **Kategori**: Profil & Keamanan
+- **Deskripsi**: Pengaturan profil personal direksi/owner travel, pembaruan kata sandi akun demi keamanan data, dan pengaturan preferensi tema tampilan antarmuka (Luxury, Emerald, Light, Dark).
 

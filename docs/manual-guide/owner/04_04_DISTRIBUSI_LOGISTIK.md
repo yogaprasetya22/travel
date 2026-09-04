@@ -1,7 +1,7 @@
 # Distribusi & Serah Terima Logistik Perlengkapan
 
 > **Target Peran**: `Owner (Level 1)` | **Login Akun**: `superadmin@hajjflow.com`
-> **Tahapan Alur**: `4. Eksekusi & Serah Terima Perlengkapan` | **Kategori**: `Operasional Gudang` | **Rute**: `/crm/logistics`
+> **Tahapan Alur**: `4. Eksekusi & Serah Terima Perlengkapan` | **Kategori**: `Operasional Gudang` | **Rute / URL**: `/crm/logistics`
 
 ## 📋 Deskripsi Fitur
 Modul serah terima barang perlengkapan ibadah (koper bagasi, kain ihram/mukena, buku doa, id card) kepada jamaah yang telah melunasi pembayaran.

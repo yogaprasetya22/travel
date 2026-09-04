@@ -1,10 +1,10 @@
 # Manajemen Mitra Agen & Persetujuan Akun
 
 > **Target Peran**: `Owner (Level 1)` | **Login Akun**: `superadmin@hajjflow.com`
-> **Tahapan Alur**: `5. Tata Kelola Mitra Penjualan` | **Kategori**: `Keagenan & Kemitraan` | **Rute**: `/agents`
+> **Tahapan Alur**: `2. Rekrutmen & Manajemen Kemitraan` | **Kategori**: `Keagenan` | **Rute / URL**: `/agents`
 
 ## 📋 Deskripsi Fitur
-Pusat pengelolaan mitra agen travel, pembuatan akun agen baru, verifikasi persetujuan kemitraan, dan pengaturan kode referral.
+Daftar seluruh agen mitra konsultan, status persetujuan akun baru, level hierarki, kode referral personal, dan penunjukan Leader/Upline.
 
 ## 🖼️ Tampilan Antarmuka
 
@@ -13,22 +13,24 @@ Pusat pengelolaan mitra agen travel, pembuatan akun agen baru, verifikasi perset
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 
 ### ➕ Create (Tambah / Input Baru)
-- Klik "+ Tambah Agen" untuk mendaftarkan mitra agen / konsultan baru langsung dari kantor pusat.
+- Klik "Tambah Agen" untuk mendaftarkan mitra baru secara manual dari kantor.
 
 ### 🔍 Read (Lihat / Pencarian / Filter Data)
-- Melihat daftar seluruh agen, total perolehan jamaah binaan, dan nomor kontak WhatsApp aktif.
+- Melihat data kontak agen, kode referral, level kemitraan, dan jumlah total jamaah yang berhasil direkrut.
+- Melihat rincian jamaah binaan per agen melalui tombol laci data jamaah.
 
 ### ✏️ Update (Edit / Pembaruan Status)
-- Edit data profil agen, ganti nomor telepon, atau ubah status persetujuan akun (Active/Suspended).
+- Ubah level agen (Konsultan -> Leader -> Cabang) untuk penyesuaian tier komisi.
+- Ubah status akun (Aktif / Nonaktif / Suspended).
 
 ### 🗑️ Delete (Hapus Data)
-- Hapus akun kemitraan agen yang sudah tidak aktif.
+- Hapus akun agen mitra yang sudah tidak bekerjasama.
 
 ## 🛠️ Langkah-Langkah Penggunaan
 
-1. Buka menu Keagenan > Daftar Mitra Agen.
-2. Verifikasi data agen yang baru bergabung dan pastikan statusnya Aktif.
-3. Salin Kode Referral unik agen untuk konfirmasi.
+1. Buka menu Keagenan > Mitra Agen.
+2. Periksa pendaftaran agen baru yang membutuhkan persetujuan.
+3. Klik tombol aksi untuk melihat performa atau mengedit data komisi agen.
 
 ---
 *Buku Panduan Resmi Sistem Travel Umroh Multi-Tenant.*
