@@ -90,47 +90,47 @@ export default function Register({
     };
 
     const inputClasses =
-        'w-full rounded-xl border border-primary !bg-card !text-foreground !placeholder-muted-foreground text-xs h-10 px-3.5 py-2 shadow-2xs focus:border-primary focus:outline-hidden focus:ring-2 focus:ring-primary/25 transition-all font-medium';
+        'w-full rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground text-xs h-10 px-3.5 py-2 shadow-2xs focus:border-primary focus:outline-hidden focus:ring-2 focus:ring-primary/20 transition-all font-medium';
 
     return (
         <div 
             className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground py-10 px-4 sm:px-6 lg:px-8 font-sans"
-            style={(themeData.themes[(tenant?.theme_name as keyof typeof themeData.themes) || 'coffee']?.variables || themeData.themes['coffee'].variables) as React.CSSProperties}
+            style={(themeData.themes[(tenant?.theme_name as keyof typeof themeData.themes) || 'luxury']?.variables || themeData.themes['luxury'].variables) as React.CSSProperties}
         >
             <Head title={`Formulir Pendaftaran Calon Jamaah - ${travelName}`} />
 
             <div className="max-w-3xl mx-auto flex flex-col gap-8">
                 {/* Back to Home & Logo Header */}
-                <div className="flex items-center justify-between border-b border-primary pb-6">
+                <div className="flex items-center justify-between border-b border-border/70 pb-6">
                     <Link
                         href={route('home')}
-                        className="inline-flex items-center gap-2 text-xs font-bold text-foreground hover:text-foreground transition-colors"
+                        className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                     >
                         <ArrowLeft className="w-4 h-4" />
                         <span>Kembali ke Beranda</span>
                     </Link>
 
                     <div className="flex items-center gap-2.5">
-                        <ApplicationLogo className="w-9 h-9 shrink-0" />
-                        <span className="font-extrabold text-sm text-foreground">{travelName}</span>
+                        <ApplicationLogo className="w-8 h-8 shrink-0" />
+                        <span className="font-bold text-sm text-foreground">{travelName}</span>
                     </div>
                 </div>
 
                 {/* Agent Referral Card (If user visits via agent link ?ref=...) */}
                 {referralAgent && (
-                    <div className="p-4 rounded-2xl bg-gradient-to-r from-background via-background to-background border border-primary shadow-xs flex flex-col sm:flex-row items-center sm:items-center gap-3 sm:gap-4 text-center sm:text-left animate-in fade-in">
-                        <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-foreground font-black text-base shrink-0 mx-auto sm:mx-0">
+                    <div className="p-4 sm:p-5 rounded-2xl bg-card/80 backdrop-blur-sm border border-border/90 shadow-xs flex flex-col sm:flex-row items-center sm:items-center gap-3.5 sm:gap-4 text-center sm:text-left animate-in fade-in">
+                        <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-base shrink-0 mx-auto sm:mx-0">
                             {referralAgent.name.substring(0, 2).toUpperCase()}
                         </div>
                         <div className="flex flex-col items-center sm:items-start">
                             <div className="flex items-center gap-1.5 justify-center sm:justify-start">
-                                <BadgeCheck className="w-4 h-4 text-foreground" />
-                                <span className="text-[10px] sm:text-[11px] font-bold text-foreground uppercase tracking-wider">
+                                <BadgeCheck className="w-4 h-4 text-primary" />
+                                <span className="text-[10px] sm:text-[11px] font-bold text-primary uppercase tracking-wider">
                                     Mitra Agen Resmi Pembimbing Anda
                                 </span>
                             </div>
-                            <span className="font-extrabold text-sm sm:text-base text-foreground mt-0.5">{referralAgent.name}</span>
-                            <span className="text-[10px] sm:text-xs text-foreground mt-0.5">
+                            <span className="font-bold text-sm sm:text-base text-foreground mt-0.5">{referralAgent.name}</span>
+                            <span className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
                                 {referralAgent.jabatan} &bull; Pendaftaran Anda akan dipandu langsung oleh beliau.
                             </span>
                         </div>
@@ -139,25 +139,25 @@ export default function Register({
 
                 {/* Form Header */}
                 <div className="flex flex-col gap-2 text-left">
-                    <Badge variant="secondary" className="w-fit bg-background text-foreground border-primary font-bold text-xs">
+                    <Badge variant="secondary" className="w-fit bg-primary/10 text-primary border-primary/20 font-bold text-xs tracking-wide">
                         PENDAFTARAN ONLINE MANDIRI
                     </Badge>
-                    <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+                    <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
                         Formulir Registrasi Calon Jamaah
                     </h1>
-                    <p className="text-xs sm:text-sm text-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                         Isi data diri Anda di bawah ini dengan benar sesuai KTP/Paspor untuk mengamankan kuota seat keberangkatan.
                     </p>
                 </div>
 
                 {/* Registration Form Card */}
-                <Card className="rounded-3xl border border-primary bg-card shadow-xl shadow-primary/5 overflow-hidden">
+                <Card className="rounded-3xl border border-border bg-card shadow-xl shadow-black/5 dark:shadow-black/20 overflow-hidden">
                     <form onSubmit={handleSubmit} className="p-6 sm:p-8 flex flex-col gap-8">
                         {/* 1. Package Selection */}
                         <div className="flex flex-col gap-4">
-                            <div className="flex items-center gap-2 border-b border-primary pb-3">
-                                <Plane className="w-4 h-4 text-foreground" />
-                                <h3 className="font-extrabold text-sm text-foreground">1. Pilih Program Paket Umroh</h3>
+                            <div className="flex items-center gap-2 border-b border-border/70 pb-3">
+                                <Plane className="w-4 h-4 text-primary" />
+                                <h3 className="font-bold text-sm text-foreground">1. Pilih Program Paket Umroh</h3>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -167,17 +167,17 @@ export default function Register({
                                         <div
                                             key={pkg.id}
                                             onClick={() => setData('paket_id', pkg.id.toString())}
-                                            className={`p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between gap-2 ${
+                                            className={`p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between gap-2.5 ${
                                                 isSelected
-                                                    ? 'border-primary bg-background ring-2 ring-primary/20 shadow-xs'
-                                                    : 'border-primary hover:border-primary bg-card'
+                                                    ? 'border-primary bg-primary/10 ring-2 ring-primary/25 shadow-xs'
+                                                    : 'border-border/80 hover:border-primary/40 bg-background/50 hover:bg-background'
                                             }`}
                                         >
-                                            <div className="flex items-start justify-between">
-                                                <span className="font-bold text-xs text-foreground">{pkg.nama_paket}</span>
-                                                {isSelected && <CheckCircle2 className="w-4 h-4 text-foreground" />}
+                                            <div className="flex items-start justify-between gap-2">
+                                                <span className="font-bold text-xs text-foreground leading-snug">{pkg.nama_paket}</span>
+                                                {isSelected && <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />}
                                             </div>
-                                            <div className="text-base font-black text-foreground">
+                                            <div className="text-base font-extrabold text-primary">
                                                 Rp {pkg.harga.toLocaleString('id-ID')}
                                             </div>
                                         </div>
@@ -189,15 +189,15 @@ export default function Register({
 
                         {/* 2. Personal Data */}
                         <div className="flex flex-col gap-4">
-                            <div className="flex items-center gap-2 border-b border-primary pb-3">
-                                <User className="w-4 h-4 text-foreground" />
-                                <h3 className="font-extrabold text-sm text-foreground">2. Data Diri Calon Jamaah</h3>
+                            <div className="flex items-center gap-2 border-b border-border/70 pb-3">
+                                <User className="w-4 h-4 text-primary" />
+                                <h3 className="font-bold text-sm text-foreground">2. Data Diri Calon Jamaah</h3>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="sm:col-span-2 flex flex-col gap-1.5">
                                     <Label htmlFor="nama_lengkap" className="text-xs font-bold text-foreground">
-                                        Nama Lengkap (Sesuai KTP / Paspor) <span className="text-red-500">*</span>
+                                        Nama Lengkap (Sesuai KTP / Paspor) <span className="text-rose-500">*</span>
                                     </Label>
                                     <input
                                         id="nama_lengkap"
@@ -213,7 +213,7 @@ export default function Register({
 
                                 <div className="flex flex-col gap-1.5">
                                     <Label htmlFor="no_hp" className="text-xs font-bold text-foreground">
-                                        Nomor WhatsApp Aktif <span className="text-red-500">*</span>
+                                        Nomor WhatsApp Aktif <span className="text-rose-500">*</span>
                                     </Label>
                                     <input
                                         id="no_hp"
@@ -276,12 +276,12 @@ export default function Register({
 
                         {/* 3. DP Payment / Official Bank Selection (Optional) */}
                         <div className="flex flex-col gap-4">
-                            <div className="flex items-center gap-2 border-b border-primary pb-3">
-                                <CreditCard className="w-4 h-4 text-foreground" />
-                                <h3 className="font-extrabold text-sm text-foreground">3. Rekening Resmi Pembayaran DP</h3>
+                            <div className="flex items-center gap-2 border-b border-border/70 pb-3">
+                                <CreditCard className="w-4 h-4 text-primary" />
+                                <h3 className="font-bold text-sm text-foreground">3. Rekening Resmi Pembayaran DP</h3>
                             </div>
 
-                            <p className="text-xs text-foreground">
+                            <p className="text-xs text-muted-foreground leading-relaxed">
                                 Anda dapat langsung mencantumkan rencana DP tanda jadi (minimal Rp 5.000.000) atau menyelesaikannya setelah konfirmasi CS.
                             </p>
 
@@ -328,24 +328,24 @@ export default function Register({
                                         placeholder="Tuliskan permintaan khusus (misal: gabung kamar bersama keluarga, kursi roda, dll)"
                                         value={data.catatan}
                                         onChange={(e) => setData('catatan', e.target.value)}
-                                        className="w-full rounded-xl border border-primary !bg-card !text-foreground !placeholder-muted-foreground text-xs p-3.5 focus:border-primary focus:outline-hidden focus:ring-2 focus:ring-primary/25 shadow-2xs font-medium"
+                                        className="w-full rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground text-xs p-3.5 focus:border-primary focus:outline-hidden focus:ring-2 focus:ring-primary/20 shadow-2xs font-medium"
                                     />
                                 </div>
                             </div>
                         </div>
 
                         {/* Submit CTA */}
-                        <div className="pt-4 border-t border-primary flex flex-col gap-3">
+                        <div className="pt-4 border-t border-border/70 flex flex-col gap-3">
                             <Button
                                 type="submit"
                                 disabled={processing}
-                                className="w-full bg-primary hover:bg-primary text-primary-foreground rounded-2xl py-4 sm:py-6 font-extrabold text-xs sm:text-sm gap-2 shadow-xl shadow-primary/20 transition-all hover:scale-[1.01] whitespace-normal h-auto leading-relaxed"
+                                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl py-4 sm:py-6 font-bold text-xs sm:text-sm gap-2 shadow-lg shadow-primary/20 transition-all hover:scale-[1.005] whitespace-normal h-auto leading-relaxed cursor-pointer"
                             >
                                 {processing ? 'Memproses Pendaftaran...' : 'Kirim Pendaftaran & Dapatkan Nomor Registrasi'}
                             </Button>
 
-                            <div className="flex items-center justify-center gap-2 text-[11px] text-foreground">
-                                <Lock className="w-3.5 h-3.5" />
+                            <div className="flex items-center justify-center gap-2 text-[11px] text-muted-foreground">
+                                <Lock className="w-3.5 h-3.5 text-primary" />
                                 <span>Data Anda dienkripsi aman dan hanya digunakan untuk proses ibadah resmi.</span>
                             </div>
                         </div>
