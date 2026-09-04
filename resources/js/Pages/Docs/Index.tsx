@@ -907,7 +907,7 @@ export default function DocsIndex({
                             </div>
                         </div>
                     ) : (
-                        <div className="space-y-5 max-h-[calc(100vh-16rem)] overflow-y-auto pr-1">
+                        <div className="space-y-5 max-h-[calc(100vh-8rem)] overflow-y-auto pr-1 no-scrollbar">
                             {Object.entries(groupedNavItems).map(([category, items]) => (
                                 <div key={category} className="space-y-1">
                                     <div className="flex items-center gap-1.5 px-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -933,15 +933,13 @@ export default function DocsIndex({
                                                     }`}
                                                 >
                                                     <span
-                                                        className={`w-5 h-5 flex items-center justify-center rounded text-[10px] font-mono shrink-0 ${
-                                                            isActive
-                                                                ? "bg-white/20 text-white font-bold"
-                                                                : "bg-muted text-muted-foreground group-hover:bg-card"
-                                                        }`}
+                                                        className={`w-4 h-4 flex items-center justify-center rounded text-[12px] font-mono shrink-0 ${isActive
+                                                                ? "bg-primary text-primary-foreground font-bold"
+                                                                : "bg-muted text-muted-foreground"
+                                                            }`}
                                                     >
                                                         {orderStr}
                                                     </span>
-                                                    <span className="truncate">{item.title}</span>
                                                 </Link>
                                             );
                                         })}
