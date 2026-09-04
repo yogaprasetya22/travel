@@ -24,6 +24,7 @@ import {
     Lock,
     LogIn,
     Landmark,
+    BookOpen,
 } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
@@ -56,6 +57,7 @@ interface TenantItem {
     no_telepon?: string | null;
     theme_name?: string | null;
     logo?: string | null;
+    is_docs_enabled?: boolean;
 }
 
 interface Props extends PageProps {
@@ -115,15 +117,21 @@ export default function Welcome({
 
                     {/* Nav Links */}
                     <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-foreground">
-                        <a href="#paket" className="hover:text-foreground transition-colors">
+                        <a href="#paket" className="hover:text-primary transition-colors">
                             Paket Umroh
                         </a>
-                        <a href="#keunggulan" className="hover:text-foreground transition-colors">
+                        <a href="#keunggulan" className="hover:text-primary transition-colors">
                             Keunggulan
                         </a>
-                        <a href="#kontak" className="hover:text-foreground transition-colors">
+                        <a href="#kontak" className="hover:text-primary transition-colors">
                             Kontak CS
                         </a>
+                        {tenant?.is_docs_enabled !== false && (
+                            <Link href="/docs" className="hover:text-primary transition-colors flex items-center gap-1.5 text-primary">
+                                <BookOpen className="w-4 h-4" />
+                                <span>Buku Panduan</span>
+                            </Link>
+                        )}
                     </nav>
 
                     {/* Action Buttons */}

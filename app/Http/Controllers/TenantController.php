@@ -104,9 +104,10 @@ class TenantController extends Controller
             'owner_email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'owner_password' => ['required', 'string', 'min:6'],
             'theme_name' => ['nullable', 'string', 'max:50'],
+            'is_docs_enabled' => ['nullable', 'boolean'],
         ]);
 
-        DB::transaction(function () use ($validated, $user) {
+        DB::transaction(function () use ($validated, $user, $request) {
             // 1. Create Tenant
             $tenant = Tenant::create([
                 'nama_travel' => $validated['nama_travel'],
@@ -114,6 +115,7 @@ class TenantController extends Controller
                 'no_telepon' => $validated['no_telepon'] ?? '6281234567890',
                 'logo' => $validated['logo'] ?? null,
                 'theme_name' => $validated['theme_name'] ?? 'luxury',
+                'is_docs_enabled' => $request->has('is_docs_enabled') ? (bool) $request->input('is_docs_enabled') : true,
             ]);
 
             // 2. Create Default Hierarchy Levels
@@ -197,6 +199,7 @@ class TenantController extends Controller
             'no_telepon' => ['nullable', 'string', 'max:30'],
             'logo' => ['nullable', 'string', 'max:255'],
             'theme_name' => ['nullable', 'string', 'max:50'],
+            'is_docs_enabled' => ['nullable', 'boolean'],
         ]);
 
         $tenant->update([
@@ -205,6 +208,7 @@ class TenantController extends Controller
             'no_telepon' => $validated['no_telepon'] ?? $tenant->no_telepon,
             'logo' => $validated['logo'] ?? $tenant->logo,
             'theme_name' => $validated['theme_name'] ?? $tenant->theme_name,
+            'is_docs_enabled' => $request->has('is_docs_enabled') ? (bool) $request->input('is_docs_enabled') : $tenant->is_docs_enabled,
         ]);
 
         return redirect()->back()->with('success', "Informasi tenant {$tenant->nama_travel} berhasil diperbarui.");

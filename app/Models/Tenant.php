@@ -29,6 +29,11 @@ class Tenant extends Model
         'logo',
         'no_telepon',
         'theme_name',
+        'is_docs_enabled',
+    ];
+
+    protected $casts = [
+        'is_docs_enabled' => 'boolean',
     ];
 
     public function users(): HasMany

@@ -650,7 +650,7 @@ export default function DocsIndex({
                             </SidebarGroup>
                         ) : (
                             Object.entries(groupedNavItems).map(([category, items]) => (
-                                <SidebarGroup key={category}>
+                                <SidebarGroup key={category} className="p-0">
                                     <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-wider">
                                         {category}
                                     </SidebarGroupLabel>
@@ -667,14 +667,13 @@ export default function DocsIndex({
                                                     <SidebarMenuButton
                                                         isActive={isActive}
                                                         tooltip={item.title}
-                                                        className="h-auto py-2 items-start"
                                                         render={
                                                             <Link
                                                                 href={`/docs/${currentRole}/${item.slug}`}
-                                                                className="flex items-start gap-2.5 w-full text-left"
+                                                                className="flex items-center gap-2"
                                                             >
                                                                 <span
-                                                                    className={`w-4 h-4 flex items-center justify-center rounded text-[9px] font-mono shrink-0 mt-0.5 ${
+                                                                    className={`w-4 h-4 flex items-center justify-center rounded text-[12px] font-mono shrink-0 ${
                                                                         isActive
                                                                             ? "bg-primary text-primary-foreground font-bold"
                                                                             : "bg-muted text-muted-foreground"
@@ -682,7 +681,6 @@ export default function DocsIndex({
                                                                 >
                                                                     {orderStr}
                                                                 </span>
-                                                                <span className="whitespace-normal break-words leading-snug text-xs flex-1">{item.title}</span>
                                                             </Link>
                                                         }
                                                     />
@@ -928,14 +926,14 @@ export default function DocsIndex({
                                                 <Link
                                                     key={item.slug}
                                                     href={`/docs/${currentRole}/${item.slug}`}
-                                                    className={`flex items-start gap-2.5 px-3 py-2 text-xs rounded-xl transition-all group ${
+                                                    className={`flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-lg transition-all group ${
                                                         isActive
                                                             ? "bg-primary text-primary-foreground font-bold shadow-xs"
                                                             : "text-muted-foreground hover:bg-muted hover:text-foreground"
                                                     }`}
                                                 >
                                                     <span
-                                                        className={`w-4 h-4 flex items-center justify-center rounded text-[9px] font-mono shrink-0 mt-0.5 ${
+                                                        className={`w-5 h-5 flex items-center justify-center rounded text-[10px] font-mono shrink-0 ${
                                                             isActive
                                                                 ? "bg-white/20 text-white font-bold"
                                                                 : "bg-muted text-muted-foreground group-hover:bg-card"
@@ -943,7 +941,7 @@ export default function DocsIndex({
                                                     >
                                                         {orderStr}
                                                     </span>
-                                                    <span className="whitespace-normal break-words leading-snug flex-1 text-left">{item.title}</span>
+                                                    <span className="truncate">{item.title}</span>
                                                 </Link>
                                             );
                                         })}

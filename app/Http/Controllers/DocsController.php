@@ -46,6 +46,11 @@ class DocsController extends Controller
         $tenant = $this->resolveTenant($request);
         $user = Auth::user();
 
+        // Check if Docs feature is disabled for this tenant (unless Super Admin Master)
+        if ($tenant && ! $tenant->is_docs_enabled && (! $user || $user->role !== 'super_admin_master')) {
+            abort(403, 'Fitur buku panduan dan dokumentasi dinonaktifkan oleh administrator untuk travel ini.');
+        }
+
         // 1. Determine Default Role if not specified
         if (! $role || ! in_array(strtolower($role), ['owner', 'agent', 'portal'])) {
             if ($user && in_array($user->role, ['agen', 'team_leader'])) {

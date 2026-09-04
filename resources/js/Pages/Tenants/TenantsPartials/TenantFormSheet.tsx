@@ -14,6 +14,7 @@ import {
     Edit2,
     Building2,
     AlertCircle,
+    BookOpen,
 } from 'lucide-react';
 
 interface TenantOwner {
@@ -29,6 +30,7 @@ export interface TenantItem {
     logo?: string | null;
     no_telepon?: string | null;
     theme_name?: string | null;
+    is_docs_enabled?: boolean;
     created_at?: string;
     users_count: number;
     jamaah_count: number;
@@ -64,6 +66,7 @@ export function CreateTenantSheet({
         owner_email: '',
         owner_password: '',
         theme_name: 'luxury',
+        is_docs_enabled: true,
     });
     const [createErrors, setCreateErrors] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,6 +81,7 @@ export function CreateTenantSheet({
                 owner_email: '',
                 owner_password: '',
                 theme_name: 'luxury',
+                is_docs_enabled: true,
             });
             setCreateErrors({});
         }
@@ -244,6 +248,35 @@ export function CreateTenantSheet({
                             </div>
                         </div>
 
+                        {/* Feature Modules Configuration */}
+                        <div className="pt-3 border-t border-border/70 flex flex-col gap-2">
+                            <div className="flex flex-col">
+                                <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                                    <BookOpen className="w-4 h-4 text-emerald-500" />
+                                    <span>Fitur Dokumentasi &amp; Buku Panduan (/docs)</span>
+                                </div>
+                                <p className="text-[11px] text-muted-foreground mt-0.5">Kontrol ketersediaan halaman dokumentasi panduan sistem untuk tenant ini.</p>
+                            </div>
+
+                            <label className="flex items-center justify-between p-3 rounded-xl border border-border bg-muted/20 hover:bg-muted/30 transition cursor-pointer">
+                                <div className="flex items-center gap-2.5">
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${createForm.is_docs_enabled ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
+                                        <BookOpen className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <div className="text-xs font-bold text-foreground">Aktifkan Buku Panduan (/docs)</div>
+                                        <div className="text-[10px] text-muted-foreground">Tampilkan menu di landing page &amp; izinkan akses halaman panduan</div>
+                                    </div>
+                                </div>
+                                <input
+                                    type="checkbox"
+                                    checked={createForm.is_docs_enabled}
+                                    onChange={(e) => setCreateForm({ ...createForm, is_docs_enabled: e.target.checked })}
+                                    className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                                />
+                            </label>
+                        </div>
+
                         {/* Theme Configuration */}
                         <div className="pt-3 border-t border-border/70 flex flex-col gap-2">
                             <div className="flex flex-col">
@@ -317,6 +350,7 @@ export function EditTenantSheet({
         domain_atau_subdomain: '',
         no_telepon: '',
         theme_name: '',
+        is_docs_enabled: true,
     });
     const [editErrors, setEditErrors] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -328,6 +362,7 @@ export function EditTenantSheet({
                 domain_atau_subdomain: selectedTenant.domain_atau_subdomain,
                 no_telepon: selectedTenant.no_telepon || '6281234567890',
                 theme_name: selectedTenant.theme_name || 'luxury',
+                is_docs_enabled: selectedTenant.is_docs_enabled ?? true,
             });
             setEditErrors({});
         }
@@ -418,6 +453,35 @@ export function EditTenantSheet({
                         {editErrors.no_telepon && (
                             <p className="text-[11px] text-rose-500 mt-1 font-medium">{editErrors.no_telepon}</p>
                         )}
+                    </div>
+
+                    {/* Feature Modules Configuration */}
+                    <div className="pt-3 border-t border-border/70 flex flex-col gap-2">
+                        <div className="flex flex-col">
+                            <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                                <BookOpen className="w-4 h-4 text-emerald-500" />
+                                <span>Fitur Dokumentasi &amp; Buku Panduan (/docs)</span>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">Kontrol ketersediaan halaman dokumentasi panduan sistem untuk tenant ini.</p>
+                        </div>
+
+                        <label className="flex items-center justify-between p-3 rounded-xl border border-border bg-muted/20 hover:bg-muted/30 transition cursor-pointer">
+                            <div className="flex items-center gap-2.5">
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${editForm.is_docs_enabled ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
+                                    <BookOpen className="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <div className="text-xs font-bold text-foreground">Aktifkan Buku Panduan (/docs)</div>
+                                    <div className="text-[10px] text-muted-foreground">Tampilkan menu di landing page &amp; izinkan akses halaman panduan</div>
+                                </div>
+                            </div>
+                            <input
+                                type="checkbox"
+                                checked={editForm.is_docs_enabled}
+                                onChange={(e) => setEditForm({ ...editForm, is_docs_enabled: e.target.checked })}
+                                className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                            />
+                        </label>
                     </div>
 
                     {/* Theme selector */}
