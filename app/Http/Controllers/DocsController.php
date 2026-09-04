@@ -203,13 +203,14 @@ class DocsController extends Controller
             $processedMarkdown
         );
 
-        // Extract Headings for Table of Contents (H2 & H3)
+        // Extract Headings for Table of Contents (H2 & H3) with clean slugs
         $headings = [];
         preg_match_all('/^(#{2,3})\s+(.+)$/m', $rawMarkdown, $matches, PREG_SET_ORDER);
         foreach ($matches as $match) {
             $level = strlen($match[1]);
             $title = trim($match[2]);
-            $anchor = Str::slug($title);
+            $cleanTitle = preg_replace('/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{1F1E0}-\x{1F1FF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u', '', $title);
+            $anchor = Str::slug(trim($cleanTitle)) ?: Str::slug($title) ?: 'section-'.uniqid();
             $headings[] = [
                 'level' => $level,
                 'title' => $title,
@@ -223,6 +224,20 @@ class DocsController extends Controller
 
         // Render to clean HTML
         $htmlContent = Str::markdown($processedMarkdown);
+
+        // Inject id attribute and scroll-margin into rendered HTML headings
+        $htmlContent = preg_replace_callback(
+            '/<h([2-3])>(.*?)<\/h\1>/',
+            function ($matches) {
+                $level = $matches[1];
+                $rawText = strip_tags($matches[2]);
+                $cleanText = preg_replace('/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{1F1E0}-\x{1F1FF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u', '', $rawText);
+                $anchor = Str::slug(trim($cleanText)) ?: Str::slug($rawText) ?: 'section-'.uniqid();
+
+                return "<h{$level} id=\"{$anchor}\" class=\"scroll-mt-24 group flex items-center justify-between\"><span>{$matches[2]}</span><a href=\"#{$anchor}\" class=\"opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-primary transition-opacity text-sm ml-2\" title=\"Tautan langsung ke bagian ini\">#</a></h{$level}>";
+            },
+            $htmlContent
+        );
 
         return [
             'title' => $title,

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Head, Link, usePage } from "@inertiajs/react";
+import { Head, Link } from "@inertiajs/react";
 import PageLayout from "@/Components/Layouts/PageLayout";
 import {
     SidebarProvider,
@@ -41,8 +41,9 @@ import {
     LogIn,
     Sun,
     Moon,
-    Palette,
-    AudioWaveform,
+    Hash,
+    CheckCircle2,
+    ListTree,
 } from "lucide-react";
 
 interface NavItem {
@@ -88,6 +89,175 @@ interface Props {
         email: string;
         role: string;
     } | null;
+}
+
+interface SectionGroup {
+    h2: HeadingItem;
+    children: HeadingItem[];
+}
+
+// Table of Contents Section Component
+function TableOfContents({ headings }: { headings: HeadingItem[] }) {
+    const [activeAnchor, setActiveAnchor] = useState<string>("");
+
+    // Group headings into structured sections (H2 with its H3 children)
+    const sections = useMemo(() => {
+        const result: SectionGroup[] = [];
+        let currentGroup: SectionGroup | null = null;
+
+        headings.forEach((h) => {
+            if (h.level === 2) {
+                currentGroup = { h2: h, children: [] };
+                result.push(currentGroup);
+            } else if (h.level === 3) {
+                if (currentGroup) {
+                    currentGroup.children.push(h);
+                } else {
+                    // Orphan H3
+                    result.push({ h2: h, children: [] });
+                }
+            }
+        });
+
+        return result;
+    }, [headings]);
+
+    // Scrollspy to detect currently visible heading
+    useEffect(() => {
+        if (!headings.length) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        setActiveAnchor(entry.target.id);
+                    }
+                });
+            },
+            {
+                rootMargin: "-80px 0px -60% 0px",
+                threshold: 0.1,
+            }
+        );
+
+        headings.forEach((h) => {
+            const el = document.getElementById(h.anchor);
+            if (el) observer.observe(el);
+        });
+
+        return () => observer.disconnect();
+    }, [headings]);
+
+    const scrollToAnchor = (anchor: string) => {
+        const el = document.getElementById(anchor);
+        if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+            setActiveAnchor(anchor);
+            history.replaceState(null, "", `#${anchor}`);
+        }
+    };
+
+    if (!headings.length) return null;
+
+    return (
+        <div className="space-y-4">
+            {/* Header Card */}
+            <div className="p-4 rounded-2xl bg-card border border-border shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+                        <ListTree className="w-4 h-4 text-primary" />
+                        Daftar Isi Halaman
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-primary/10 text-primary border border-primary/20">
+                        {sections.length} Bagian
+                    </span>
+                </div>
+
+                <div className="space-y-2 pt-1">
+                    {sections.map((sec, idx) => {
+                        const isH2Active = activeAnchor === sec.h2.anchor;
+                        const hasActiveChild = sec.children.some(
+                            (c) => c.anchor === activeAnchor
+                        );
+                        const isSectionActive = isH2Active || hasActiveChild;
+
+                        return (
+                            <div
+                                key={sec.h2.anchor || idx}
+                                className={`rounded-xl border transition-all p-2.5 space-y-1.5 ${
+                                    isSectionActive
+                                        ? "bg-primary/5 border-primary/30 shadow-xs"
+                                        : "bg-muted/30 border-transparent hover:bg-muted/60 hover:border-border"
+                                }`}
+                            >
+                                {/* Main H2 Header */}
+                                <button
+                                    type="button"
+                                    onClick={() => scrollToAnchor(sec.h2.anchor)}
+                                    className={`w-full text-left flex items-start gap-2 text-xs font-semibold transition-colors ${
+                                        isH2Active
+                                            ? "text-primary font-bold"
+                                            : "text-foreground hover:text-primary"
+                                    }`}
+                                >
+                                    <span
+                                        className={`flex items-center justify-center size-4 rounded text-[9px] font-mono shrink-0 mt-0.5 ${
+                                            isH2Active
+                                                ? "bg-primary text-primary-foreground font-bold"
+                                                : "bg-muted text-muted-foreground"
+                                        }`}
+                                    >
+                                        {idx + 1}
+                                    </span>
+                                    <span className="line-clamp-2 leading-tight">
+                                        {sec.h2.title}
+                                    </span>
+                                </button>
+
+                                {/* Nested H3 Subsections */}
+                                {sec.children.length > 0 && (
+                                    <div className="pl-6 space-y-1 pt-1 border-l border-border/80 ml-2">
+                                        {sec.children.map((child) => {
+                                            const isChildActive =
+                                                activeAnchor === child.anchor;
+
+                                            return (
+                                                <button
+                                                    key={child.anchor}
+                                                    type="button"
+                                                    onClick={() =>
+                                                        scrollToAnchor(child.anchor)
+                                                    }
+                                                    className={`w-full text-left block text-[11px] py-0.5 truncate transition-all ${
+                                                        isChildActive
+                                                            ? "text-primary font-bold translate-x-1"
+                                                            : "text-muted-foreground hover:text-foreground hover:translate-x-0.5"
+                                                    }`}
+                                                >
+                                                    • {child.title}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Help Card */}
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-amber-500/5 to-transparent border border-primary/20 space-y-2">
+                <div className="flex items-center gap-2 text-primary font-bold text-xs">
+                    <Briefcase className="w-4 h-4" />
+                    <span>Pusat Bantuan Travel</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Butuh panduan teknis operasional lebih lanjut? Hubungi administrator atau supervisor travel Anda.
+                </p>
+            </div>
+        </div>
+    );
 }
 
 export default function DocsIndex({
@@ -183,7 +353,7 @@ export default function DocsIndex({
         };
     }, [activeDoc]);
 
-    const travelName = tenant?.nama_travel || "Hajj & Umroh System";
+    const travelName = tenant?.nama_travel || "Hajj & Umroh Travel";
     const pageTitle = activeDoc ? activeDoc.title : "Buku Panduan";
     const roleLabel =
         currentRole === "owner"
@@ -414,7 +584,7 @@ export default function DocsIndex({
 
     // ==========================================
     // 1. GUEST MODE (BELUM LOGIN)
-    // Sidebar utama langsung memuat Modul Dokumentasi!
+    // Sidebar utama langsung memuat Navigasi Modul!
     // ==========================================
     if (!isAuthenticated) {
         return (
@@ -644,38 +814,10 @@ export default function DocsIndex({
                                 )}
                             </div>
 
-                            {/* Right Table of Contents */}
+                            {/* Enhanced Right Table of Contents (Sections) */}
                             {activeDoc && activeDoc.headings.length > 0 && (
-                                <div className="hidden xl:block w-64 shrink-0 sticky top-4 space-y-4">
-                                    <div className="p-4 rounded-2xl bg-card border border-border shadow-xs space-y-3">
-                                        <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-                                            <Sparkles className="w-3.5 h-3.5 text-primary" />
-                                            Daftar Isi Halaman
-                                        </span>
-                                        <nav className="space-y-1 text-xs">
-                                            {activeDoc.headings.map((h, i) => (
-                                                <a
-                                                    key={i}
-                                                    href={`#${h.anchor}`}
-                                                    className={`block py-1 text-muted-foreground hover:text-foreground transition-colors truncate ${
-                                                        h.level === 3 ? "pl-3 text-[11px]" : "font-medium"
-                                                    }`}
-                                                >
-                                                    {h.title}
-                                                </a>
-                                            ))}
-                                        </nav>
-                                    </div>
-
-                                    <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-amber-500/5 to-transparent border border-primary/20 space-y-2">
-                                        <div className="flex items-center gap-2 text-primary font-bold text-xs">
-                                            <Briefcase className="w-4 h-4" />
-                                            <span>Butuh Bantuan?</span>
-                                        </div>
-                                        <p className="text-[11px] text-muted-foreground leading-relaxed">
-                                            Hubungi administrator atau konsultan travel kami untuk panduan lebih lanjut.
-                                        </p>
-                                    </div>
+                                <div className="hidden xl:block w-72 shrink-0 sticky top-4">
+                                    <TableOfContents headings={activeDoc.headings} />
                                 </div>
                             )}
                         </div>
@@ -865,38 +1007,10 @@ export default function DocsIndex({
                     )}
                 </div>
 
-                {/* RIGHT SIDEBAR: TABLE OF CONTENTS */}
+                {/* ENHANCED RIGHT SIDEBAR: TABLE OF CONTENTS (SECTIONS) */}
                 {activeDoc && activeDoc.headings.length > 0 && (
-                    <div className="hidden 2xl:block w-64 shrink-0 sticky top-4 space-y-4">
-                        <div className="p-4 rounded-2xl bg-card border border-border shadow-xs space-y-3">
-                            <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-                                <Sparkles className="w-3.5 h-3.5 text-primary" />
-                                Daftar Isi Halaman
-                            </span>
-                            <nav className="space-y-1 text-xs">
-                                {activeDoc.headings.map((h, i) => (
-                                    <a
-                                        key={i}
-                                        href={`#${h.anchor}`}
-                                        className={`block py-1 text-muted-foreground hover:text-foreground transition-colors truncate ${
-                                            h.level === 3 ? "pl-3 text-[11px]" : "font-medium"
-                                        }`}
-                                    >
-                                        {h.title}
-                                    </a>
-                                ))}
-                            </nav>
-                        </div>
-
-                        <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-amber-500/5 to-transparent border border-primary/20 space-y-2">
-                            <div className="flex items-center gap-2 text-primary font-bold text-xs">
-                                <Briefcase className="w-4 h-4" />
-                                <span>Pusat Bantuan</span>
-                            </div>
-                            <p className="text-[11px] text-muted-foreground leading-relaxed">
-                                Butuh panduan teknis lebih lanjut? Hubungi administrator atau supervisor travel.
-                            </p>
-                        </div>
+                    <div className="hidden 2xl:block w-72 shrink-0 sticky top-4">
+                        <TableOfContents headings={activeDoc.headings} />
                     </div>
                 )}
             </div>
