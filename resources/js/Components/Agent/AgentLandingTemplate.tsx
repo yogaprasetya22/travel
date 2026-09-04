@@ -273,20 +273,20 @@ export default function AgentLandingTemplate({
                 </div>
 
                 {/* Trust Points */}
-                <div className={`grid grid-cols-3 ${isPreview ? 'gap-1' : 'gap-2'} w-full pt-0.5`}>
-                    <div className={`${isPreview ? 'p-1.5 rounded-lg' : 'py-2 px-1.5 sm:py-2.5 sm:px-2 rounded-xl'} bg-card/50 border border-border/60 flex flex-col items-center text-center shadow-2xs`}>
-                        <HeartHandshake className={`${isPreview ? 'w-3 h-3 mb-0.5' : 'w-4 h-4 sm:w-5 sm:h-5 mb-1'} text-primary`} />
-                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-xs'} font-medium text-foreground`}>Pendampingan Khusyuk</span>
+                <div className={`grid grid-cols-3 ${isPreview ? 'gap-1' : 'gap-1.5 sm:gap-2'} w-full pt-0.5`}>
+                    <div className={`${isPreview ? 'py-1 px-1 rounded-lg' : 'py-1.5 px-2 sm:py-2 sm:px-2 rounded-xl'} bg-card/50 border border-border/60 flex flex-col items-center justify-center text-center shadow-2xs`}>
+                        <HeartHandshake className={`${isPreview ? 'w-2.5 h-2.5 mb-0.5' : 'w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5'} text-primary`} />
+                        <span className={`${isPreview ? 'text-[7px] leading-tight' : 'text-[9.5px] sm:text-xs leading-tight'} font-medium text-foreground`}>Pendampingan Khusyuk</span>
                     </div>
 
-                    <div className={`${isPreview ? 'p-1.5 rounded-lg' : 'py-2 px-1.5 sm:py-2.5 sm:px-2 rounded-xl'} bg-card/50 border border-border/60 flex flex-col items-center text-center shadow-2xs`}>
-                        <BookOpen className={`${isPreview ? 'w-3 h-3 mb-0.5' : 'w-4 h-4 sm:w-5 sm:h-5 mb-1'} text-primary`} />
-                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-xs'} font-medium text-foreground`}>Sesuai Sunnah</span>
+                    <div className={`${isPreview ? 'py-1 px-1 rounded-lg' : 'py-1.5 px-2 sm:py-2 sm:px-2 rounded-xl'} bg-card/50 border border-border/60 flex flex-col items-center justify-center text-center shadow-2xs`}>
+                        <BookOpen className={`${isPreview ? 'w-2.5 h-2.5 mb-0.5' : 'w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5'} text-primary`} />
+                        <span className={`${isPreview ? 'text-[7px] leading-tight' : 'text-[9.5px] sm:text-xs leading-tight'} font-medium text-foreground`}>Sesuai Sunnah</span>
                     </div>
 
-                    <div className={`${isPreview ? 'p-1.5 rounded-lg' : 'py-2 px-1.5 sm:py-2.5 sm:px-2 rounded-xl'} bg-card/50 border border-border/60 flex flex-col items-center text-center shadow-2xs`}>
-                        <CheckCircle2 className={`${isPreview ? 'w-3 h-3 mb-0.5' : 'w-4 h-4 sm:w-5 sm:h-5 mb-1'} text-primary`} />
-                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-xs'} font-medium text-foreground`}>Resmi Kemenag</span>
+                    <div className={`${isPreview ? 'py-1 px-1 rounded-lg' : 'py-1.5 px-2 sm:py-2 sm:px-2 rounded-xl'} bg-card/50 border border-border/60 flex flex-col items-center justify-center text-center shadow-2xs`}>
+                        <CheckCircle2 className={`${isPreview ? 'w-2.5 h-2.5 mb-0.5' : 'w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5'} text-primary`} />
+                        <span className={`${isPreview ? 'text-[7px] leading-tight' : 'text-[9.5px] sm:text-xs leading-tight'} font-medium text-foreground`}>Resmi Kemenag</span>
                     </div>
                 </div>
             </div>
