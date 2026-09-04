@@ -1,12 +1,12 @@
 # Data Jamaah, Verifikasi Kasir & Invoice Pembayaran
 
-> **Target Peran**: `Owner (Level 1)` | **Tahapan Alur**: `3. Manajemen Leads & CRM`
-> **Kategori Modul**: `CRM & Kasir` | **Rute Halaman**: `/crm/customers`
+> **Target Peran**: `Owner (Level 1)` | **Login Akun**: `superadmin@hajjflow.com`
+> **Tahapan Alur**: `3. Manajemen Leads & CRM` | **Rute Halaman**: `/crm/customers`
 
 ## 📋 Deskripsi Fitur
 Tabel master data seluruh jamaah terdaftar dengan kemampuan pencarian cepat, filter status lunas, dan input pembayaran DP/Pelunasan.
 
-## 🖼️ Tampilan Antarmuka
+## 🖼️ Tampilan Antarmuka (Owner / Superadmin (Level 1))
 
 ![Tampilan Data Jamaah, Verifikasi Kasir & Invoice Pembayaran](screenshots/04_data_jamaah_dan_pembayaran.png)
 

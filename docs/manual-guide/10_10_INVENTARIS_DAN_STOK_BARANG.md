@@ -1,12 +1,12 @@
 # Inventaris Stok & Perlengkapan Gudang
 
-> **Target Peran**: `Owner (Level 1)` | **Tahapan Alur**: `4. Operasional & Keberangkatan`
-> **Kategori Modul**: `Gudang & Inventaris` | **Rute Halaman**: `/inventaris`
+> **Target Peran**: `Owner (Level 1)` | **Login Akun**: `superadmin@hajjflow.com`
+> **Tahapan Alur**: `4. Operasional & Keberangkatan` | **Rute Halaman**: `/inventaris`
 
 ## 📋 Deskripsi Fitur
 Pencatatan stok fisik perlengkapan travel, peringatan stok minimum, dan riwayat mutasi barang masuk/keluar.
 
-## 🖼️ Tampilan Antarmuka
+## 🖼️ Tampilan Antarmuka (Owner / Superadmin (Level 1))
 
 ![Tampilan Inventaris Stok & Perlengkapan Gudang](screenshots/10_inventaris_dan_stok_barang.png)
 

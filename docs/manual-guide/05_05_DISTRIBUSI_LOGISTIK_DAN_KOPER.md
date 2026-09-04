@@ -1,12 +1,12 @@
 # Distribusi Logistik & Perlengkapan Jamaah
 
-> **Target Peran**: `Owner (Level 1)` | **Tahapan Alur**: `4. Operasional & Keberangkatan`
-> **Kategori Modul**: `Logistik & Perlengkapan` | **Rute Halaman**: `/crm/logistics`
+> **Target Peran**: `Owner (Level 1)` | **Login Akun**: `superadmin@hajjflow.com`
+> **Tahapan Alur**: `4. Operasional & Keberangkatan` | **Rute Halaman**: `/crm/logistics`
 
 ## 📋 Deskripsi Fitur
 Modul pelacakan pembagian perlengkapan umroh (koper, kain ihram, mukena, seragam, dan buku doa) kepada setiap jamaah.
 
-## 🖼️ Tampilan Antarmuka
+## 🖼️ Tampilan Antarmuka (Owner / Superadmin (Level 1))
 
 ![Tampilan Distribusi Logistik & Perlengkapan Jamaah](screenshots/05_distribusi_logistik_dan_koper.png)
 

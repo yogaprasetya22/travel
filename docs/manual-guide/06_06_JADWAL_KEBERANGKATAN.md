@@ -1,12 +1,12 @@
 # Jadwal & Kuota Keberangkatan
 
-> **Target Peran**: `Owner (Level 1)` | **Tahapan Alur**: `4. Operasional & Keberangkatan`
-> **Kategori Modul**: `Operasional` | **Rute Halaman**: `/crm/schedules`
+> **Target Peran**: `Owner (Level 1)` | **Login Akun**: `superadmin@hajjflow.com`
+> **Tahapan Alur**: `4. Operasional & Keberangkatan` | **Rute Halaman**: `/crm/schedules`
 
 ## 📋 Deskripsi Fitur
 Manajemen tanggal keberangkatan, batas kuota kursi penerbangan, hotel Makkah/Madinah, dan status ketersediaan seat.
 
-## 🖼️ Tampilan Antarmuka
+## 🖼️ Tampilan Antarmuka (Owner / Superadmin (Level 1))
 
 ![Tampilan Jadwal & Kuota Keberangkatan](screenshots/06_jadwal_keberangkatan.png)
 

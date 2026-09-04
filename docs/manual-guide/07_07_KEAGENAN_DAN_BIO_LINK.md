@@ -1,12 +1,12 @@
 # Manajemen Mitra Agen & Verifikasi Akun
 
-> **Target Peran**: `Owner (Level 1)` | **Tahapan Alur**: `1. Setup & Master Data`
-> **Kategori Modul**: `Keagenan & Kemitraan` | **Rute Halaman**: `/agents`
+> **Target Peran**: `Owner (Level 1)` | **Login Akun**: `superadmin@hajjflow.com`
+> **Tahapan Alur**: `1. Setup & Master Data` | **Rute Halaman**: `/agents`
 
 ## 📋 Deskripsi Fitur
 Pusat pengelolaan mitra agen travel, pembuatan kode referral unik, dan pengaturan izin kemitraan.
 
-## 🖼️ Tampilan Antarmuka
+## 🖼️ Tampilan Antarmuka (Owner / Superadmin (Level 1))
 
 ![Tampilan Manajemen Mitra Agen & Verifikasi Akun](screenshots/07_keagenan_dan_bio_link.png)
 

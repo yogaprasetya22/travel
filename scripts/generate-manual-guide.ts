@@ -7,6 +7,7 @@ interface StepGuide {
     category: string;
     title: string;
     targetRole: 'Owner (Level 1)' | 'Agen Mitra (Level 2/3)' | 'Semua Role';
+    loginAs: 'superadmin' | 'agent';
     workflowStage: '1. Setup & Master Data' | '2. Promosi & Akuisisi' | '3. Manajemen Leads & CRM' | '4. Operasional & Keberangkatan' | '5. Keuangan & Komisi';
     route: string;
     description: string;
@@ -19,17 +20,31 @@ const BASE_URL = process.env.GUIDE_BASE_URL || 'http://localhost:8000';
 const DOCS_DIR = path.resolve(process.cwd(), 'docs/manual-guide');
 const SCREENSHOTS_DIR = path.join(DOCS_DIR, 'screenshots');
 
+const USERS = {
+    superadmin: {
+        email: 'superadmin@hajjflow.com',
+        password: 'password',
+        label: 'Owner / Superadmin (Level 1)'
+    },
+    agent: {
+        email: 'agent2.t2@travel.com',
+        password: 'password',
+        label: 'Mitra Agen (Level 2/3)'
+    }
+};
+
 const MODULES: StepGuide[] = [
     {
         id: '01_login_dan_dashboard',
         category: 'Umum & Dashboard',
-        targetRole: 'Semua Role',
+        targetRole: 'Owner (Level 1)',
+        loginAs: 'superadmin',
         workflowStage: '1. Setup & Master Data',
-        title: 'Panduan Login & Dashboard Utama',
+        title: 'Panduan Login & Dashboard Utama (Owner)',
         route: '/dashboard',
         description: 'Dashboard memberikan visibilitas menyeluruh terhadap kinerja travel, akumulasi omzet, jumlah jamaah, dan grafik tren keberangkatan.',
         steps: [
-            'Buka halaman login dan masukkan Email serta Password akun Anda.',
+            'Buka halaman login dan masukkan Email serta Password akun Owner/Admin Anda (`superadmin@hajjflow.com`).',
             'Setelah berhasil masuk, Anda akan langsung diarahkan ke Dashboard Utama.',
             'Perhatikan ringkasan KPI di bagian atas: Total Jamaah, Omzet Terkumpul, Sisa Tagihan, dan Jumlah Agen Aktif.',
             'Gunakan filter rentang tanggal untuk menganalisis data dalam periode tertentu.'
@@ -42,11 +57,13 @@ const MODULES: StepGuide[] = [
         id: '02_pengaturan_bio_link_agen',
         category: 'Keagenan & Promosi',
         targetRole: 'Agen Mitra (Level 2/3)',
+        loginAs: 'agent',
         workflowStage: '2. Promosi & Akuisisi',
         title: 'Setup Bio Link & Landing Page Personal Agen',
         route: '/profile',
         description: 'Pusat kustomisasi website mini Bio Link (Linktree Islami) untuk Mitra Agen agar dapat mempromosikan paket dan menjaring leads secara digital.',
         steps: [
+            'Masuk dengan akun Mitra Agen (`agent2.t2@travel.com`).',
             'Buka menu Profil Akun > Pengaturan Bio Link Agen.',
             'Lengkapi Nama Konsultan, Kota Domisili, dan Kalimat Bio/Komitmen Pelayanan.',
             'Atur tombol tindakan: Konsultasi WhatsApp Agen, WhatsApp CS Travel, atau formulir pendaftaran.',
@@ -62,6 +79,7 @@ const MODULES: StepGuide[] = [
         id: '03_crm_pipeline_kanban',
         category: 'CRM & Pipeline',
         targetRole: 'Semua Role',
+        loginAs: 'superadmin',
         workflowStage: '3. Manajemen Leads & CRM',
         title: 'Manajemen Prospek Jamaah (Kanban Board Leads to Closing)',
         route: '/crm',
@@ -95,6 +113,7 @@ const MODULES: StepGuide[] = [
         id: '04_data_jamaah_dan_pembayaran',
         category: 'CRM & Kasir',
         targetRole: 'Owner (Level 1)',
+        loginAs: 'superadmin',
         workflowStage: '3. Manajemen Leads & CRM',
         title: 'Data Jamaah, Verifikasi Kasir & Invoice Pembayaran',
         route: '/crm/customers',
@@ -113,6 +132,7 @@ const MODULES: StepGuide[] = [
         id: '05_distribusi_logistik_dan_koper',
         category: 'Logistik & Perlengkapan',
         targetRole: 'Owner (Level 1)',
+        loginAs: 'superadmin',
         workflowStage: '4. Operasional & Keberangkatan',
         title: 'Distribusi Logistik & Perlengkapan Jamaah',
         route: '/crm/logistics',
@@ -128,6 +148,7 @@ const MODULES: StepGuide[] = [
         id: '06_jadwal_keberangkatan',
         category: 'Operasional',
         targetRole: 'Owner (Level 1)',
+        loginAs: 'superadmin',
         workflowStage: '4. Operasional & Keberangkatan',
         title: 'Jadwal & Kuota Keberangkatan',
         route: '/crm/schedules',
@@ -143,6 +164,7 @@ const MODULES: StepGuide[] = [
         id: '07_keagenan_dan_bio_link',
         category: 'Keagenan & Kemitraan',
         targetRole: 'Owner (Level 1)',
+        loginAs: 'superadmin',
         workflowStage: '1. Setup & Master Data',
         title: 'Manajemen Mitra Agen & Verifikasi Akun',
         route: '/agents',
@@ -158,6 +180,7 @@ const MODULES: StepGuide[] = [
         id: '08_pembagian_komisi_agen',
         category: 'Keagenan & Keuangan',
         targetRole: 'Semua Role',
+        loginAs: 'superadmin',
         workflowStage: '5. Keuangan & Komisi',
         title: 'Pencatatan & Pencairan Komisi Agen',
         route: '/commissions',
@@ -173,6 +196,7 @@ const MODULES: StepGuide[] = [
         id: '09_monitoring_dan_pohon_jaringan',
         category: 'Keagenan & Hierarki',
         targetRole: 'Owner (Level 1)',
+        loginAs: 'superadmin',
         workflowStage: '5. Keuangan & Komisi',
         title: 'Monitoring Kinerja & Struktur Tim Agen',
         route: '/monitoring',
@@ -187,6 +211,7 @@ const MODULES: StepGuide[] = [
         id: '10_inventaris_dan_stok_barang',
         category: 'Gudang & Inventaris',
         targetRole: 'Owner (Level 1)',
+        loginAs: 'superadmin',
         workflowStage: '4. Operasional & Keberangkatan',
         title: 'Inventaris Stok & Perlengkapan Gudang',
         route: '/inventaris',
@@ -202,6 +227,7 @@ const MODULES: StepGuide[] = [
         id: '11_pengaturan_data_master',
         category: 'Pengaturan Master',
         targetRole: 'Owner (Level 1)',
+        loginAs: 'superadmin',
         workflowStage: '1. Setup & Master Data',
         title: 'Pengaturan Data Master, Paket Umroh & Rekening Bank',
         route: '/settings/master',
@@ -217,6 +243,7 @@ const MODULES: StepGuide[] = [
         id: '12_pengaturan_pengguna_dan_level',
         category: 'Pengaturan Akun',
         targetRole: 'Owner (Level 1)',
+        loginAs: 'superadmin',
         workflowStage: '1. Setup & Master Data',
         title: 'Pengaturan Pengguna & Hierarki Level Jabatan',
         route: '/settings/users',
@@ -230,8 +257,34 @@ const MODULES: StepGuide[] = [
     }
 ];
 
+async function ensureLoggedIn(page: any, context: any, role: 'superadmin' | 'agent', currentRole: { value: string | null }) {
+    if (currentRole.value === role) {
+        return;
+    }
+
+    console.log(`🔑 Berpindah sesi login sebagai: ${USERS[role].label} (${USERS[role].email})...`);
+    
+    // Clear cookies for clean session switch
+    await context.clearCookies();
+
+    await page.goto(`${BASE_URL}/login`, { waitUntil: 'networkidle' });
+    
+    const emailInput = page.locator('input[type="email"], input[name="email"]');
+    const passwordInput = page.locator('input[type="password"], input[name="password"]');
+    
+    if (await emailInput.isVisible()) {
+        await emailInput.fill(USERS[role].email);
+        await passwordInput.fill(USERS[role].password);
+        await page.locator('button[type="submit"]').click();
+        await page.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {});
+        await page.waitForTimeout(1500);
+        currentRole.value = role;
+        console.log(`✅ Berhasil masuk sebagai ${USERS[role].label}.`);
+    }
+}
+
 async function run() {
-    console.log(`\n🚀 Memulai Otomasi Scraper Manual Guide...`);
+    console.log(`\n🚀 Memulai Otomasi Scraper Manual Guide (Dual Role)...`);
     console.log(`📍 Target Server: ${BASE_URL}`);
     console.log(`📁 Output Direktori: ${DOCS_DIR}\n`);
 
@@ -249,29 +302,18 @@ async function run() {
     });
 
     const page = await context.newPage();
+    const currentRole: { value: string | null } = { value: null };
 
     try {
-        // 1. Auto-Login
-        console.log(`🔑 Melakukan autentikasi login otomatis...`);
-        await page.goto(`${BASE_URL}/login`, { waitUntil: 'networkidle' });
-        
-        // Fill login credentials
-        const emailInput = page.locator('input[type="email"], input[name="email"]');
-        const passwordInput = page.locator('input[type="password"], input[name="password"]');
-        
-        if (await emailInput.isVisible()) {
-            await emailInput.fill('superadmin@hajjflow.com');
-            await passwordInput.fill('password');
-            await page.locator('button[type="submit"]').click();
-            await page.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {});
-            await page.waitForTimeout(1500);
-            console.log(`✅ Berhasil login ke sistem.`);
-        }
-
         // Table of Contents Markdown with Role Matrix & End-to-End Workflow
         let masterIndexMarkdown = `# 📖 BUKU PANDUAN PENGGUNA (USER MANUAL GUIDE)\n\n`;
         masterIndexMarkdown += `**Sistem Informasi & CRM Travel Umroh Multi-Tenant**\n\n`;
         masterIndexMarkdown += `*Panduan ini disusun untuk memandu seluruh peran (Owner Travel, Admin Operasional, Keuangan, Kasir, dan Mitra Agen).* \n\n`;
+        masterIndexMarkdown += `---\n\n`;
+
+        masterIndexMarkdown += `## 👥 Akun Akses Demo / Peran Sistem\n\n`;
+        masterIndexMarkdown += `- **Owner Travel (Level 1)**: \`${USERS.superadmin.email}\` (Password: \`${USERS.superadmin.password}\`)\n`;
+        masterIndexMarkdown += `- **Mitra Agen (Level 2/3)**: \`${USERS.agent.email}\` (Password: \`${USERS.agent.password}\`)\n\n`;
         masterIndexMarkdown += `---\n\n`;
 
         masterIndexMarkdown += `## 🗺️ Alur Bisnis: Dari Mendapatkan Jamaah Hingga Closing & Berangkat\n\n`;
@@ -292,6 +334,9 @@ async function run() {
             const mod = MODULES[i];
             const orderNum = String(i + 1).padStart(2, '0');
             console.log(`📸 [${orderNum}/${MODULES.length}] Menangkap layar & mengekstrak panduan: ${mod.title}...`);
+
+            // Ensure correct role is logged in
+            await ensureLoggedIn(page, context, mod.loginAs, currentRole);
 
             // Navigate to page
             await page.goto(`${BASE_URL}${mod.route}`, { waitUntil: 'networkidle' });
@@ -316,10 +361,10 @@ async function run() {
             const filePath = path.join(DOCS_DIR, fileBasename);
 
             let docContent = `# ${mod.title}\n\n`;
-            docContent += `> **Target Peran**: \`${mod.targetRole}\` | **Tahapan Alur**: \`${mod.workflowStage}\`\n`;
-            docContent += `> **Kategori Modul**: \`${mod.category}\` | **Rute Halaman**: \`${mod.route}\`\n\n`;
+            docContent += `> **Target Peran**: \`${mod.targetRole}\` | **Login Akun**: \`${USERS[mod.loginAs].email}\`\n`;
+            docContent += `> **Tahapan Alur**: \`${mod.workflowStage}\` | **Rute Halaman**: \`${mod.route}\`\n\n`;
             docContent += `## 📋 Deskripsi Fitur\n${mod.description}\n\n`;
-            docContent += `## 🖼️ Tampilan Antarmuka\n\n`;
+            docContent += `## 🖼️ Tampilan Antarmuka (${USERS[mod.loginAs].label})\n\n`;
             docContent += `![Tampilan ${mod.title}](screenshots/${screenshotName})\n\n`;
 
             docContent += `## 🛠️ Langkah-Langkah Penggunaan\n\n`;
@@ -342,14 +387,14 @@ async function run() {
 
             // Append to Master Index
             masterIndexMarkdown += `### ${orderNum}. [${mod.title}](${fileBasename})\n`;
-            masterIndexMarkdown += `- **Target Role**: \`${mod.targetRole}\`\n`;
+            masterIndexMarkdown += `- **Target Role**: \`${mod.targetRole}\` (Akun: \`${USERS[mod.loginAs].email}\`)\n`;
             masterIndexMarkdown += `- **Fase Alur**: ${mod.workflowStage}\n`;
             masterIndexMarkdown += `- **Deskripsi**: ${mod.description}\n\n`;
         }
 
         // Save Master README.md
         fs.writeFileSync(path.join(DOCS_DIR, 'README.md'), masterIndexMarkdown, 'utf-8');
-        console.log(`\n✨ Selesai! Seluruh panduan telah berhasil disusun di folder: ${DOCS_DIR}\n`);
+        console.log(`\n✨ Selesai! Seluruh panduan dual-role telah berhasil disusun di folder: ${DOCS_DIR}\n`);
 
     } catch (error: any) {
         console.error(`❌ Terjadi kesalahan saat scraping panduan:`, error);

@@ -1,12 +1,12 @@
 # Pengaturan Data Master, Paket Umroh & Rekening Bank
 
-> **Target Peran**: `Owner (Level 1)` | **Tahapan Alur**: `1. Setup & Master Data`
-> **Kategori Modul**: `Pengaturan Master` | **Rute Halaman**: `/settings/master`
+> **Target Peran**: `Owner (Level 1)` | **Login Akun**: `superadmin@hajjflow.com`
+> **Tahapan Alur**: `1. Setup & Master Data` | **Rute Halaman**: `/settings/master`
 
 ## 📋 Deskripsi Fitur
 Konfigurasi master paket umroh, harga, komisi default, fasilitas hotel, rekening bank resmi, dan sumber leads.
 
-## 🖼️ Tampilan Antarmuka
+## 🖼️ Tampilan Antarmuka (Owner / Superadmin (Level 1))
 
 ![Tampilan Pengaturan Data Master, Paket Umroh & Rekening Bank](screenshots/11_pengaturan_data_master.png)
 

@@ -1,12 +1,12 @@
 # Monitoring Kinerja & Struktur Tim Agen
 
-> **Target Peran**: `Owner (Level 1)` | **Tahapan Alur**: `5. Keuangan & Komisi`
-> **Kategori Modul**: `Keagenan & Hierarki` | **Rute Halaman**: `/monitoring`
+> **Target Peran**: `Owner (Level 1)` | **Login Akun**: `superadmin@hajjflow.com`
+> **Tahapan Alur**: `5. Keuangan & Komisi` | **Rute Halaman**: `/monitoring`
 
 ## 📋 Deskripsi Fitur
 Visualisasi pohon jaringan (hierarki leader, agen level 2, agen level 3) beserta perolehan omzet per grup tim.
 
-## 🖼️ Tampilan Antarmuka
+## 🖼️ Tampilan Antarmuka (Owner / Superadmin (Level 1))
 
 ![Tampilan Monitoring Kinerja & Struktur Tim Agen](screenshots/09_monitoring_dan_pohon_jaringan.png)
 

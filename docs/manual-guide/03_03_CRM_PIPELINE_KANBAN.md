@@ -1,12 +1,12 @@
 # Manajemen Prospek Jamaah (Kanban Board Leads to Closing)
 
-> **Target Peran**: `Semua Role` | **Tahapan Alur**: `3. Manajemen Leads & CRM`
-> **Kategori Modul**: `CRM & Pipeline` | **Rute Halaman**: `/crm`
+> **Target Peran**: `Semua Role` | **Login Akun**: `superadmin@hajjflow.com`
+> **Tahapan Alur**: `3. Manajemen Leads & CRM` | **Rute Halaman**: `/crm`
 
 ## 📋 Deskripsi Fitur
 Papan Kanban interaktif untuk memonitor perpindahan status jamaah dari tahap Inquiry (Calon) hingga Berangkat dan Pasca-Kepulangan.
 
-## 🖼️ Tampilan Antarmuka
+## 🖼️ Tampilan Antarmuka (Owner / Superadmin (Level 1))
 
 ![Tampilan Manajemen Prospek Jamaah (Kanban Board Leads to Closing)](screenshots/03_crm_pipeline_kanban.png)
 
