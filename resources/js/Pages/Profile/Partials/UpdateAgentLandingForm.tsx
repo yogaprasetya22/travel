@@ -667,45 +667,50 @@ export default function UpdateAgentLandingForm({
                         <div className="w-8 h-1 rounded-full bg-slate-800" />
                     </div>
 
-                    {/* Fixed Status Bar (Simulated Time + Battery/Signal) */}
-                    <div className="absolute top-3.5 left-5 right-5 flex items-center justify-between text-[9px] font-semibold text-foreground/75 pointer-events-none z-30 select-none">
-                        <span>{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                        <div className="flex items-center gap-1">
-                            <span className="text-[8px] font-mono font-bold">5G</span>
-                            <div className="w-3.5 h-2 rounded-xs border border-foreground/60 p-0.5 flex items-center">
-                                <div className="w-full h-full bg-foreground/70 rounded-2xs" />
-                            </div>
-                        </div>
-                    </div>
-
                     {/* Inside Screen with Tenant Theme */}
                     <div
-                        className="w-full h-full rounded-[34px] overflow-y-auto no-scrollbar bg-background text-foreground px-3 pb-5 pt-9 relative flex flex-col justify-between"
+                        className="w-full h-full rounded-[34px] overflow-hidden bg-background text-foreground relative flex flex-col justify-between"
                         style={(themeData.themes[(tenant?.theme_name as keyof typeof themeData.themes) || 'luxury']?.variables || themeData.themes['luxury'].variables) as React.CSSProperties}
                     >
-                        {/* Background Radial Glow */}
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
+                        {/* Fixed Status Bar (Inside Screen, Themed Background + Backdrop Blur) */}
+                        <div className="sticky top-0 left-0 right-0 h-9 px-6 pt-1 flex items-center justify-between text-[9px] font-semibold text-foreground/80 bg-background/85 backdrop-blur-md z-30 select-none border-b border-border/20">
+                            <span>{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            <div className="flex items-center gap-1">
+                                <span className="text-[8px] font-mono font-bold">5G</span>
+                                <div className="w-3.5 h-2 rounded-xs border border-foreground/60 p-0.5 flex items-center">
+                                    <div className="w-full h-full bg-foreground/70 rounded-2xs" />
+                                </div>
+                            </div>
+                        </div>
 
-                        <div className="w-full relative z-10 pt-1">
-                            <AgentLandingTemplate
-                                agent={{
-                                    name: data.name,
-                                    avatar_url: avatarPreview,
-                                    no_hp: data.no_hp,
-                                    kota: data.kota,
-                                    bio: data.bio,
-                                    jabatan: user.jabatan,
-                                    referral_code: user.referral_code,
-                                    landing_links: data.landing_links,
-                                    social_links: data.social_links,
-                                }}
-                                tenant={tenant}
-                                isPreview={true}
-                            />
+                        {/* Scrollable Content */}
+                        <div className="w-full flex-1 overflow-y-auto no-scrollbar px-3 pb-4 pt-2 relative">
+                            {/* Background Radial Glow */}
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
+
+                            <div className="w-full relative z-10">
+                                <AgentLandingTemplate
+                                    agent={{
+                                        name: data.name,
+                                        avatar_url: avatarPreview,
+                                        no_hp: data.no_hp,
+                                        kota: data.kota,
+                                        bio: data.bio,
+                                        jabatan: user.jabatan,
+                                        referral_code: user.referral_code,
+                                        landing_links: data.landing_links,
+                                        social_links: data.social_links,
+                                    }}
+                                    tenant={tenant}
+                                    isPreview={true}
+                                />
+                            </div>
                         </div>
 
                         {/* Bottom iOS Home Indicator */}
-                        <div className="w-24 h-1 bg-foreground/20 rounded-full mx-auto mt-3 shrink-0 pointer-events-none" />
+                        <div className="w-full py-2 bg-background/90 backdrop-blur-xs flex justify-center shrink-0 z-20 pointer-events-none">
+                            <div className="w-24 h-1 bg-foreground/20 rounded-full" />
+                        </div>
                     </div>
                 </div>
             </div>
