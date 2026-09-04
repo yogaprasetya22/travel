@@ -190,10 +190,10 @@ class DocsController extends Controller
     {
         $rawMarkdown = File::get($filepath);
 
-        // Rewrite relative image paths e.g. "screenshots/xxx.png" -> "/docs/assets/{role}/screenshots/xxx.png"
+        // Rewrite relative image paths e.g. "screenshots/xxx.png" -> "/docs-assets/{role}/screenshots/xxx.png"
         $processedMarkdown = preg_replace(
             '/!\[(.*?)\]\(screenshots\/(.*?)\)/',
-            '![$1](/docs/assets/'.$role.'/screenshots/$2)',
+            '![$1](/docs-assets/'.$role.'/screenshots/$2)',
             $rawMarkdown
         );
 
