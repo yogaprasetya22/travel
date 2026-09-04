@@ -47,9 +47,32 @@ export default function UpdateAgentLandingForm({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(user.avatar_url || null);
 
+    const rawTenantWa = tenant?.no_telepon ? tenant.no_telepon.replace(/[^0-9]/g, '') : '';
+    const formattedTenantWa = rawTenantWa.startsWith('0') ? '62' + rawTenantWa.slice(1) : rawTenantWa;
+
+    const normalizeLink = (item: LandingLinkItem): LandingLinkItem => {
+        let targetType = item.target_type;
+        if (!targetType) {
+            if (item.url && item.url.includes('wa.me')) {
+                if (formattedTenantWa && item.url.includes(formattedTenantWa)) {
+                    targetType = 'tenant_wa';
+                } else {
+                    targetType = 'agent_wa';
+                }
+            } else {
+                targetType = 'custom_url';
+            }
+        }
+        return {
+            ...item,
+            target_type: targetType,
+            style_type: item.style_type || 'default',
+        };
+    };
+
     // Initial default links if agent has never set any
     const defaultLinks: LandingLinkItem[] = user.landing_links && user.landing_links.length > 0
-        ? user.landing_links
+        ? user.landing_links.map(normalizeLink)
         : [
             {
                 id: 'link-1',
@@ -735,6 +758,7 @@ export default function UpdateAgentLandingForm({
                             {/* Action Cards List */}
                             <div className="w-full flex flex-col gap-2 pt-1">
                                 {data.landing_links.map((link, i) => {
+                                    const targetType = link.target_type || (link.url && link.url.includes('wa.me') ? (rawTenantWa && link.url.includes(formattedTenantWa) ? 'tenant_wa' : 'agent_wa') : undefined);
                                     const isEmerald = link.style_type === 'emerald';
                                     const isPrimary = link.style_type === 'primary';
 
@@ -757,10 +781,10 @@ export default function UpdateAgentLandingForm({
                                                 </div>
                                                 <div className="flex flex-col text-left min-w-0">
                                                     <span className="text-[10px] leading-snug font-bold truncate">{link.title || 'Tautan Tanpa Judul'}</span>
-                                                    {link.target_type === 'tenant_wa' && (
+                                                    {targetType === 'tenant_wa' && (
                                                         <span className="text-[8px] opacity-75 font-normal">➔ CS Induk Travel</span>
                                                     )}
-                                                    {link.target_type === 'agent_wa' && (
+                                                    {targetType === 'agent_wa' && (
                                                         <span className="text-[8px] opacity-75 font-normal">➔ WA Pribadi Agen</span>
                                                     )}
                                                 </div>
