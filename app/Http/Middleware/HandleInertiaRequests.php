@@ -95,7 +95,11 @@ class HandleInertiaRequests extends Middleware
                     $userLevelKeys[] = $user->role.':full';
                 }
 
-                return Menu::whereNull('parent_id')
+                $activeTenant = $user->role === 'super_admin_master'
+                    ? (Tenant::find($request->session()->get('tenant_id')) ?? Tenant::first())
+                    : $user->tenant;
+
+                $menus = Menu::whereNull('parent_id')
                     ->where(function ($q) use ($userLevelKeys) {
                         foreach ($userLevelKeys as $key) {
                             $q->orWhereJsonContains('roles', $key);
@@ -110,6 +114,12 @@ class HandleInertiaRequests extends Middleware
                     }])
                     ->orderBy('urutan')
                     ->get();
+
+                if ($activeTenant && $activeTenant->is_docs_enabled === false && $user->role !== 'super_admin_master') {
+                    $menus = $menus->filter(fn ($m) => $m->url !== '/docs')->values();
+                }
+
+                return $menus;
             },
         ];
     }
