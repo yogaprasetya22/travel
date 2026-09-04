@@ -54,7 +54,15 @@ interface CustomPageProps extends PageProps {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const { auth, menus } = usePage<CustomPageProps>().props
-    const user = auth.user
+    const user = auth?.user || {
+        id: 0,
+        name: 'Tamu Pengunjung',
+        email: 'guest@travel.com',
+        role: 'guest',
+        tenant: null,
+        avatar_url: '',
+        avatar: '',
+    }
 
     // 1. Dynamic Team / Branding based on Tenant
     const teams = React.useMemo(() => {

@@ -1,26 +1,20 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Head, Link } from "@inertiajs/react";
+import PageLayout from "@/Components/Layouts/PageLayout";
 import {
     BookOpen,
     Search,
     ChevronRight,
     ArrowLeft,
     ArrowRight,
-    LayoutDashboard,
     Layers,
-    UserCheck,
     Compass,
-    Menu as MenuIcon,
     X,
     Sparkles,
     ShieldCheck,
     Users,
     Briefcase,
-    Home,
-    Sun,
-    Moon,
 } from "lucide-react";
-import { useTheme } from "@/Components/ThemeProvider";
 
 interface NavItem {
     title: string;
@@ -68,15 +62,12 @@ interface Props {
 }
 
 export default function DocsIndex({
-    tenant,
     currentRole,
     currentSlug,
     navigation,
     activeDoc,
-    isAuthenticated,
 }: Props) {
     const [searchQuery, setSearchQuery] = useState("");
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     const roleNavItems = useMemo(() => {
@@ -149,45 +140,53 @@ export default function DocsIndex({
         };
     }, [activeDoc]);
 
-    const travelName = tenant?.nama_travel || "Hajj & Umroh Travel";
-    const { theme, setTheme } = useTheme();
+    const pageTitle = activeDoc ? activeDoc.title : "Buku Panduan";
+    const roleLabel =
+        currentRole === "owner"
+            ? "Owner Travel (Level 1)"
+            : currentRole === "agent"
+            ? "Mitra Agen (Level 2/3)"
+            : "Portal Dokumentasi";
 
     return (
-        <div className="min-h-screen bg-background text-foreground flex flex-col antialiased selection:bg-primary/20 selection:text-primary">
-            <Head title={`${activeDoc?.title || "Buku Panduan"} - ${travelName} Docs`} />
-
+        <PageLayout
+            title={`${pageTitle} - Buku Panduan`}
+            breadcrumbParent="Buku Panduan"
+            breadcrumbPage={roleLabel}
+            contentClass="p-4 sm:p-6 md:p-8 space-y-6"
+        >
             {/* EMBEDDED CUSTOM MARKDOWN STYLES */}
             <style>{`
                 .docs-rendered-markdown h1 {
-                    font-size: 1.75rem;
+                    font-size: 1.65rem;
                     font-weight: 800;
                     letter-spacing: -0.025em;
                     color: var(--foreground);
                     padding-bottom: 0.75rem;
-                    margin-bottom: 1.5rem;
+                    margin-bottom: 1.25rem;
                     border-bottom: 1px solid var(--border);
                 }
                 .docs-rendered-markdown h2 {
-                    font-size: 1.35rem;
+                    font-size: 1.25rem;
                     font-weight: 700;
                     letter-spacing: -0.02em;
                     color: var(--foreground);
-                    margin-top: 2.25rem;
-                    margin-bottom: 0.85rem;
+                    margin-top: 2rem;
+                    margin-bottom: 0.75rem;
                     display: flex;
                     align-items: center;
                     gap: 0.5rem;
                 }
                 .docs-rendered-markdown h3 {
-                    font-size: 1.05rem;
+                    font-size: 1rem;
                     font-weight: 600;
                     color: var(--foreground);
-                    margin-top: 1.5rem;
-                    margin-bottom: 0.6rem;
+                    margin-top: 1.25rem;
+                    margin-bottom: 0.5rem;
                 }
                 .docs-rendered-markdown p {
                     font-size: 0.875rem;
-                    line-height: 1.75;
+                    line-height: 1.7;
                     color: var(--muted-foreground);
                     margin-bottom: 1rem;
                 }
@@ -295,338 +294,177 @@ export default function DocsIndex({
                 }
             `}</style>
 
-            {/* TOP HEADER */}
-            <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-md">
-                <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-                    {/* Brand & Mobile Toggle */}
-                    <div className="flex items-center gap-3">
-                        <button
-                            type="button"
-                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className="lg:hidden p-2 rounded-xl border border-border bg-card hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-                            aria-label="Toggle Menu"
-                        >
-                            {mobileMenuOpen ? (
-                                <X className="w-5 h-5" />
-                            ) : (
-                                <MenuIcon className="w-5 h-5" />
-                            )}
-                        </button>
-
-                        <Link
-                            href="/docs"
-                            className="flex items-center gap-2.5 group"
-                        >
-                            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-primary-foreground shadow-md shadow-primary/20 group-hover:scale-105 transition-transform">
-                                <BookOpen className="w-5 h-5" />
-                            </div>
-                            <div className="flex flex-col">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-bold text-sm sm:text-base tracking-tight text-foreground">
-                                        {travelName}
-                                    </span>
-                                    <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
-                                        Docs
-                                    </span>
-                                </div>
-                                <span className="text-[11px] text-muted-foreground hidden sm:inline-block">
-                                    Buku Panduan & Dokumentasi Resmi
-                                </span>
-                            </div>
-                        </Link>
+            {/* TOP ROLE SWITCHER TABS */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-border shadow-xs">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-primary-foreground shadow-md shadow-primary/20">
+                        <BookOpen className="w-5 h-5" />
                     </div>
-
-                    {/* Role Switcher Tabs (Desktop) */}
-                    <div className="hidden md:flex items-center p-1 bg-muted/60 rounded-xl border border-border/60">
-                        <Link
-                            href="/docs"
-                            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
-                                currentRole === "portal"
-                                    ? "bg-background text-foreground shadow-sm font-bold"
-                                    : "text-muted-foreground hover:text-foreground"
-                            }`}
-                        >
-                            <Compass className="w-3.5 h-3.5" />
-                            Portal Ringkasan
-                        </Link>
-                        <Link
-                            href="/docs/owner"
-                            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
-                                currentRole === "owner"
-                                    ? "bg-background text-foreground shadow-sm font-bold"
-                                    : "text-muted-foreground hover:text-foreground"
-                            }`}
-                        >
-                            <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
-                            Owner Travel (Level 1)
-                        </Link>
-                        <Link
-                            href="/docs/agent"
-                            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
-                                currentRole === "agent"
-                                    ? "bg-background text-foreground shadow-sm font-bold"
-                                    : "text-muted-foreground hover:text-foreground"
-                            }`}
-                        >
-                            <Users className="w-3.5 h-3.5 text-emerald-500" />
-                            Mitra Agen (Level 2/3)
-                        </Link>
-                    </div>
-
-                    {/* Right Action Buttons */}
-                    <div className="flex items-center gap-2.5">
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setTheme(
-                                    theme === "luxury" || theme === "dark"
-                                        ? "caramellatte"
-                                        : "luxury"
-                                )
-                            }
-                            className="p-2 rounded-xl border border-border bg-card hover:bg-accent text-foreground transition-colors"
-                            title="Ganti Tema Warna"
-                        >
-                            {theme === "caramellatte" || theme === "light" ? (
-                                <Moon className="w-4 h-4 text-amber-500" />
-                            ) : (
-                                <Sun className="w-4 h-4 text-amber-400" />
-                            )}
-                        </button>
-
-                        {isAuthenticated ? (
-                            <Link
-                                href="/dashboard"
-                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all"
-                            >
-                                <LayoutDashboard className="w-3.5 h-3.5" />
-                                <span className="hidden sm:inline">Masuk ke</span> Dashboard
-                            </Link>
-                        ) : (
-                            <Link
-                                href="/login"
-                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all"
-                            >
-                                <UserCheck className="w-3.5 h-3.5" />
-                                Login Sistem
-                            </Link>
-                        )}
+                    <div>
+                        <h2 className="text-base font-bold text-foreground">
+                            Pusat Panduan & Dokumentasi
+                        </h2>
+                        <p className="text-xs text-muted-foreground">
+                            Petunjuk operasional sistem travel umroh & haji lengkap dengan CRUD matrix
+                        </p>
                     </div>
                 </div>
 
-                {/* Mobile Role Switcher (Under Header on small screens) */}
-                <div className="flex md:hidden border-t border-border px-4 py-2 bg-muted/30 overflow-x-auto gap-2">
+                {/* Role Tabs */}
+                <div className="flex items-center p-1 bg-muted/60 rounded-xl border border-border/60 self-start sm:self-auto overflow-x-auto max-w-full">
                     <Link
                         href="/docs"
-                        className={`px-3 py-1 text-xs whitespace-nowrap rounded-lg border font-medium ${
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap ${
                             currentRole === "portal"
-                                ? "bg-primary text-primary-foreground border-primary font-bold"
-                                : "bg-card text-muted-foreground border-border"
+                                ? "bg-background text-foreground shadow-xs font-bold"
+                                : "text-muted-foreground hover:text-foreground"
                         }`}
                     >
-                        Portal
+                        <Compass className="w-3.5 h-3.5" />
+                        Portal Ringkasan
                     </Link>
                     <Link
                         href="/docs/owner"
-                        className={`px-3 py-1 text-xs whitespace-nowrap rounded-lg border font-medium ${
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap ${
                             currentRole === "owner"
-                                ? "bg-primary text-primary-foreground border-primary font-bold"
-                                : "bg-card text-muted-foreground border-border"
+                                ? "bg-background text-foreground shadow-xs font-bold"
+                                : "text-muted-foreground hover:text-foreground"
                         }`}
                     >
-                        🏢 Panduan Owner
+                        <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
+                        Owner Travel (Level 1)
                     </Link>
                     <Link
                         href="/docs/agent"
-                        className={`px-3 py-1 text-xs whitespace-nowrap rounded-lg border font-medium ${
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap ${
                             currentRole === "agent"
-                                ? "bg-primary text-primary-foreground border-primary font-bold"
-                                : "bg-card text-muted-foreground border-border"
+                                ? "bg-background text-foreground shadow-xs font-bold"
+                                : "text-muted-foreground hover:text-foreground"
                         }`}
                     >
-                        🤝 Panduan Agen
+                        <Users className="w-3.5 h-3.5 text-emerald-500" />
+                        Mitra Agen (Level 2/3)
                     </Link>
                 </div>
-            </header>
+            </div>
 
-            {/* MAIN CONTENT LAYOUT */}
-            <div className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 flex gap-8 py-6">
-                {/* LEFT SIDEBAR (Desktop Column & Mobile Drawer) */}
-                <aside
-                    className={`
-                        fixed inset-y-0 left-0 z-50 w-72 bg-background border-r border-border p-5
-                        transform transition-transform duration-300 ease-in-out
-                        lg:static lg:translate-x-0 lg:z-auto lg:p-0 lg:border-r-0 lg:bg-transparent lg:shrink-0
-                        ${mobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"}
-                    `}
-                >
-                    <div className="flex items-center justify-between pb-4 lg:hidden border-b border-border mb-4">
-                        <span className="font-bold text-sm">Daftar Modul Panduan</span>
-                        <button
-                            type="button"
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
+            {/* 3-COLUMN DOCS LAYOUT */}
+            <div className="flex flex-col lg:flex-row gap-6 items-start">
+                {/* INNER LEFT SUB-SIDEBAR: MODULES LIST */}
+                <div className="w-full lg:w-72 shrink-0 bg-card border border-border rounded-2xl p-4 space-y-5 shadow-xs sticky top-4">
+                    {/* Search */}
+                    <div className="relative">
+                        <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
+                        <input
+                            type="text"
+                            placeholder="Cari modul atau topik..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-background border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-muted-foreground/60"
+                        />
+                        {searchQuery && (
+                            <button
+                                type="button"
+                                onClick={() => setSearchQuery("")}
+                                className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground text-xs"
+                            >
+                                <X className="w-3.5 h-3.5" />
+                            </button>
+                        )}
                     </div>
 
-                    <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-3 space-y-6">
-                        {/* Search Filter */}
-                        <div className="relative">
-                            <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
-                            <input
-                                type="text"
-                                placeholder="Cari topik atau fitur..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-card border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-muted-foreground/60"
-                            />
-                            {searchQuery && (
-                                <button
-                                    type="button"
-                                    onClick={() => setSearchQuery("")}
-                                    className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground text-xs"
+                    {/* Navigation Groups */}
+                    {currentRole === "portal" ? (
+                        <div className="space-y-3">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1">
+                                Pilihan Panduan Peran
+                            </span>
+                            <div className="space-y-1.5">
+                                <Link
+                                    href="/docs/owner"
+                                    className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold rounded-xl bg-background hover:bg-muted text-foreground border border-border transition-all group"
                                 >
-                                    <X className="w-3.5 h-3.5" />
-                                </button>
-                            )}
-                        </div>
-
-                        {/* Navigation Items */}
-                        {currentRole === "portal" ? (
-                            <div className="space-y-3">
-                                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-2">
-                                    Pilihan Panduan Peran
-                                </span>
-                                <div className="space-y-1.5">
-                                    <Link
-                                        href="/docs/owner"
-                                        className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold rounded-xl bg-card hover:bg-accent text-foreground border border-border transition-all group"
-                                    >
-                                        <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
-                                            1
+                                    <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
+                                        1
+                                    </div>
+                                    <div>
+                                        <div className="font-bold">Panduan Owner Travel</div>
+                                        <div className="text-[10px] text-muted-foreground">
+                                            12 Modul Operasional & Finansial
                                         </div>
-                                        <div>
-                                            <div className="font-bold">Panduan Owner Travel</div>
-                                            <div className="text-[10px] text-muted-foreground">
-                                                12 Modul Operasional & Finansial
-                                            </div>
+                                    </div>
+                                    <ChevronRight className="w-4 h-4 ml-auto text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                                </Link>
+                                <Link
+                                    href="/docs/agent"
+                                    className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold rounded-xl bg-background hover:bg-muted text-foreground border border-border transition-all group"
+                                >
+                                    <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
+                                        2
+                                    </div>
+                                    <div>
+                                        <div className="font-bold">Panduan Mitra Agen</div>
+                                        <div className="text-[10px] text-muted-foreground">
+                                            6 Modul Penjualan & Bio Link
                                         </div>
-                                        <ChevronRight className="w-4 h-4 ml-auto text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-                                    </Link>
-                                    <Link
-                                        href="/docs/agent"
-                                        className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold rounded-xl bg-card hover:bg-accent text-foreground border border-border transition-all group"
-                                    >
-                                        <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
-                                            2
-                                        </div>
-                                        <div>
-                                            <div className="font-bold">Panduan Mitra Agen</div>
-                                            <div className="text-[10px] text-muted-foreground">
-                                                6 Modul Penjualan & Bio Link
-                                            </div>
-                                        </div>
-                                        <ChevronRight className="w-4 h-4 ml-auto text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-                                    </Link>
-                                </div>
+                                    </div>
+                                    <ChevronRight className="w-4 h-4 ml-auto text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                                </Link>
                             </div>
-                        ) : (
-                            <div className="space-y-5">
-                                {Object.entries(groupedNavItems).map(
-                                    ([category, items]) => (
-                                        <div key={category} className="space-y-1">
-                                            <div className="flex items-center gap-1.5 px-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
-                                                <Layers className="w-3 h-3 text-primary" />
-                                                <span>{category}</span>
-                                            </div>
-                                            <div className="space-y-0.5">
-                                                {items.map((item) => {
-                                                    const isActive =
-                                                        item.slug === currentSlug;
-                                                    const orderStr =
-                                                        item.order > 0
-                                                            ? String(item.order).padStart(2, "0")
-                                                            : "★";
+                        </div>
+                    ) : (
+                        <div className="space-y-5 max-h-[calc(100vh-16rem)] overflow-y-auto pr-1">
+                            {Object.entries(groupedNavItems).map(
+                                ([category, items]) => (
+                                    <div key={category} className="space-y-1">
+                                        <div className="flex items-center gap-1.5 px-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                            <Layers className="w-3 h-3 text-primary" />
+                                            <span>{category}</span>
+                                        </div>
+                                        <div className="space-y-0.5">
+                                            {items.map((item) => {
+                                                const isActive =
+                                                    item.slug === currentSlug;
+                                                const orderStr =
+                                                    item.order > 0
+                                                        ? String(item.order).padStart(2, "0")
+                                                        : "★";
 
-                                                    return (
-                                                        <Link
-                                                            key={item.slug}
-                                                            href={`/docs/${currentRole}/${item.slug}`}
-                                                            onClick={() =>
-                                                                setMobileMenuOpen(false)
-                                                            }
-                                                            className={`flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-lg transition-all group ${
+                                                return (
+                                                    <Link
+                                                        key={item.slug}
+                                                        href={`/docs/${currentRole}/${item.slug}`}
+                                                        className={`flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-lg transition-all group ${
+                                                            isActive
+                                                                ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                                                                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                                        }`}
+                                                    >
+                                                        <span
+                                                            className={`w-5 h-5 flex items-center justify-center rounded text-[10px] font-mono shrink-0 ${
                                                                 isActive
-                                                                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                                                                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                                                    ? "bg-white/20 text-white font-bold"
+                                                                    : "bg-muted text-muted-foreground group-hover:bg-card"
                                                             }`}
                                                         >
-                                                            <span
-                                                                className={`w-5 h-5 flex items-center justify-center rounded text-[10px] font-mono shrink-0 ${
-                                                                    isActive
-                                                                        ? "bg-white/20 text-white font-bold"
-                                                                        : "bg-muted text-muted-foreground group-hover:bg-card"
-                                                                }`}
-                                                            >
-                                                                {orderStr}
-                                                            </span>
-                                                            <span className="truncate">
-                                                                {item.title}
-                                                            </span>
-                                                        </Link>
-                                                    );
-                                                })}
-                                            </div>
+                                                            {orderStr}
+                                                        </span>
+                                                        <span className="truncate">
+                                                            {item.title}
+                                                        </span>
+                                                    </Link>
+                                                );
+                                            })}
                                         </div>
-                                    )
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </aside>
+                                    </div>
+                                )
+                            )}
+                        </div>
+                    )}
+                </div>
 
-                {/* MOBILE OVERLAY */}
-                {mobileMenuOpen && (
-                    <div
-                        className="fixed inset-0 z-40 bg-black/60 lg:hidden backdrop-blur-xs"
-                        onClick={() => setMobileMenuOpen(false)}
-                    />
-                )}
-
-                {/* CENTER CONTENT */}
-                <main className="flex-1 min-w-0 max-w-4xl">
-                    {/* Breadcrumbs */}
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-6 pb-2 border-b border-border/60">
-                        <Link
-                            href="/docs"
-                            className="hover:text-foreground flex items-center gap-1"
-                        >
-                            <Home className="w-3 h-3" /> Docs
-                        </Link>
-                        <ChevronRight className="w-3 h-3 text-muted-foreground/60" />
-                        <Link
-                            href={`/docs/${currentRole}`}
-                            className="hover:text-foreground capitalize font-medium"
-                        >
-                            {currentRole === "owner"
-                                ? "Owner Travel"
-                                : currentRole === "agent"
-                                ? "Mitra Agen"
-                                : "Portal"}
-                        </Link>
-                        {activeDoc && activeDoc.slug !== "overview" && (
-                            <>
-                                <ChevronRight className="w-3 h-3 text-muted-foreground/60" />
-                                <span className="text-foreground font-semibold truncate max-w-[240px] sm:max-w-none">
-                                    {activeDoc.title}
-                                </span>
-                            </>
-                        )}
-                    </div>
-
-                    {/* DOCS ARTICLE BODY */}
+                {/* CENTER ARTICLE CONTAINER */}
+                <div className="flex-1 min-w-0 bg-card border border-border rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs">
                     {activeDoc ? (
                         <div className="space-y-6">
                             <article
@@ -640,7 +478,7 @@ export default function DocsIndex({
                                 {prevDoc ? (
                                     <Link
                                         href={`/docs/${currentRole}/${prevDoc.slug}`}
-                                        className="flex flex-col gap-1 p-3.5 rounded-xl border border-border hover:border-primary hover:bg-card transition-all max-w-[45%]"
+                                        className="flex flex-col gap-1 p-3.5 rounded-xl border border-border hover:border-primary hover:bg-muted/40 transition-all max-w-[45%]"
                                     >
                                         <span className="text-[11px] text-muted-foreground flex items-center gap-1">
                                             <ArrowLeft className="w-3 h-3" /> Sebelumnya
@@ -656,7 +494,7 @@ export default function DocsIndex({
                                 {nextDoc && (
                                     <Link
                                         href={`/docs/${currentRole}/${nextDoc.slug}`}
-                                        className="flex flex-col items-end gap-1 p-3.5 rounded-xl border border-border hover:border-primary hover:bg-card transition-all max-w-[45%] text-right"
+                                        className="flex flex-col items-end gap-1 p-3.5 rounded-xl border border-border hover:border-primary hover:bg-muted/40 transition-all max-w-[45%] text-right"
                                     >
                                         <span className="text-[11px] text-muted-foreground flex items-center gap-1">
                                             Selanjutnya <ArrowRight className="w-3 h-3" />
@@ -669,7 +507,7 @@ export default function DocsIndex({
                             </div>
                         </div>
                     ) : (
-                        <div className="p-12 text-center border rounded-2xl bg-card border-border space-y-3">
+                        <div className="p-12 text-center space-y-3">
                             <BookOpen className="w-12 h-12 text-muted-foreground mx-auto" />
                             <h3 className="font-bold text-base">Dokumentasi Tidak Ditemukan</h3>
                             <p className="text-xs text-muted-foreground max-w-md mx-auto">
@@ -677,43 +515,41 @@ export default function DocsIndex({
                             </p>
                         </div>
                     )}
-                </main>
+                </div>
 
-                {/* RIGHT SIDEBAR (Table of Contents - Desktop) */}
+                {/* RIGHT SIDEBAR: TABLE OF CONTENTS (Desktop) */}
                 {activeDoc && activeDoc.headings.length > 0 && (
-                    <aside className="hidden xl:block w-64 shrink-0">
-                        <div className="sticky top-24 space-y-4">
-                            <div className="p-4 rounded-2xl bg-card border border-border shadow-xs space-y-3">
-                                <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-                                    <Sparkles className="w-3.5 h-3.5 text-primary" />
-                                    Daftar Isi Halaman
-                                </span>
-                                <nav className="space-y-1 text-xs">
-                                    {activeDoc.headings.map((h, i) => (
-                                        <a
-                                            key={i}
-                                            href={`#${h.anchor}`}
-                                            className={`block py-1 text-muted-foreground hover:text-foreground transition-colors truncate ${
-                                                h.level === 3 ? "pl-3 text-[11px]" : "font-medium"
-                                            }`}
-                                        >
-                                            {h.title}
-                                        </a>
-                                    ))}
-                                </nav>
-                            </div>
-
-                            <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-amber-500/5 to-transparent border border-primary/20 space-y-2">
-                                <div className="flex items-center gap-2 text-primary font-bold text-xs">
-                                    <Briefcase className="w-4 h-4" />
-                                    <span>Butuh Bantuan?</span>
-                                </div>
-                                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                                    Hubungi tim teknis atau administrator travel jika ada modul yang belum dipahami.
-                                </p>
-                            </div>
+                    <div className="hidden 2xl:block w-64 shrink-0 sticky top-4 space-y-4">
+                        <div className="p-4 rounded-2xl bg-card border border-border shadow-xs space-y-3">
+                            <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                                Daftar Isi Halaman
+                            </span>
+                            <nav className="space-y-1 text-xs">
+                                {activeDoc.headings.map((h, i) => (
+                                    <a
+                                        key={i}
+                                        href={`#${h.anchor}`}
+                                        className={`block py-1 text-muted-foreground hover:text-foreground transition-colors truncate ${
+                                            h.level === 3 ? "pl-3 text-[11px]" : "font-medium"
+                                        }`}
+                                    >
+                                        {h.title}
+                                    </a>
+                                ))}
+                            </nav>
                         </div>
-                    </aside>
+
+                        <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-amber-500/5 to-transparent border border-primary/20 space-y-2">
+                            <div className="flex items-center gap-2 text-primary font-bold text-xs">
+                                <Briefcase className="w-4 h-4" />
+                                <span>Pusat Bantuan</span>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                Butuh panduan teknis lebih lanjut? Hubungi administrator atau supervisor travel.
+                            </p>
+                        </div>
+                    </div>
                 )}
             </div>
 
@@ -739,6 +575,6 @@ export default function DocsIndex({
                     </div>
                 </div>
             )}
-        </div>
+        </PageLayout>
     );
 }
