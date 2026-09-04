@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Head, Link, router } from "@inertiajs/react";
+import { Head, Link } from "@inertiajs/react";
 import {
     BookOpen,
     Search,
@@ -9,12 +9,9 @@ import {
     LayoutDashboard,
     Layers,
     UserCheck,
-    CheckCircle2,
     Compass,
     Menu as MenuIcon,
     X,
-    ExternalLink,
-    Maximize2,
     Sparkles,
     ShieldCheck,
     Users,
@@ -22,7 +19,6 @@ import {
     Home,
     Sun,
     Moon,
-    Palette,
 } from "lucide-react";
 import { useTheme } from "@/Components/ThemeProvider";
 
@@ -78,7 +74,6 @@ export default function DocsIndex({
     navigation,
     activeDoc,
     isAuthenticated,
-    currentUser,
 }: Props) {
     const [searchQuery, setSearchQuery] = useState("");
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -135,14 +130,14 @@ export default function DocsIndex({
             const target = e.target as HTMLElement;
             if (target && target.tagName === "IMG") {
                 const img = target as HTMLImageElement;
-                if (img.src && img.src.includes("/docs/assets/")) {
+                if (img.src && (img.src.includes("/docs/assets/") || img.src.includes("screenshots"))) {
                     e.preventDefault();
                     setSelectedImage(img.src);
                 }
             }
         };
 
-        const docContainer = document.getElementById("markdown-content");
+        const docContainer = document.getElementById("docs-body-content");
         if (docContainer) {
             docContainer.addEventListener("click", handleDocClick);
         }
@@ -154,23 +149,161 @@ export default function DocsIndex({
         };
     }, [activeDoc]);
 
-    const travelName = tenant?.nama_travel || "Hajj & Umroh System";
-
+    const travelName = tenant?.nama_travel || "Hajj & Umroh Travel";
     const { theme, setTheme } = useTheme();
 
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col antialiased selection:bg-primary/20 selection:text-primary">
             <Head title={`${activeDoc?.title || "Buku Panduan"} - ${travelName} Docs`} />
 
+            {/* EMBEDDED CUSTOM MARKDOWN STYLES */}
+            <style>{`
+                .docs-rendered-markdown h1 {
+                    font-size: 1.75rem;
+                    font-weight: 800;
+                    letter-spacing: -0.025em;
+                    color: var(--foreground);
+                    padding-bottom: 0.75rem;
+                    margin-bottom: 1.5rem;
+                    border-bottom: 1px solid var(--border);
+                }
+                .docs-rendered-markdown h2 {
+                    font-size: 1.35rem;
+                    font-weight: 700;
+                    letter-spacing: -0.02em;
+                    color: var(--foreground);
+                    margin-top: 2.25rem;
+                    margin-bottom: 0.85rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+                .docs-rendered-markdown h3 {
+                    font-size: 1.05rem;
+                    font-weight: 600;
+                    color: var(--foreground);
+                    margin-top: 1.5rem;
+                    margin-bottom: 0.6rem;
+                }
+                .docs-rendered-markdown p {
+                    font-size: 0.875rem;
+                    line-height: 1.75;
+                    color: var(--muted-foreground);
+                    margin-bottom: 1rem;
+                }
+                .docs-rendered-markdown blockquote {
+                    border-left: 4px solid var(--primary);
+                    background: rgba(var(--primary-rgb, 111, 78, 55), 0.08);
+                    border-radius: 0 0.75rem 0.75rem 0;
+                    padding: 0.85rem 1.25rem;
+                    margin: 1.25rem 0;
+                    color: var(--foreground);
+                    font-size: 0.85rem;
+                }
+                .docs-rendered-markdown blockquote p {
+                    margin-bottom: 0.35rem;
+                    color: var(--foreground);
+                }
+                .docs-rendered-markdown blockquote p:last-child {
+                    margin-bottom: 0;
+                }
+                .docs-rendered-markdown ul {
+                    list-style-type: disc;
+                    padding-left: 1.4rem;
+                    margin: 0.85rem 0;
+                    font-size: 0.875rem;
+                    color: var(--muted-foreground);
+                }
+                .docs-rendered-markdown ol {
+                    list-style-type: decimal;
+                    padding-left: 1.4rem;
+                    margin: 0.85rem 0;
+                    font-size: 0.875rem;
+                    color: var(--muted-foreground);
+                }
+                .docs-rendered-markdown li {
+                    margin-bottom: 0.4rem;
+                    line-height: 1.6;
+                }
+                .docs-rendered-markdown code {
+                    background: var(--muted);
+                    color: var(--foreground);
+                    padding: 0.15rem 0.4rem;
+                    border-radius: 0.375rem;
+                    font-size: 0.8rem;
+                    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+                    border: 1px solid var(--border);
+                }
+                .docs-rendered-markdown pre {
+                    background: var(--muted);
+                    padding: 1rem;
+                    border-radius: 0.75rem;
+                    overflow-x: auto;
+                    margin: 1.25rem 0;
+                    border: 1px solid var(--border);
+                }
+                .docs-rendered-markdown table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 1.5rem 0;
+                    font-size: 0.8rem;
+                    border-radius: 0.75rem;
+                    overflow: hidden;
+                    border: 1px solid var(--border);
+                }
+                .docs-rendered-markdown th {
+                    background: var(--muted);
+                    font-weight: 700;
+                    text-align: left;
+                    padding: 0.75rem 1rem;
+                    border: 1px solid var(--border);
+                    color: var(--foreground);
+                }
+                .docs-rendered-markdown td {
+                    padding: 0.75rem 1rem;
+                    border: 1px solid var(--border);
+                    color: var(--muted-foreground);
+                }
+                .docs-rendered-markdown tr:hover td {
+                    background: rgba(var(--primary-rgb, 111, 78, 55), 0.03);
+                }
+                .docs-rendered-markdown img {
+                    border-radius: 1rem;
+                    border: 1px solid var(--border);
+                    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+                    margin: 1.5rem 0;
+                    max-width: 100%;
+                    cursor: zoom-in;
+                    transition: transform 0.2s ease;
+                }
+                .docs-rendered-markdown img:hover {
+                    transform: scale(1.005);
+                }
+                .docs-rendered-markdown hr {
+                    border: 0;
+                    border-top: 1px solid var(--border);
+                    margin: 2rem 0;
+                }
+                .docs-rendered-markdown a {
+                    color: var(--primary);
+                    font-weight: 600;
+                    text-decoration: underline;
+                    text-underline-offset: 3px;
+                }
+                .docs-rendered-markdown a:hover {
+                    opacity: 0.85;
+                }
+            `}</style>
+
             {/* TOP HEADER */}
-            <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/90 backdrop-blur-md">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-md">
+                <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
                     {/* Brand & Mobile Toggle */}
                     <div className="flex items-center gap-3">
                         <button
                             type="button"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className="lg:hidden p-2 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                            className="lg:hidden p-2 rounded-xl border border-border bg-card hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
                             aria-label="Toggle Menu"
                         >
                             {mobileMenuOpen ? (
@@ -244,11 +377,17 @@ export default function DocsIndex({
                     <div className="flex items-center gap-2.5">
                         <button
                             type="button"
-                            onClick={() => setTheme(theme === 'luxury' || theme === 'dark' ? 'caramellatte' : 'luxury')}
+                            onClick={() =>
+                                setTheme(
+                                    theme === "luxury" || theme === "dark"
+                                        ? "caramellatte"
+                                        : "luxury"
+                                )
+                            }
                             className="p-2 rounded-xl border border-border bg-card hover:bg-accent text-foreground transition-colors"
                             title="Ganti Tema Warna"
                         >
-                            {theme === 'caramellatte' || theme === 'light' ? (
+                            {theme === "caramellatte" || theme === "light" ? (
                                 <Moon className="w-4 h-4 text-amber-500" />
                             ) : (
                                 <Sun className="w-4 h-4 text-amber-400" />
@@ -310,27 +449,30 @@ export default function DocsIndex({
                 </div>
             </header>
 
-            {/* MAIN CONTENT WRAPPER */}
-            <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 flex gap-8 py-6">
-                {/* LEFT SIDEBAR (Desktop & Mobile Drawer) */}
+            {/* MAIN CONTENT LAYOUT */}
+            <div className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 flex gap-8 py-6">
+                {/* LEFT SIDEBAR (Desktop Column & Mobile Drawer) */}
                 <aside
-                    className={`fixed inset-y-0 left-0 z-50 w-72 bg-background border-r border-border p-5 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:z-0 lg:p-0 lg:border-r-0 lg:bg-transparent ${
-                        mobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
-                    }`}
+                    className={`
+                        fixed inset-y-0 left-0 z-50 w-72 bg-background border-r border-border p-5
+                        transform transition-transform duration-300 ease-in-out
+                        lg:static lg:translate-x-0 lg:z-auto lg:p-0 lg:border-r-0 lg:bg-transparent lg:shrink-0
+                        ${mobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"}
+                    `}
                 >
                     <div className="flex items-center justify-between pb-4 lg:hidden border-b border-border mb-4">
                         <span className="font-bold text-sm">Daftar Modul Panduan</span>
                         <button
                             type="button"
                             onClick={() => setMobileMenuOpen(false)}
-                            className="p-1 rounded-lg hover:bg-accent text-muted-foreground"
+                            className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground"
                         >
                             <X className="w-5 h-5" />
                         </button>
                     </div>
 
-                    <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 space-y-6">
-                        {/* Search in Nav */}
+                    <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-3 space-y-6">
+                        {/* Search Filter */}
                         <div className="relative">
                             <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
                             <input
@@ -351,16 +493,16 @@ export default function DocsIndex({
                             )}
                         </div>
 
-                        {/* Navigation List Grouped */}
+                        {/* Navigation Items */}
                         {currentRole === "portal" ? (
                             <div className="space-y-3">
                                 <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-2">
                                     Pilihan Panduan Peran
                                 </span>
-                                <div className="space-y-1">
+                                <div className="space-y-1.5">
                                     <Link
                                         href="/docs/owner"
-                                        className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-xl bg-card hover:bg-accent text-foreground border border-border transition-all group"
+                                        className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold rounded-xl bg-card hover:bg-accent text-foreground border border-border transition-all group"
                                     >
                                         <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
                                             1
@@ -375,7 +517,7 @@ export default function DocsIndex({
                                     </Link>
                                     <Link
                                         href="/docs/agent"
-                                        className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-xl bg-card hover:bg-accent text-foreground border border-border transition-all group"
+                                        className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold rounded-xl bg-card hover:bg-accent text-foreground border border-border transition-all group"
                                     >
                                         <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
                                             2
@@ -391,11 +533,11 @@ export default function DocsIndex({
                                 </div>
                             </div>
                         ) : (
-                            <div className="space-y-6">
+                            <div className="space-y-5">
                                 {Object.entries(groupedNavItems).map(
                                     ([category, items]) => (
-                                        <div key={category} className="space-y-1.5">
-                                            <div className="flex items-center gap-1.5 px-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                                        <div key={category} className="space-y-1">
+                                            <div className="flex items-center gap-1.5 px-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
                                                 <Layers className="w-3 h-3 text-primary" />
                                                 <span>{category}</span>
                                             </div>
@@ -417,14 +559,14 @@ export default function DocsIndex({
                                                             }
                                                             className={`flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-lg transition-all group ${
                                                                 isActive
-                                                                    ? "bg-primary/10 text-primary font-bold border-l-2 border-primary"
+                                                                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
                                                                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                                                             }`}
                                                         >
                                                             <span
                                                                 className={`w-5 h-5 flex items-center justify-center rounded text-[10px] font-mono shrink-0 ${
                                                                     isActive
-                                                                        ? "bg-primary text-primary-foreground font-bold"
+                                                                        ? "bg-white/20 text-white font-bold"
                                                                         : "bg-muted text-muted-foreground group-hover:bg-card"
                                                                 }`}
                                                             >
@@ -445,18 +587,18 @@ export default function DocsIndex({
                     </div>
                 </aside>
 
-                {/* BACKDROP OVERLAY FOR MOBILE */}
+                {/* MOBILE OVERLAY */}
                 {mobileMenuOpen && (
                     <div
-                        className="fixed inset-0 z-40 bg-black/50 lg:hidden backdrop-blur-sm"
+                        className="fixed inset-0 z-40 bg-black/60 lg:hidden backdrop-blur-xs"
                         onClick={() => setMobileMenuOpen(false)}
                     />
                 )}
 
-                {/* CENTER ARTICLE CONTENT */}
-                <main className="flex-1 min-w-0">
+                {/* CENTER CONTENT */}
+                <main className="flex-1 min-w-0 max-w-4xl">
                     {/* Breadcrumbs */}
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-4 pb-2 border-b border-border/60">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-6 pb-2 border-b border-border/60">
                         <Link
                             href="/docs"
                             className="hover:text-foreground flex items-center gap-1"
@@ -477,33 +619,24 @@ export default function DocsIndex({
                         {activeDoc && activeDoc.slug !== "overview" && (
                             <>
                                 <ChevronRight className="w-3 h-3 text-muted-foreground/60" />
-                                <span className="text-foreground font-semibold truncate max-w-[200px] sm:max-w-none">
+                                <span className="text-foreground font-semibold truncate max-w-[240px] sm:max-w-none">
                                     {activeDoc.title}
                                 </span>
                             </>
                         )}
                     </div>
 
-                    {/* ARTICLE BODY */}
+                    {/* DOCS ARTICLE BODY */}
                     {activeDoc ? (
                         <div className="space-y-6">
                             <article
-                                id="markdown-content"
-                                className="prose prose-slate dark:prose-invert max-w-none
-                                prose-headings:font-bold prose-headings:tracking-tight
-                                prose-h1:text-2xl sm:prose-h1:text-3xl prose-h1:border-b prose-h1:border-border prose-h1:pb-3 prose-h1:text-foreground
-                                prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-3 prose-h2:text-foreground
-                                prose-h3:text-base prose-h3:mt-5 prose-h3:mb-2 prose-h3:text-foreground
-                                prose-p:text-sm prose-p:leading-relaxed prose-p:text-muted-foreground
-                                prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-muted/40 prose-blockquote:p-4 prose-blockquote:rounded-r-xl prose-blockquote:not-italic prose-blockquote:text-xs prose-blockquote:text-foreground
-                                prose-ul:my-2 prose-ul:text-xs prose-ul:text-muted-foreground prose-li:my-1
-                                prose-table:w-full prose-table:text-xs prose-th:p-2.5 prose-th:bg-muted prose-th:border prose-th:border-border prose-td:p-2.5 prose-td:border prose-td:border-border
-                                prose-img:rounded-2xl prose-img:border prose-img:border-border prose-img:shadow-lg prose-img:cursor-zoom-in prose-img:transition-transform hover:prose-img:scale-[1.01]"
+                                id="docs-body-content"
+                                className="docs-rendered-markdown"
                                 dangerouslySetInnerHTML={{ __html: activeDoc.html }}
                             />
 
-                            {/* PREV & NEXT ARTICLE PAGINATION */}
-                            <div className="pt-8 mt-8 border-t border-border flex items-center justify-between gap-4">
+                            {/* PREV & NEXT BUTTONS */}
+                            <div className="pt-8 mt-10 border-t border-border flex items-center justify-between gap-4">
                                 {prevDoc ? (
                                     <Link
                                         href={`/docs/${currentRole}/${prevDoc.slug}`}
