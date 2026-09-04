@@ -718,18 +718,18 @@ export default function UpdateAgentLandingForm({
 
                             {/* Main Emerald Contact */}
                             <div
-                                className="w-full p-3.5 rounded-2xl bg-emerald-700/90 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm flex items-center justify-between shadow-sm transition-all border border-emerald-600/40"
+                                className="w-full p-2.5 rounded-xl bg-emerald-600 text-white font-semibold flex items-center justify-between shadow-xs transition-all border border-emerald-500/40"
                             >
-                                <div className="flex items-center gap-2 min-w-0">
-                                    <div className="p-2 rounded-xl bg-white/15 text-white shrink-0">
-                                        <MessageCircle className="w-4 h-4 fill-white" />
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                    <div className="p-1.5 rounded-lg bg-white/20 text-white shrink-0">
+                                        <MessageCircle className="w-3.5 h-3.5 fill-white" />
                                     </div>
-                                    <div className="flex flex-col text-left">
-                                        <span className="font-bold text-[10px] sm:text-[10px] -mb-2">Konsultasi &amp; Tanya Jawab Bimbingan</span>
+                                    <div className="flex flex-col text-left min-w-0">
+                                        <span className="font-bold text-[10px] leading-snug">Konsultasi &amp; Tanya Jawab Bimbingan</span>
                                         <span className="text-[8px] text-emerald-100 font-normal">Hubungi langsung via WhatsApp (+{formattedAgentWa})</span>
                                     </div>
                                 </div>
-                                <ChevronRight className="w-4 h-4 text-white/80 shrink-0" />
+                                <ChevronRight className="w-3.5 h-3.5 text-white/80 shrink-0" />
                             </div>
 
                             {/* Action Cards List */}
@@ -751,14 +751,14 @@ export default function UpdateAgentLandingForm({
                                                     : 'bg-card/90 text-foreground border-border/80'
                                                 }`}
                                         >
-                                            <div className="flex items-center gap-2 min-w-0">
-                                                <div className="p-1 rounded-md bg-black/10 dark:bg-white/10 shrink-0">
+                                            <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                                                <div className="p-1.5 rounded-lg bg-black/10 dark:bg-white/10 shrink-0">
                                                     {getIconComponent(link.icon)}
                                                 </div>
-                                                <div className="flex flex-col min-w-0">
-                                                    <span className="truncate -mb-2">{link.title || 'Tautan Tanpa Judul'}</span>
+                                                <div className="flex flex-col text-left min-w-0">
+                                                    <span className="text-[10px] leading-snug font-bold truncate">{link.title || 'Tautan Tanpa Judul'}</span>
                                                     {link.target_type === 'tenant_wa' && (
-                                                        <span className="text-[8px] opacity-75 font-normal ">➔ CS Induk Travel</span>
+                                                        <span className="text-[8px] opacity-75 font-normal">➔ CS Induk Travel</span>
                                                     )}
                                                     {link.target_type === 'agent_wa' && (
                                                         <span className="text-[8px] opacity-75 font-normal">➔ WA Pribadi Agen</span>
