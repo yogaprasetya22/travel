@@ -80,30 +80,50 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const navMain = React.useMemo(() => {
         const cleanPath = currentUrl.split('?')[0].split('#')[0];
 
-        const isMatch = (targetUrl: string) => {
-            if (!targetUrl || targetUrl === '#') return false;
+        // Collect all distinct valid URLs from all menus and children
+        const allUrls: string[] = [];
+        (menus || []).forEach((m) => {
+            if (m.url && m.url !== '#') {
+                allUrls.push(m.url.split('?')[0].split('#')[0]);
+            }
+            (m.children || []).forEach((c) => {
+                if (c.url && c.url !== '#') {
+                    allUrls.push(c.url.split('?')[0].split('#')[0]);
+                }
+            });
+        });
+
+        // Find matching URLs (exact match or parent path match)
+        const matchingUrls = allUrls.filter((url) => {
+            if (url === cleanPath) return true;
+            if (url !== '/' && cleanPath.startsWith(url + '/')) return true;
+            return false;
+        });
+
+        // The active item is the most specific (longest) matching target URL
+        const bestMatchUrl = matchingUrls.sort((a, b) => b.length - a.length)[0] || null;
+
+        const isItemActive = (targetUrl: string) => {
+            if (!targetUrl || targetUrl === '#' || !bestMatchUrl) return false;
             const cleanTarget = targetUrl.split('?')[0].split('#')[0];
-            return (
-                targetUrl === currentUrl ||
-                cleanTarget === cleanPath ||
-                (cleanTarget !== '/' && cleanPath.startsWith(cleanTarget))
-            );
+            return cleanTarget === bestMatchUrl;
         };
 
         return (menus || []).map((menu) => {
-            const isMenuDirectMatch = isMatch(menu.url);
-            const hasActiveChild = (menu.children || []).some((child) => isMatch(child.url));
+            const isMenuDirectMatch = isItemActive(menu.url);
+            const activeChildren = (menu.children || []).map((child) => ({
+                title: child.title,
+                url: child.url,
+                isActive: isItemActive(child.url),
+            }));
+            const hasActiveChild = activeChildren.some((child) => child.isActive);
 
             return {
                 title: menu.title,
                 url: menu.url,
                 icon: menu.icon ? (iconMap[menu.icon] as any) : undefined,
                 isActive: isMenuDirectMatch || hasActiveChild,
-                items: (menu.children || []).map((child) => ({
-                    title: child.title,
-                    url: child.url,
-                    isActive: isMatch(child.url),
-                })),
+                items: activeChildren,
             };
         });
     }, [menus, currentUrl]);
