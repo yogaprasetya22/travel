@@ -15,11 +15,13 @@ Pencatatan persediaan fisik perlengkapan travel di gudang (koper, kain ihram, mu
 
 ### 📸 Tampilan Sheet Restock
 
-![Tampilan Sheet Restock](screenshots/09_inventaris_dan_stok_barang_sheet_restock.webp)
+![Tampilan Sheet Restock (Light)](screenshots/light/09_inventaris_dan_stok_barang_sheet_restock.webp#gh-light-mode-only)
+![Tampilan Sheet Restock (Dark)](screenshots/dark/09_inventaris_dan_stok_barang_sheet_restock.webp#gh-dark-mode-only)
 
 ### 📸 Tampilan Sheet Tambah Barang
 
-![Tampilan Sheet Tambah Barang](screenshots/09_inventaris_dan_stok_barang_sheet_tambah_barang.webp)
+![Tampilan Sheet Tambah Barang (Light)](screenshots/light/09_inventaris_dan_stok_barang_sheet_tambah_barang.webp#gh-light-mode-only)
+![Tampilan Sheet Tambah Barang (Dark)](screenshots/dark/09_inventaris_dan_stok_barang_sheet_tambah_barang.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

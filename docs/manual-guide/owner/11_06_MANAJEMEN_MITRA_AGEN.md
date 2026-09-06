@@ -15,11 +15,13 @@ Daftar seluruh agen mitra konsultan, status persetujuan akun baru, level hierark
 
 ### 📸 Tampilan Drawer Jamaah Binaan
 
-![Tampilan Drawer Jamaah Binaan](screenshots/06_manajemen_mitra_agen_drawer_jamaah_binaan.webp)
+![Tampilan Drawer Jamaah Binaan (Light)](screenshots/light/06_manajemen_mitra_agen_drawer_jamaah_binaan.webp#gh-light-mode-only)
+![Tampilan Drawer Jamaah Binaan (Dark)](screenshots/dark/06_manajemen_mitra_agen_drawer_jamaah_binaan.webp#gh-dark-mode-only)
 
 ### 📸 Tampilan Sheet Tambah Agen
 
-![Tampilan Sheet Tambah Agen](screenshots/06_manajemen_mitra_agen_sheet_tambah_agen.webp)
+![Tampilan Sheet Tambah Agen (Light)](screenshots/light/06_manajemen_mitra_agen_sheet_tambah_agen.webp#gh-light-mode-only)
+![Tampilan Sheet Tambah Agen (Dark)](screenshots/dark/06_manajemen_mitra_agen_sheet_tambah_agen.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

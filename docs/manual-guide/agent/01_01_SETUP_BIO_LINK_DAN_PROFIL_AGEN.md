@@ -15,7 +15,8 @@ Pusat pengaturan profil akun agen, ganti password, nomor WhatsApp konsultasi, bi
 
 ### 📸 Tampilan Live Preview
 
-![Tampilan Live Preview](screenshots/01_setup_bio_link_dan_profil_agen_live_preview.webp)
+![Tampilan Live Preview (Light)](screenshots/light/01_setup_bio_link_dan_profil_agen_live_preview.webp#gh-light-mode-only)
+![Tampilan Live Preview (Dark)](screenshots/dark/01_setup_bio_link_dan_profil_agen_live_preview.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

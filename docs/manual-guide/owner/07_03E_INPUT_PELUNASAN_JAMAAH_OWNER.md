@@ -15,7 +15,8 @@ Proses pencatatan pelunasan akhir jamaah saat total pembayaran telah memenuhi ha
 
 ### 📸 Tampilan Drawer
 
-![Tampilan Drawer](screenshots/03e_input_pelunasan_jamaah_owner_drawer.webp)
+![Tampilan Drawer (Light)](screenshots/light/03e_input_pelunasan_jamaah_owner_drawer.webp#gh-light-mode-only)
+![Tampilan Drawer (Dark)](screenshots/dark/03e_input_pelunasan_jamaah_owner_drawer.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

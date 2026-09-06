@@ -15,7 +15,8 @@ Konfigurasi sentral paket umroh & haji, nominal komisi default, fasilitas hotel,
 
 ### 📸 Tampilan Sheet Tambah Paket
 
-![Tampilan Sheet Tambah Paket](screenshots/10_pengaturan_data_master_sheet_tambah_paket.webp)
+![Tampilan Sheet Tambah Paket (Light)](screenshots/light/10_pengaturan_data_master_sheet_tambah_paket.webp#gh-light-mode-only)
+![Tampilan Sheet Tambah Paket (Dark)](screenshots/dark/10_pengaturan_data_master_sheet_tambah_paket.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

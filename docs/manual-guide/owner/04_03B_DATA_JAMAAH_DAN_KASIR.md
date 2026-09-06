@@ -15,7 +15,8 @@ Master data seluruh jamaah terdaftar dengan fungsi Kasir untuk memverifikasi pem
 
 ### 📸 Tampilan Drawer
 
-![Tampilan Drawer](screenshots/03b_data_jamaah_dan_kasir_drawer.webp)
+![Tampilan Drawer (Light)](screenshots/light/03b_data_jamaah_dan_kasir_drawer.webp#gh-light-mode-only)
+![Tampilan Drawer (Dark)](screenshots/dark/03b_data_jamaah_dan_kasir_drawer.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

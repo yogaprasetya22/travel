@@ -15,7 +15,8 @@ Kasir atau Owner memasukkan penerimaan uang muka (Down Payment / DP) jamaah ke d
 
 ### 📸 Tampilan Drawer
 
-![Tampilan Drawer](screenshots/03c_input_dp_pembayaran_owner_drawer.webp)
+![Tampilan Drawer (Light)](screenshots/light/03c_input_dp_pembayaran_owner_drawer.webp#gh-light-mode-only)
+![Tampilan Drawer (Dark)](screenshots/dark/03c_input_dp_pembayaran_owner_drawer.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

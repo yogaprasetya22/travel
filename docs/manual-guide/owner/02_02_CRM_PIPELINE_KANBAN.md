@@ -15,7 +15,8 @@ Papan Kanban visual interaktif untuk mengawal alur prospek calon jamaah dari tah
 
 ### 📸 Tampilan Modal Tambah Leads
 
-![Tampilan Modal Tambah Leads](screenshots/02_crm_pipeline_kanban_modal_tambah_leads.webp)
+![Tampilan Modal Tambah Leads (Light)](screenshots/light/02_crm_pipeline_kanban_modal_tambah_leads.webp#gh-light-mode-only)
+![Tampilan Modal Tambah Leads (Dark)](screenshots/dark/02_crm_pipeline_kanban_modal_tambah_leads.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

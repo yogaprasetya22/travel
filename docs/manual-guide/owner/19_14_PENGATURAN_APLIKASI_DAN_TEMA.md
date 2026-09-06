@@ -15,7 +15,8 @@ Pusat preferensi sistem travel: pemilihan palet tema warna (Luxury, Emerald, Roy
 
 ### 📸 Tampilan Tab Notifikasi
 
-![Tampilan Tab Notifikasi](screenshots/14_pengaturan_aplikasi_dan_tema_tab_notifikasi.webp)
+![Tampilan Tab Notifikasi (Light)](screenshots/light/14_pengaturan_aplikasi_dan_tema_tab_notifikasi.webp#gh-light-mode-only)
+![Tampilan Tab Notifikasi (Dark)](screenshots/dark/14_pengaturan_aplikasi_dan_tema_tab_notifikasi.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

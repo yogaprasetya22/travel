@@ -15,7 +15,8 @@ Visualisasi pohon jaringan (Network Tree) keagenan bertingkat untuk melihat hubu
 
 ### 📸 Tampilan Drawer Nasabah Tim
 
-![Tampilan Drawer Nasabah Tim](screenshots/08_monitoring_pohon_jaringan_drawer_nasabah_tim.webp)
+![Tampilan Drawer Nasabah Tim (Light)](screenshots/light/08_monitoring_pohon_jaringan_drawer_nasabah_tim.webp#gh-light-mode-only)
+![Tampilan Drawer Nasabah Tim (Dark)](screenshots/dark/08_monitoring_pohon_jaringan_drawer_nasabah_tim.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

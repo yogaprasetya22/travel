@@ -139,16 +139,28 @@ export async function generateRoleSection(
         await page.screenshot({ path: path.join(ssDirDark, ssFilename), fullPage: false, type: 'webp', quality: 85 });
 
         if (mod.actions) {
+            // 1. Run Action in Light Mode
             try {
-                await mod.actions(page, ssDir);
+                await setAppTheme(page, 'light');
+                await mod.actions(page, ssDirLight);
             } catch (err: any) {
-                console.log(`   ⚠️ Info aksi modul: ${err.message}`);
+                console.log(`   ⚠️ Info aksi modul (light): ${err.message}`);
+            }
+
+            // 2. Reload page & Run Action in Dark Mode
+            try {
+                await page.goto(targetUrl, { waitUntil: 'networkidle' });
+                await page.waitForTimeout(800);
+                await setAppTheme(page, 'dark');
+                await mod.actions(page, ssDirDark);
+            } catch (err: any) {
+                console.log(`   ⚠️ Info aksi modul (dark): ${err.message}`);
             }
         }
 
-        // Check for any additional screenshots taken by actions in ssDir root or subfolders
-        const extraScreenshots = fs.existsSync(ssDir)
-            ? fs.readdirSync(ssDir).filter((file) => file.startsWith(`${mod.id}_`) && (file.endsWith('.webp') || file.endsWith('.png')))
+        // Check for any additional screenshots taken by actions (stored in light/ and dark/)
+        const extraLightScreenshots = fs.existsSync(ssDirLight)
+            ? fs.readdirSync(ssDirLight).filter((file) => file.startsWith(`${mod.id}_`) && (file.endsWith('.webp') || file.endsWith('.png')))
             : [];
 
         const fileBasename = `${orderNum}_${mod.id.toUpperCase()}.md`;
@@ -162,9 +174,9 @@ export async function generateRoleSection(
         docContent += `![Tampilan ${mod.title} (Light)](screenshots/light/${ssFilename}#gh-light-mode-only)\n`;
         docContent += `![Tampilan ${mod.title} (Dark)](screenshots/dark/${ssFilename}#gh-dark-mode-only)\n\n`;
 
-        if (extraScreenshots.length > 0) {
+        if (extraLightScreenshots.length > 0) {
             docContent += `## 🗂️ Tampilan Drawer, Modal & Aksi Detail\n\n`;
-            for (const extra of extraScreenshots) {
+            for (const extra of extraLightScreenshots) {
                 const actionLabel = extra
                     .replace(`${mod.id}_`, '')
                     .replace(/\.(webp|png)$/, '')
@@ -172,7 +184,8 @@ export async function generateRoleSection(
                     .replace(/_/g, ' ')
                     .replace(/\b\w/g, (l) => l.toUpperCase());
                 docContent += `### 📸 Tampilan ${actionLabel}\n\n`;
-                docContent += `![Tampilan ${actionLabel}](screenshots/${extra})\n\n`;
+                docContent += `![Tampilan ${actionLabel} (Light)](screenshots/light/${extra}#gh-light-mode-only)\n`;
+                docContent += `![Tampilan ${actionLabel} (Dark)](screenshots/dark/${extra}#gh-dark-mode-only)\n\n`;
             }
         }
 

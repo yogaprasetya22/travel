@@ -15,7 +15,8 @@ Modul serah terima barang perlengkapan ibadah (koper bagasi, kain ihram/mukena, 
 
 ### 📸 Tampilan Drawer Serah Terima
 
-![Tampilan Drawer Serah Terima](screenshots/04_distribusi_logistik_drawer_serah_terima.webp)
+![Tampilan Drawer Serah Terima (Light)](screenshots/light/04_distribusi_logistik_drawer_serah_terima.webp#gh-light-mode-only)
+![Tampilan Drawer Serah Terima (Dark)](screenshots/dark/04_distribusi_logistik_drawer_serah_terima.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

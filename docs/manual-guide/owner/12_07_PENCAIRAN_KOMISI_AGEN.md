@@ -15,7 +15,8 @@ Modul keuangan untuk memvalidasi hak komisi penjualan agen atas jamaah yang tela
 
 ### 📸 Tampilan Modal Batch Payout
 
-![Tampilan Modal Batch Payout](screenshots/07_pencairan_komisi_agen_modal_batch_payout.webp)
+![Tampilan Modal Batch Payout (Light)](screenshots/light/07_pencairan_komisi_agen_modal_batch_payout.webp#gh-light-mode-only)
+![Tampilan Modal Batch Payout (Dark)](screenshots/dark/07_pencairan_komisi_agen_modal_batch_payout.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

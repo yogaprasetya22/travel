@@ -15,7 +15,8 @@ Laci pusat notifikasi real-time dan fitur Broadcast Announcement untuk mengirimk
 
 ### 📸 Tampilan Drawer Notifikasi
 
-![Tampilan Drawer Notifikasi](screenshots/15_pusat_notifikasi_dan_broadcast_drawer_notifikasi.webp)
+![Tampilan Drawer Notifikasi (Light)](screenshots/light/15_pusat_notifikasi_dan_broadcast_drawer_notifikasi.webp#gh-light-mode-only)
+![Tampilan Drawer Notifikasi (Dark)](screenshots/dark/15_pusat_notifikasi_dan_broadcast_drawer_notifikasi.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

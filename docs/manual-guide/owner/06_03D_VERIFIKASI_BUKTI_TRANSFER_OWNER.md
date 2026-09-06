@@ -15,7 +15,8 @@ Halaman Finance Payment adalah pusat validasi kasir untuk menyetujui atau menola
 
 ### 📸 Tampilan Pratinjau Bukti
 
-![Tampilan Pratinjau Bukti](screenshots/03d_verifikasi_bukti_transfer_owner_pratinjau_bukti.webp)
+![Tampilan Pratinjau Bukti (Light)](screenshots/light/03d_verifikasi_bukti_transfer_owner_pratinjau_bukti.webp#gh-light-mode-only)
+![Tampilan Pratinjau Bukti (Dark)](screenshots/dark/03d_verifikasi_bukti_transfer_owner_pratinjau_bukti.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

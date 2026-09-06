@@ -15,7 +15,8 @@ Formulir pendaftaran mandiri calon jamaah via tautan referral agen. Memuat infor
 
 ### 📸 Tampilan Validasi Error
 
-![Tampilan Validasi Error](screenshots/03_form_pendaftaran_jamaah_referral_publik_validasi_error.webp)
+![Tampilan Validasi Error (Light)](screenshots/light/03_form_pendaftaran_jamaah_referral_publik_validasi_error.webp#gh-light-mode-only)
+![Tampilan Validasi Error (Dark)](screenshots/dark/03_form_pendaftaran_jamaah_referral_publik_validasi_error.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

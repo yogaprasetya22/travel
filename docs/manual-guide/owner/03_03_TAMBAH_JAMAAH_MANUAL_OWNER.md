@@ -15,7 +15,8 @@ Owner atau staf kantor dapat mendaftarkan calon jamaah secara manual langsung da
 
 ### 📸 Tampilan Drawer
 
-![Tampilan Drawer](screenshots/03_tambah_jamaah_manual_owner_drawer.webp)
+![Tampilan Drawer (Light)](screenshots/light/03_tambah_jamaah_manual_owner_drawer.webp#gh-light-mode-only)
+![Tampilan Drawer (Dark)](screenshots/dark/03_tambah_jamaah_manual_owner_drawer.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

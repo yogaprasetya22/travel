@@ -15,7 +15,8 @@ Pusat kendali multi-tenant platform untuk melihat seluruh travel agensi terdafta
 
 ### 📸 Tampilan Sheet Onboard
 
-![Tampilan Sheet Onboard](screenshots/13_manajemen_multi_tenant_platform_sheet_onboard.webp)
+![Tampilan Sheet Onboard (Light)](screenshots/light/13_manajemen_multi_tenant_platform_sheet_onboard.webp#gh-light-mode-only)
+![Tampilan Sheet Onboard (Dark)](screenshots/dark/13_manajemen_multi_tenant_platform_sheet_onboard.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

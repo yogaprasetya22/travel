@@ -15,7 +15,8 @@ Owner dapat menggeser kartu jamaah antar-kolom tahapan CRM (New Leads → Follow
 
 ### 📸 Tampilan Modal Followup
 
-![Tampilan Modal Followup](screenshots/03f_pindah_stage_kanban_owner_modal_followup.webp)
+![Tampilan Modal Followup (Light)](screenshots/light/03f_pindah_stage_kanban_owner_modal_followup.webp#gh-light-mode-only)
+![Tampilan Modal Followup (Dark)](screenshots/dark/03f_pindah_stage_kanban_owner_modal_followup.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 
