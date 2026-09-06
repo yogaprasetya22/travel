@@ -738,16 +738,38 @@ export default function CustomerDrawer({
                 </DialogHeader>
                 <div className="flex flex-col items-center justify-center p-2">
                     {selectedSlip && (
-                        <div className="w-full bg-muted/50 rounded-xl overflow-hidden flex justify-center border border-border">
+                        <div className="w-full bg-muted/50 rounded-xl overflow-hidden flex flex-col items-center justify-center border border-border min-h-[250px] p-2">
                             <img
                                 src={selectedSlip}
                                 alt="Bukti Transfer"
                                 className="object-contain max-h-[65vh] w-full rounded-lg"
+                                onError={(e) => {
+                                    const target = e.currentTarget;
+                                    target.style.display = 'none';
+                                    const fallback = target.nextElementSibling as HTMLElement;
+                                    if (fallback) fallback.style.display = 'flex';
+                                }}
                             />
+                            <div className="hidden flex-col items-center justify-center p-6 text-center gap-2">
+                                <div className="text-xs font-semibold text-foreground">Gambar Tidak Dapat Dimuat</div>
+                                <p className="text-[11px] text-muted-foreground">
+                                    File tidak ditemukan di storage server. Pastikan symlink <code className="font-mono bg-muted px-1 py-0.5 rounded">php artisan storage:link</code> sudah aktif.
+                                </p>
+                            </div>
                         </div>
                     )}
                 </div>
-                <div className="flex justify-end pt-2">
+                <div className="flex justify-between items-center pt-2">
+                    {selectedSlip && (
+                        <a
+                            href={selectedSlip}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs font-semibold text-primary hover:underline"
+                        >
+                            Buka di Tab Baru ↗
+                        </a>
+                    )}
                     <button
                         type="button"
                         onClick={() => setSelectedSlip(null)}

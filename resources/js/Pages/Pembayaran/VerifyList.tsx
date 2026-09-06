@@ -174,18 +174,57 @@ export default function VerifyPayment({ payments }: VerifyPaymentProps) {
 
             {/* Drawer: Bukti Transfer Preview */}
             <Sheet open={!!selectedSlip} onOpenChange={(open) => { if (!open) setSelectedSlip(null) }}>
-                <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2">
+                <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2 flex flex-col justify-between">
                     <SheetHeader>
                         <SheetTitle>Pratinjau Bukti Transfer</SheetTitle>
                     </SheetHeader>
                     <div className="flex flex-col items-center justify-center flex-1 p-4">
                         {selectedSlip && (
-                            <div className="w-full bg-muted rounded-xl overflow-hidden flex justify-center">
-                                <img src={selectedSlip} alt="Bukti transfer" className="object-contain max-h-[70vh] w-full" />
+                            <div className="w-full bg-muted/30 border border-border rounded-xl overflow-hidden flex flex-col items-center justify-center min-h-[300px] p-2">
+                                <img
+                                    src={selectedSlip}
+                                    alt="Bukti transfer"
+                                    className="object-contain max-h-[70vh] w-full rounded-lg"
+                                    onError={(e) => {
+                                        const target = e.currentTarget;
+                                        target.style.display = 'none';
+                                        const fallback = target.nextElementSibling as HTMLElement;
+                                        if (fallback) fallback.style.display = 'flex';
+                                    }}
+                                />
+                                <div className="hidden flex-col items-center justify-center p-8 text-center gap-3">
+                                    <div className="w-12 h-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center">
+                                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                    </div>
+                                    <div className="text-sm font-semibold text-foreground">Gambar Tidak Dapat Dimuat</div>
+                                    <p className="text-xs text-muted-foreground max-w-sm">
+                                        File bukti transfer tidak ditemukan di storage server atau symlink belum dibuat (jalankan <code className="bg-muted px-1.5 py-0.5 rounded text-foreground font-mono">php artisan storage:link</code> pada server).
+                                    </p>
+                                    <a
+                                        href={selectedSlip}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="mt-2 inline-flex items-center text-xs font-semibold text-primary underline hover:opacity-80"
+                                    >
+                                        Buka Link Langsung
+                                    </a>
+                                </div>
                             </div>
                         )}
                     </div>
-                    <div className="p-4 border-t border-border flex justify-end">
+                    <div className="p-4 border-t border-border flex justify-between items-center">
+                        {selectedSlip && (
+                            <a
+                                href={selectedSlip}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-xs font-semibold text-primary hover:underline"
+                            >
+                                Buka di Tab Baru ↗
+                            </a>
+                        )}
                         <button onClick={() => setSelectedSlip(null)}
                             className="px-4 py-2 text-sm font-semibold text-foreground border border-border rounded-lg hover:bg-muted/40 transition">
                             Tutup
