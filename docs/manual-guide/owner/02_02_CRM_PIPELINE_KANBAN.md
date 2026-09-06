@@ -8,13 +8,13 @@ Papan Kanban visual interaktif untuk mengawal alur prospek calon jamaah dari tah
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Papan CRM Kanban Pipeline Jamaah (Leads to Closing)](screenshots/02_crm_pipeline_kanban.png)
+![Tampilan Papan CRM Kanban Pipeline Jamaah (Leads to Closing)](screenshots/02_crm_pipeline_kanban.webp)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 
 ### 📸 Tampilan Modal Tambah Leads
 
-![Tampilan Modal Tambah Leads](screenshots/02_crm_pipeline_kanban_modal_tambah_leads.png)
+![Tampilan Modal Tambah Leads](screenshots/02_crm_pipeline_kanban_modal_tambah_leads.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

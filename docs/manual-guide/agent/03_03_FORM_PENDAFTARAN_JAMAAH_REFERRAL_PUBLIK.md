@@ -8,13 +8,13 @@ Formulir pendaftaran mandiri calon jamaah via tautan referral agen. Memuat infor
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Formulir Pendaftaran Online Mandiri Jamaah (Referral Link)](screenshots/03_form_pendaftaran_jamaah_referral_publik.png)
+![Tampilan Formulir Pendaftaran Online Mandiri Jamaah (Referral Link)](screenshots/03_form_pendaftaran_jamaah_referral_publik.webp)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 
 ### 📸 Tampilan Validasi Error
 
-![Tampilan Validasi Error](screenshots/03_form_pendaftaran_jamaah_referral_publik_validasi_error.png)
+![Tampilan Validasi Error](screenshots/03_form_pendaftaran_jamaah_referral_publik_validasi_error.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

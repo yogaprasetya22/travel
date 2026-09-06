@@ -8,13 +8,13 @@ Papan Kanban visual khusus bagi agen untuk mengawal jamaah binaan melewati setia
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Monitoring Pipeline Kanban Jamaah Binaan](screenshots/05_monitoring_crm_pipeline_binaan.png)
+![Tampilan Monitoring Pipeline Kanban Jamaah Binaan](screenshots/05_monitoring_crm_pipeline_binaan.webp)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 
 ### 📸 Tampilan Drawer Edit
 
-![Tampilan Drawer Edit](screenshots/05_monitoring_crm_pipeline_binaan_drawer_edit.png)
+![Tampilan Drawer Edit](screenshots/05_monitoring_crm_pipeline_binaan_drawer_edit.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

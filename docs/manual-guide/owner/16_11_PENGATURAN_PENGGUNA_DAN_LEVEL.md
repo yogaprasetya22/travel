@@ -8,7 +8,7 @@ Pengelolaan akun login staf kantor internal (Admin, Keuangan, Kasir) dan pengatu
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Manajemen Staf Internal & Hierarki Pengguna](screenshots/11_pengaturan_pengguna_dan_level.png)
+![Tampilan Manajemen Staf Internal & Hierarki Pengguna](screenshots/11_pengaturan_pengguna_dan_level.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

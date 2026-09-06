@@ -8,7 +8,7 @@ Dashboard struktur pohon jaringan agen (Downline). Agen dapat memantau produktiv
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Monitoring Pohon Jaringan & Performa Tim Sub-Agen](screenshots/05b_monitoring_pohon_jaringan_tim_agen.png)
+![Tampilan Monitoring Pohon Jaringan & Performa Tim Sub-Agen](screenshots/05b_monitoring_pohon_jaringan_tim_agen.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

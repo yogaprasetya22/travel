@@ -8,13 +8,13 @@ Modul keuangan untuk memvalidasi hak komisi penjualan agen atas jamaah yang tela
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Rekapitulasi & Pencairan Komisi Mitra Agen](screenshots/07_pencairan_komisi_agen.png)
+![Tampilan Rekapitulasi & Pencairan Komisi Mitra Agen](screenshots/07_pencairan_komisi_agen.webp)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 
 ### 📸 Tampilan Modal Batch Payout
 
-![Tampilan Modal Batch Payout](screenshots/07_pencairan_komisi_agen_modal_batch_payout.png)
+![Tampilan Modal Batch Payout](screenshots/07_pencairan_komisi_agen_modal_batch_payout.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

@@ -94,9 +94,9 @@ export async function generateRoleSection(
 
         fs.mkdirSync(ssDir, { recursive: true });
 
-        const screenshotName = `${mod.id}.png`;
+        const screenshotName = `${mod.id}.webp`;
         const screenshotPath = path.join(ssDir, screenshotName);
-        await page.screenshot({ path: screenshotPath, fullPage: false });
+        await page.screenshot({ path: screenshotPath, fullPage: false, type: 'webp', quality: 85 });
 
         if (mod.actions) {
             try {
@@ -106,9 +106,9 @@ export async function generateRoleSection(
             }
         }
 
-        // Check for any additional screenshots taken by actions (e.g. {id}_drawer.png, {id}_action.png, etc.)
+        // Check for any additional screenshots taken by actions (e.g. {id}_drawer.webp, {id}_action.webp, etc.)
         const extraScreenshots = fs.existsSync(ssDir)
-            ? fs.readdirSync(ssDir).filter((file) => file.startsWith(`${mod.id}_`) && file.endsWith('.png'))
+            ? fs.readdirSync(ssDir).filter((file) => file.startsWith(`${mod.id}_`) && (file.endsWith('.webp') || file.endsWith('.png')))
             : [];
 
         const fileBasename = `${orderNum}_${mod.id.toUpperCase()}.md`;
@@ -126,7 +126,7 @@ export async function generateRoleSection(
             for (const extra of extraScreenshots) {
                 const actionLabel = extra
                     .replace(`${mod.id}_`, '')
-                    .replace('.png', '')
+                    .replace(/\.(webp|png)$/, '')
                     .replace(/_/g, ' ')
                     .replace(/\b\w/g, (l) => l.toUpperCase());
                 docContent += `### 📸 Tampilan ${actionLabel}\n\n`;

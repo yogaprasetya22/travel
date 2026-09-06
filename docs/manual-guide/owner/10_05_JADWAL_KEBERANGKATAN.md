@@ -8,13 +8,13 @@ Manajemen kloter keberangkatan, batas kuota kursi pesawat, hotel Makkah/Madinah,
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Jadwal, Maskapai & Manajemen Kuota Kursi](screenshots/05_jadwal_keberangkatan.png)
+![Tampilan Jadwal, Maskapai & Manajemen Kuota Kursi](screenshots/05_jadwal_keberangkatan.webp)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 
 ### 📸 Tampilan Drawer Manifest
 
-![Tampilan Drawer Manifest](screenshots/05_jadwal_keberangkatan_drawer_manifest.png)
+![Tampilan Drawer Manifest](screenshots/05_jadwal_keberangkatan_drawer_manifest.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

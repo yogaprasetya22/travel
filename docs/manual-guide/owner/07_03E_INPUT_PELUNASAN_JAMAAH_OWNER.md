@@ -8,13 +8,13 @@ Proses pencatatan pelunasan akhir jamaah saat total pembayaran telah memenuhi ha
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Input Pelunasan Penuh (Lunas) Jamaah oleh Kasir](screenshots/03e_input_pelunasan_jamaah_owner.png)
+![Tampilan Input Pelunasan Penuh (Lunas) Jamaah oleh Kasir](screenshots/03e_input_pelunasan_jamaah_owner.webp)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 
 ### 📸 Tampilan Drawer
 
-![Tampilan Drawer](screenshots/03e_input_pelunasan_jamaah_owner_drawer.png)
+![Tampilan Drawer](screenshots/03e_input_pelunasan_jamaah_owner_drawer.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

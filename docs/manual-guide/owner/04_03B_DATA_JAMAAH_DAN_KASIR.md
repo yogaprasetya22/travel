@@ -8,13 +8,13 @@ Master data seluruh jamaah terdaftar dengan fungsi Kasir untuk memverifikasi pem
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Master Data Jamaah, Kasir & Kuitansi Pembayaran](screenshots/03b_data_jamaah_dan_kasir.png)
+![Tampilan Master Data Jamaah, Kasir & Kuitansi Pembayaran](screenshots/03b_data_jamaah_dan_kasir.webp)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 
 ### 📸 Tampilan Drawer
 
-![Tampilan Drawer](screenshots/03b_data_jamaah_dan_kasir_drawer.png)
+![Tampilan Drawer](screenshots/03b_data_jamaah_dan_kasir_drawer.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

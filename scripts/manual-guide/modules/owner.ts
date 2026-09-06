@@ -67,7 +67,7 @@ export const OWNER_MODULES: StepGuide[] = [
             if (await addBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await addBtn.click();
                 await page.waitForTimeout(1000);
-                await page.screenshot({ path: `${ssDir}/02_crm_pipeline_kanban_modal_tambah_leads.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/02_crm_pipeline_kanban_modal_tambah_leads.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -114,7 +114,7 @@ export const OWNER_MODULES: StepGuide[] = [
             if (await addBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await addBtn.click();
                 await page.waitForTimeout(1000);
-                await page.screenshot({ path: `${ssDir}/03_tambah_jamaah_manual_owner_drawer.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/03_tambah_jamaah_manual_owner_drawer.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -160,7 +160,7 @@ export const OWNER_MODULES: StepGuide[] = [
             if (await detailBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await detailBtn.click();
                 await page.waitForTimeout(1200);
-                await page.screenshot({ path: `${ssDir}/03b_data_jamaah_dan_kasir_drawer.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/03b_data_jamaah_dan_kasir_drawer.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -211,7 +211,7 @@ export const OWNER_MODULES: StepGuide[] = [
                     await payBtn.click();
                     await page.waitForTimeout(800);
                 }
-                await page.screenshot({ path: `${ssDir}/03c_input_dp_pembayaran_owner_drawer.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/03c_input_dp_pembayaran_owner_drawer.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -255,7 +255,7 @@ export const OWNER_MODULES: StepGuide[] = [
             if (await slipBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await slipBtn.click();
                 await page.waitForTimeout(1000);
-                await page.screenshot({ path: `${ssDir}/03d_verifikasi_bukti_transfer_owner_pratinjau_bukti.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/03d_verifikasi_bukti_transfer_owner_pratinjau_bukti.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -294,7 +294,7 @@ export const OWNER_MODULES: StepGuide[] = [
             if (await finBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await finBtn.click();
                 await page.waitForTimeout(1200);
-                await page.screenshot({ path: `${ssDir}/03e_input_pelunasan_jamaah_owner_drawer.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/03e_input_pelunasan_jamaah_owner_drawer.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -334,7 +334,7 @@ export const OWNER_MODULES: StepGuide[] = [
             if (await followBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await followBtn.click();
                 await page.waitForTimeout(1000);
-                await page.screenshot({ path: `${ssDir}/03f_pindah_stage_kanban_owner_modal_followup.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/03f_pindah_stage_kanban_owner_modal_followup.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -373,7 +373,7 @@ export const OWNER_MODULES: StepGuide[] = [
             if (await firstCard.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await firstCard.click();
                 await page.waitForTimeout(1200);
-                await page.screenshot({ path: `${ssDir}/04_distribusi_logistik_drawer_serah_terima.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/04_distribusi_logistik_drawer_serah_terima.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -410,7 +410,7 @@ export const OWNER_MODULES: StepGuide[] = [
             if (await firstJamaahCard.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await firstJamaahCard.click();
                 await page.waitForTimeout(1200);
-                await page.screenshot({ path: `${ssDir}/05_jadwal_keberangkatan_drawer_manifest.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/05_jadwal_keberangkatan_drawer_manifest.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -452,7 +452,7 @@ export const OWNER_MODULES: StepGuide[] = [
             if (await addBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await addBtn.click();
                 await page.waitForTimeout(1000);
-                await page.screenshot({ path: `${ssDir}/06_manajemen_mitra_agen_sheet_tambah_agen.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/06_manajemen_mitra_agen_sheet_tambah_agen.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -462,7 +462,7 @@ export const OWNER_MODULES: StepGuide[] = [
             if (await jamaahBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await jamaahBtn.click();
                 await page.waitForTimeout(1500);
-                await page.screenshot({ path: `${ssDir}/06_manajemen_mitra_agen_drawer_jamaah_binaan.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/06_manajemen_mitra_agen_drawer_jamaah_binaan.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -500,7 +500,7 @@ export const OWNER_MODULES: StepGuide[] = [
             if (await batchBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await batchBtn.click();
                 await page.waitForTimeout(1000);
-                await page.screenshot({ path: `${ssDir}/07_pencairan_komisi_agen_modal_batch_payout.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/07_pencairan_komisi_agen_modal_batch_payout.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -531,7 +531,7 @@ export const OWNER_MODULES: StepGuide[] = [
             if (await lihatBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await lihatBtn.click();
                 await page.waitForTimeout(1500);
-                await page.screenshot({ path: `${ssDir}/08_monitoring_pohon_jaringan_drawer_nasabah_tim.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/08_monitoring_pohon_jaringan_drawer_nasabah_tim.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -569,7 +569,7 @@ export const OWNER_MODULES: StepGuide[] = [
             if (await restockBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await restockBtn.click();
                 await page.waitForTimeout(1000);
-                await page.screenshot({ path: `${ssDir}/09_inventaris_dan_stok_barang_sheet_restock.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/09_inventaris_dan_stok_barang_sheet_restock.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -579,7 +579,7 @@ export const OWNER_MODULES: StepGuide[] = [
             if (await addBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await addBtn.click();
                 await page.waitForTimeout(1000);
-                await page.screenshot({ path: `${ssDir}/09_inventaris_dan_stok_barang_sheet_tambah_barang.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/09_inventaris_dan_stok_barang_sheet_tambah_barang.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -625,7 +625,7 @@ export const OWNER_MODULES: StepGuide[] = [
                 if (await addPkgBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
                     await addPkgBtn.click();
                     await page.waitForTimeout(1000);
-                    await page.screenshot({ path: `${ssDir}/10_pengaturan_data_master_sheet_tambah_paket.png`, fullPage: false });
+                    await page.screenshot({ path: `${ssDir}/10_pengaturan_data_master_sheet_tambah_paket.webp`, fullPage: false, type: 'webp', quality: 85 });
                     await page.keyboard.press('Escape');
                     await page.waitForTimeout(600);
                 }
@@ -668,7 +668,7 @@ export const OWNER_MODULES: StepGuide[] = [
             if (await levelPill.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await levelPill.click();
                 await page.waitForTimeout(1200);
-                await page.screenshot({ path: `${ssDir}/11_pengaturan_pengguna_dan_level_drawer_level_users.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/11_pengaturan_pengguna_dan_level_drawer_level_users.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -738,7 +738,7 @@ export const OWNER_MODULES: StepGuide[] = [
             if (await onboardBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await onboardBtn.click();
                 await page.waitForTimeout(1000);
-                await page.screenshot({ path: `${ssDir}/13_manajemen_multi_tenant_platform_sheet_onboard.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/13_manajemen_multi_tenant_platform_sheet_onboard.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -773,7 +773,7 @@ export const OWNER_MODULES: StepGuide[] = [
             if (await notifTab.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await notifTab.click();
                 await page.waitForTimeout(800);
-                await page.screenshot({ path: `${ssDir}/14_pengaturan_aplikasi_dan_tema_tab_notifikasi.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/14_pengaturan_aplikasi_dan_tema_tab_notifikasi.webp`, fullPage: false, type: 'webp', quality: 85 });
             }
         }
     },
@@ -812,13 +812,13 @@ export const OWNER_MODULES: StepGuide[] = [
             if (await bellBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await bellBtn.click();
                 await page.waitForTimeout(1000);
-                await page.screenshot({ path: `${ssDir}/15_pusat_notifikasi_dan_broadcast_drawer_notifikasi.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/15_pusat_notifikasi_dan_broadcast_drawer_notifikasi.webp`, fullPage: false, type: 'webp', quality: 85 });
 
                 const blastBtn = page.getByRole('button', { name: /Kirim Pengumuman Siaran/i }).first();
                 if (await blastBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
                     await blastBtn.click();
                     await page.waitForTimeout(1000);
-                    await page.screenshot({ path: `${ssDir}/15_pusat_notifikasi_dan_broadcast_sheet_broadcast.png`, fullPage: false });
+                    await page.screenshot({ path: `${ssDir}/15_pusat_notifikasi_dan_broadcast_sheet_broadcast.webp`, fullPage: false, type: 'webp', quality: 85 });
                     await page.keyboard.press('Escape');
                     await page.waitForTimeout(600);
                 }

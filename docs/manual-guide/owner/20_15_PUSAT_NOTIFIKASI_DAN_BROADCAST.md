@@ -8,13 +8,13 @@ Laci pusat notifikasi real-time dan fitur Broadcast Announcement untuk mengirimk
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Pusat Notifikasi & Kirim Pengumuman Siaran (Broadcast)](screenshots/15_pusat_notifikasi_dan_broadcast.png)
+![Tampilan Pusat Notifikasi & Kirim Pengumuman Siaran (Broadcast)](screenshots/15_pusat_notifikasi_dan_broadcast.webp)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 
 ### 📸 Tampilan Drawer Notifikasi
 
-![Tampilan Drawer Notifikasi](screenshots/15_pusat_notifikasi_dan_broadcast_drawer_notifikasi.png)
+![Tampilan Drawer Notifikasi](screenshots/15_pusat_notifikasi_dan_broadcast_drawer_notifikasi.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

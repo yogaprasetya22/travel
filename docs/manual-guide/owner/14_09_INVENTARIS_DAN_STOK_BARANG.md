@@ -8,17 +8,17 @@ Pencatatan persediaan fisik perlengkapan travel di gudang (koper, kain ihram, mu
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Inventaris Stok Fisik Gudang & Barang Masuk](screenshots/09_inventaris_dan_stok_barang.png)
+![Tampilan Inventaris Stok Fisik Gudang & Barang Masuk](screenshots/09_inventaris_dan_stok_barang.webp)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 
-### 📸 Tampilan Sheet Tambah Barang
-
-![Tampilan Sheet Tambah Barang](screenshots/09_inventaris_dan_stok_barang_sheet_tambah_barang.png)
-
 ### 📸 Tampilan Sheet Restock
 
-![Tampilan Sheet Restock](screenshots/09_inventaris_dan_stok_barang_sheet_restock.png)
+![Tampilan Sheet Restock](screenshots/09_inventaris_dan_stok_barang_sheet_restock.webp)
+
+### 📸 Tampilan Sheet Tambah Barang
+
+![Tampilan Sheet Tambah Barang](screenshots/09_inventaris_dan_stok_barang_sheet_tambah_barang.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

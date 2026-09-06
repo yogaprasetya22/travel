@@ -8,13 +8,13 @@ Pusat pengaturan profil akun agen, ganti password, nomor WhatsApp konsultasi, bi
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Setup Profil, Password & Live Customizer Bio Link](screenshots/01_setup_bio_link_dan_profil_agen.png)
+![Tampilan Setup Profil, Password & Live Customizer Bio Link](screenshots/01_setup_bio_link_dan_profil_agen.webp)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 
 ### 📸 Tampilan Live Preview
 
-![Tampilan Live Preview](screenshots/01_setup_bio_link_dan_profil_agen_live_preview.png)
+![Tampilan Live Preview](screenshots/01_setup_bio_link_dan_profil_agen_live_preview.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

@@ -8,13 +8,13 @@ Visualisasi pohon jaringan (Network Tree) keagenan bertingkat untuk melihat hubu
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Monitoring Struktur Tim & Pohon Jaringan Agen](screenshots/08_monitoring_pohon_jaringan.png)
+![Tampilan Monitoring Struktur Tim & Pohon Jaringan Agen](screenshots/08_monitoring_pohon_jaringan.webp)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 
 ### 📸 Tampilan Drawer Nasabah Tim
 
-![Tampilan Drawer Nasabah Tim](screenshots/08_monitoring_pohon_jaringan_drawer_nasabah_tim.png)
+![Tampilan Drawer Nasabah Tim](screenshots/08_monitoring_pohon_jaringan_drawer_nasabah_tim.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

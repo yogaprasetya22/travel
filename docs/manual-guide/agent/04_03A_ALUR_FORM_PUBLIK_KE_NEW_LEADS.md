@@ -8,7 +8,7 @@ Alur end-to-end: calon jamaah mengisi formulir publik via link referral agen →
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Alur Form Pendaftaran Publik → Masuk New Leads CRM (Agen)](screenshots/03a_alur_form_publik_ke_new_leads.png)
+![Tampilan Alur Form Pendaftaran Publik → Masuk New Leads CRM (Agen)](screenshots/03a_alur_form_publik_ke_new_leads.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

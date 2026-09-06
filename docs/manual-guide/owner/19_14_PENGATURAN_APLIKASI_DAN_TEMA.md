@@ -8,13 +8,13 @@ Pusat preferensi sistem travel: pemilihan palet tema warna (Luxury, Emerald, Roy
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Pengaturan Sistem, Notifikasi & Kustomisasi Tema](screenshots/14_pengaturan_aplikasi_dan_tema.png)
+![Tampilan Pengaturan Sistem, Notifikasi & Kustomisasi Tema](screenshots/14_pengaturan_aplikasi_dan_tema.webp)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 
 ### 📸 Tampilan Tab Notifikasi
 
-![Tampilan Tab Notifikasi](screenshots/14_pengaturan_aplikasi_dan_tema_tab_notifikasi.png)
+![Tampilan Tab Notifikasi](screenshots/14_pengaturan_aplikasi_dan_tema_tab_notifikasi.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

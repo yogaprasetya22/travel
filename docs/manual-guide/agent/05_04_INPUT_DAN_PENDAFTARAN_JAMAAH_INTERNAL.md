@@ -8,17 +8,17 @@ Agen dapat mendaftarkan jamaah secara manual dari dashboard jika calon jamaah me
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Pendaftaran & Input Data Jamaah Binaan Secara Manual (Internal Agen)](screenshots/04_input_dan_pendaftaran_jamaah_internal.png)
+![Tampilan Pendaftaran & Input Data Jamaah Binaan Secara Manual (Internal Agen)](screenshots/04_input_dan_pendaftaran_jamaah_internal.webp)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 
 ### 📸 Tampilan Form Terisi
 
-![Tampilan Form Terisi](screenshots/04_input_dan_pendaftaran_jamaah_internal_form_terisi.png)
+![Tampilan Form Terisi](screenshots/04_input_dan_pendaftaran_jamaah_internal_form_terisi.webp)
 
 ### 📸 Tampilan Modal Tambah
 
-![Tampilan Modal Tambah](screenshots/04_input_dan_pendaftaran_jamaah_internal_modal_tambah.png)
+![Tampilan Modal Tambah](screenshots/04_input_dan_pendaftaran_jamaah_internal_modal_tambah.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

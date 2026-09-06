@@ -8,7 +8,7 @@ Halaman web publik resmi milik agen yang diakses oleh calon jamaah melalui klik 
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Halaman Publik Bio Link Mitra Agen (Mobile Landing Page)](screenshots/02_tampilan_landing_page_bio_link_publik.png)
+![Tampilan Halaman Publik Bio Link Mitra Agen (Mobile Landing Page)](screenshots/02_tampilan_landing_page_bio_link_publik.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

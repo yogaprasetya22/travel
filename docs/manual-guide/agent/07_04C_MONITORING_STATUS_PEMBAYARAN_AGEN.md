@@ -8,13 +8,13 @@ Setelah bukti transfer diverifikasi oleh kantor, agen dapat memantau perpindahan
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Memantau Status Pembayaran & Pindah Stage Kanban (Agen)](screenshots/04c_monitoring_status_pembayaran_agen.png)
+![Tampilan Memantau Status Pembayaran & Pindah Stage Kanban (Agen)](screenshots/04c_monitoring_status_pembayaran_agen.webp)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 
 ### 📸 Tampilan Modal Followup
 
-![Tampilan Modal Followup](screenshots/04c_monitoring_status_pembayaran_agen_modal_followup.png)
+![Tampilan Modal Followup](screenshots/04c_monitoring_status_pembayaran_agen_modal_followup.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

@@ -8,13 +8,13 @@ Pusat transparansi saldo komisi agen, riwayat komisi per jamaah yang telah lunas
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Rekap Komisi Penjualan & Saldo Agen](screenshots/06_rekap_komisi_dan_pencairan_agen.png)
+![Tampilan Rekap Komisi Penjualan & Saldo Agen](screenshots/06_rekap_komisi_dan_pencairan_agen.webp)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 
 ### 📸 Tampilan Filter Status
 
-![Tampilan Filter Status](screenshots/06_rekap_komisi_dan_pencairan_agen_filter_status.png)
+![Tampilan Filter Status](screenshots/06_rekap_komisi_dan_pencairan_agen_filter_status.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

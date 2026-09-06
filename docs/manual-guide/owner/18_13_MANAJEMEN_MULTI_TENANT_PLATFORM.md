@@ -8,13 +8,13 @@ Pusat kendali multi-tenant platform untuk melihat seluruh travel agensi terdafta
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Manajemen Multi-Tenant & Entitas Travel Agensi](screenshots/13_manajemen_multi_tenant_platform.png)
+![Tampilan Manajemen Multi-Tenant & Entitas Travel Agensi](screenshots/13_manajemen_multi_tenant_platform.webp)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 
 ### 📸 Tampilan Sheet Onboard
 
-![Tampilan Sheet Onboard](screenshots/13_manajemen_multi_tenant_platform_sheet_onboard.png)
+![Tampilan Sheet Onboard](screenshots/13_manajemen_multi_tenant_platform_sheet_onboard.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

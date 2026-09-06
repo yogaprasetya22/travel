@@ -41,7 +41,7 @@ export const AGENT_MODULES: StepGuide[] = [
             if (await phoneMockup.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await phoneMockup.scrollIntoViewIfNeeded();
                 await page.waitForTimeout(800);
-                await page.screenshot({ path: `${ssDir}/01_setup_bio_link_dan_profil_agen_live_preview.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/01_setup_bio_link_dan_profil_agen_live_preview.webp`, fullPage: false, type: 'webp', quality: 85 });
             }
         }
     },
@@ -108,7 +108,7 @@ export const AGENT_MODULES: StepGuide[] = [
             if (await submitBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await submitBtn.click();
                 await page.waitForTimeout(1000);
-                await page.screenshot({ path: `${ssDir}/03_form_pendaftaran_jamaah_referral_publik_validasi_error.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/03_form_pendaftaran_jamaah_referral_publik_validasi_error.webp`, fullPage: false, type: 'webp', quality: 85 });
             }
         }
     },
@@ -180,7 +180,7 @@ export const AGENT_MODULES: StepGuide[] = [
                 await page.waitForTimeout(1000);
 
                 // Screenshot drawer form kosong
-                await page.screenshot({ path: `${ssDir}/04_input_dan_pendaftaran_jamaah_internal_modal_tambah.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/04_input_dan_pendaftaran_jamaah_internal_modal_tambah.webp`, fullPage: false, type: 'webp', quality: 85 });
 
                 // Isi data form calon jamaah secara lengkap
                 await page.locator('#nama_lengkap').fill('H. Ahmad Fauzi (Binaan Budi)');
@@ -200,7 +200,7 @@ export const AGENT_MODULES: StepGuide[] = [
                 await page.waitForTimeout(500);
 
                 // Screenshot formulir yang sudah terisi lengkap
-                await page.screenshot({ path: `${ssDir}/04_input_dan_pendaftaran_jamaah_internal_form_terisi.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/04_input_dan_pendaftaran_jamaah_internal_form_terisi.webp`, fullPage: false, type: 'webp', quality: 85 });
 
                 // Klik simpan data prospek
                 const saveBtn = page.locator('button[type="submit"]:has-text("Simpan"), button:has-text("Simpan Prospek")').first();
@@ -259,14 +259,14 @@ export const AGENT_MODULES: StepGuide[] = [
                     await payBtn.click();
                     await page.waitForTimeout(800);
                 }
-                await page.screenshot({ path: `${ssDir}/04b_upload_bukti_transfer_agen_drawer_financial.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/04b_upload_bukti_transfer_agen_drawer_financial.webp`, fullPage: false, type: 'webp', quality: 85 });
 
                 // 2. Switch to Biodata tab
                 const biodataTab = page.locator('button:has-text("Biodata"), [role="tab"]:has-text("Biodata")').first();
                 if (await biodataTab.isVisible({ timeout: 2000 }).catch(() => false)) {
                     await biodataTab.click();
                     await page.waitForTimeout(800);
-                    await page.screenshot({ path: `${ssDir}/04b_upload_bukti_transfer_agen_drawer_biodata.png`, fullPage: false });
+                    await page.screenshot({ path: `${ssDir}/04b_upload_bukti_transfer_agen_drawer_biodata.webp`, fullPage: false, type: 'webp', quality: 85 });
                 }
 
                 await page.keyboard.press('Escape');
@@ -278,7 +278,7 @@ export const AGENT_MODULES: StepGuide[] = [
             if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
                 await searchInput.fill('ZZZ_TIDAK_ADA_DATA_999');
                 await page.waitForTimeout(1000);
-                await page.screenshot({ path: `${ssDir}/04b_upload_bukti_transfer_agen_empty_state.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/04b_upload_bukti_transfer_agen_empty_state.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await searchInput.fill('');
                 await page.waitForTimeout(600);
             }
@@ -321,7 +321,7 @@ export const AGENT_MODULES: StepGuide[] = [
             if (await followBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await followBtn.click();
                 await page.waitForTimeout(1000);
-                await page.screenshot({ path: `${ssDir}/04c_monitoring_status_pembayaran_agen_modal_followup.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/04c_monitoring_status_pembayaran_agen_modal_followup.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -354,7 +354,7 @@ export const AGENT_MODULES: StepGuide[] = [
             if (await editBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await editBtn.click();
                 await page.waitForTimeout(1000);
-                await page.screenshot({ path: `${ssDir}/05_monitoring_crm_pipeline_binaan_drawer_edit.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/05_monitoring_crm_pipeline_binaan_drawer_edit.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -389,7 +389,7 @@ export const AGENT_MODULES: StepGuide[] = [
             if (await viewCustBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
                 await viewCustBtn.click();
                 await page.waitForTimeout(1000);
-                await page.screenshot({ path: `${ssDir}/05b_monitoring_pohon_jaringan_tim_agen_drawer_nasabah.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/05b_monitoring_pohon_jaringan_tim_agen_drawer_nasabah.webp`, fullPage: false, type: 'webp', quality: 85 });
                 await page.keyboard.press('Escape');
                 await page.waitForTimeout(600);
             }
@@ -423,7 +423,7 @@ export const AGENT_MODULES: StepGuide[] = [
             if (await statusSelect.isVisible({ timeout: 2000 }).catch(() => false)) {
                 await statusSelect.selectOption({ label: 'Menunggu DP' }).catch(() => {});
                 await page.waitForTimeout(800);
-                await page.screenshot({ path: `${ssDir}/06_rekap_komisi_dan_pencairan_agen_filter_status.png`, fullPage: false });
+                await page.screenshot({ path: `${ssDir}/06_rekap_komisi_dan_pencairan_agen_filter_status.webp`, fullPage: false, type: 'webp', quality: 85 });
             }
         }
     }

@@ -8,21 +8,21 @@ Setelah jamaah binaan mentransfer DP atau cicilan ke rekening travel, agen mengu
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Upload Bukti Transfer Pembayaran oleh Agen](screenshots/04b_upload_bukti_transfer_agen.png)
+![Tampilan Upload Bukti Transfer Pembayaran oleh Agen](screenshots/04b_upload_bukti_transfer_agen.webp)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 
-### 📸 Tampilan Empty State
-
-![Tampilan Empty State](screenshots/04b_upload_bukti_transfer_agen_empty_state.png)
-
 ### 📸 Tampilan Drawer Biodata
 
-![Tampilan Drawer Biodata](screenshots/04b_upload_bukti_transfer_agen_drawer_biodata.png)
+![Tampilan Drawer Biodata](screenshots/04b_upload_bukti_transfer_agen_drawer_biodata.webp)
 
 ### 📸 Tampilan Drawer Financial
 
-![Tampilan Drawer Financial](screenshots/04b_upload_bukti_transfer_agen_drawer_financial.png)
+![Tampilan Drawer Financial](screenshots/04b_upload_bukti_transfer_agen_drawer_financial.webp)
+
+### 📸 Tampilan Empty State
+
+![Tampilan Empty State](screenshots/04b_upload_bukti_transfer_agen_empty_state.webp)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 
