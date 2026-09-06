@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Head, Link } from "@inertiajs/react";
 import PageLayout from "@/Components/Layouts/PageLayout";
 import {
@@ -517,60 +518,63 @@ export default function DocsIndex({
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [selectedImage]);
 
-    // Lightbox modal component (Clean Modern Fullscreen Lightbox)
-    const lightboxModal = selectedImage && (
-        <div
-            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-between p-4 sm:p-6 select-none animate-in fade-in duration-200"
-            onClick={() => setSelectedImage(null)}
-        >
-            {/* Top Bar Actions */}
+    // Lightbox modal component (Clean Modern Fullscreen Lightbox via Portal)
+    const lightboxModal = selectedImage && typeof document !== "undefined"
+        ? createPortal(
             <div
-                className="w-full flex items-center justify-between z-10 max-w-7xl px-2 py-1"
-                onClick={(e) => e.stopPropagation()}
+                className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex flex-col items-center justify-between p-4 sm:p-6 select-none animate-in fade-in duration-200"
+                onClick={() => setSelectedImage(null)}
             >
-                <div className="text-xs text-neutral-400 font-medium flex items-center gap-2">
-                    <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>Pratinjau Gambar Dokumentasi</span>
+                {/* Top Bar Actions */}
+                <div
+                    className="w-full flex items-center justify-between z-10 max-w-7xl px-2 py-1"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <div className="text-xs text-neutral-400 font-medium flex items-center gap-2">
+                        <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>Pratinjau Gambar Dokumentasi</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <a
+                            href={selectedImage}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold backdrop-blur-md transition flex items-center gap-1.5"
+                        >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                            <span>Buka Resolusi Penuh</span>
+                        </a>
+                        <button
+                            type="button"
+                            onClick={() => setSelectedImage(null)}
+                            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white hover:text-rose-400 transition"
+                            title="Tutup (Esc)"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <a
-                        href={selectedImage}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold backdrop-blur-md transition flex items-center gap-1.5"
-                    >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        <span>Buka Resolusi Penuh</span>
-                    </a>
-                    <button
-                        type="button"
-                        onClick={() => setSelectedImage(null)}
-                        className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white hover:text-rose-400 transition"
-                        title="Tutup (Esc)"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
+
+                {/* Main Image Container */}
+                <div
+                    className="flex-1 w-full flex items-center justify-center p-2 min-h-0"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <img
+                        src={selectedImage}
+                        alt="Screenshot Zoom"
+                        className="max-h-[85vh] max-w-[95vw] w-auto h-auto object-contain rounded-xl shadow-2xl border border-white/10"
+                    />
                 </div>
-            </div>
 
-            {/* Main Image Container */}
-            <div
-                className="flex-1 w-full flex items-center justify-center p-2 min-h-0"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <img
-                    src={selectedImage}
-                    alt="Screenshot Zoom"
-                    className="max-h-[85vh] max-w-[95vw] w-auto h-auto object-contain rounded-xl shadow-2xl border border-white/10"
-                />
-            </div>
-
-            {/* Bottom Helper */}
-            <div className="text-[11px] text-neutral-400/80 tracking-wide">
-                Klik area luar atau tekan <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono text-[10px]">Esc</kbd> untuk menutup
-            </div>
-        </div>
-    );
+                {/* Bottom Helper */}
+                <div className="text-[11px] text-neutral-400/80 tracking-wide">
+                    Klik area luar atau tekan <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono text-[10px]">Esc</kbd> untuk menutup
+                </div>
+            </div>,
+            document.body
+        )
+        : null;
 
     // Common Role Header Banner
     const roleBanner = (
