@@ -61,6 +61,7 @@ services:
     volumes:
       - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./public:/var/www/html/public:ro
+      - travel_app_storage:/var/www/html/storage/app:ro
       - travel_app_logs:/var/log/nginx
     depends_on:
       - app
