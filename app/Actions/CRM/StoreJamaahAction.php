@@ -27,13 +27,13 @@ class StoreJamaahAction
             'tenant_id' => $tenantId,
             'crm_stage_id' => $firstStage->id,
             'nama_lengkap' => $data['nama_lengkap'],
-            'nik' => $data['nik'] ?? null,
+            'nik' => ! empty($data['nik']) ? $data['nik'] : null,
             'no_hp' => $data['no_hp'],
-            'email' => $data['email'] ?? null,
-            'paket_id' => $data['paket_id'],
-            'agen_id' => $data['agen_id'] ?? $authUserId,
-            'tanggal_keberangkatan' => $data['tanggal_keberangkatan'] ?? null,
-            'catatan_admin' => $data['catatan_admin'] ?? 'Didaftarkan oleh admin/agen di CRM.',
+            'email' => ! empty($data['email']) ? $data['email'] : null,
+            'paket_id' => (int) $data['paket_id'],
+            'agen_id' => ! empty($data['agen_id']) ? (int) $data['agen_id'] : $authUserId,
+            'tanggal_keberangkatan' => ! empty($data['tanggal_keberangkatan']) ? $data['tanggal_keberangkatan'] : null,
+            'catatan_admin' => ! empty($data['catatan_admin']) ? $data['catatan_admin'] : 'Didaftarkan oleh admin/agen di CRM.',
         ]);
     }
 }
