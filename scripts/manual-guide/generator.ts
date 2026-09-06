@@ -31,14 +31,21 @@ export async function ensureLoggedIn(
     }
 }
 
-import themeData from '../../resources/js/lib/theme-colors.json';
-
 export async function setAppTheme(page: any, mode: 'light' | 'dark'): Promise<void> {
     const themeKey = mode === 'dark' ? 'luxury' : 'caramellatte';
-    const allThemes = (themeData.themes || {}) as Record<string, any>;
-    const themeDef = allThemes[themeKey];
+    let themeDef: any = null;
+    try {
+        const themeJsonPath = path.resolve(__dirname, '../../resources/js/lib/theme-colors.json');
+        if (fs.existsSync(themeJsonPath)) {
+            const raw = fs.readFileSync(themeJsonPath, 'utf-8');
+            const parsed = JSON.parse(raw);
+            themeDef = parsed?.themes?.[themeKey] || null;
+        }
+    } catch {
+        themeDef = null;
+    }
 
-    await page.evaluate(({ key, def }) => {
+    await page.evaluate(({ key, def }: { key: string; def: any }) => {
         localStorage.setItem('theme_preference', key);
         const root = document.documentElement;
         if (def && def.variables) {
