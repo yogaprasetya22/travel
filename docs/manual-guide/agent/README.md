@@ -35,17 +35,37 @@ Panduan ini memuat seluruh panduan langkah demi langkah, operasi CRUD lengkap, d
 - **Kategori**: Registrasi & Referral Jamaah
 - **Deskripsi**: Formulir pendaftaran mandiri calon jamaah via tautan referral agen. Memuat informasi paket yang dipilih, data diri calon jamaah, nomor paspor, pilihan kamar, dan nomor rekening resmi travel untuk transfer DP. Agen otomatis tercatat sebagai pembina jamaah.
 
-### 04. [Pendaftaran & Input Data Jamaah Binaan (Internal Agen)](04_04_INPUT_DAN_PENDAFTARAN_JAMAAH_INTERNAL.md)
+### 04. [Alur Form Pendaftaran Publik → Masuk New Leads CRM (Agen)](04_03A_ALUR_FORM_PUBLIK_KE_NEW_LEADS.md)
+- **Fase**: 2. Pendaftaran & Akuisisi Calon Jamaah
+- **Kategori**: Digital Marketing & Leads Capture
+- **Deskripsi**: Alur end-to-end: calon jamaah mengisi formulir publik via link referral agen → data otomatis masuk ke sistem sebagai New Leads di papan CRM agen. Agen tidak perlu mengentry ulang data apapun.
+
+### 05. [Pendaftaran & Input Data Jamaah Binaan Secara Manual (Internal Agen)](05_04_INPUT_DAN_PENDAFTARAN_JAMAAH_INTERNAL.md)
 - **Fase**: 2. Pendaftaran & Akuisisi Calon Jamaah
 - **Kategori**: Penjualan & Pendaftaran
-- **Deskripsi**: Modul bagi agen untuk mendaftarkan jamaah secara manual dari dashboard agen jika calon jamaah mendaftar secara tatap muka (offline) atau via chat.
+- **Deskripsi**: Agen dapat mendaftarkan jamaah secara manual dari dashboard jika calon jamaah mendaftar secara tatap muka (offline) atau melalui chat pribadi tanpa mengklik link referral.
 
-### 05. [Monitoring Pipeline Kanban Jamaah Binaan](05_05_MONITORING_CRM_PIPELINE_BINAAN.md)
+### 06. [Upload Bukti Transfer Pembayaran oleh Agen](06_04B_UPLOAD_BUKTI_TRANSFER_AGEN.md)
+- **Fase**: 3. Pengawalan Prospek Hingga Lunas
+- **Kategori**: Penjualan & Pembayaran
+- **Deskripsi**: Setelah jamaah binaan mentransfer DP atau cicilan ke rekening travel, agen mengunggah foto bukti transfer dari dashboard agen. Bukti akan diperiksa dan disetujui oleh pihak manajemen travel.
+
+### 07. [Memantau Status Pembayaran & Pindah Stage Kanban (Agen)](07_04C_MONITORING_STATUS_PEMBAYARAN_AGEN.md)
+- **Fase**: 3. Pengawalan Prospek Hingga Lunas
+- **Kategori**: CRM & Follow Up
+- **Deskripsi**: Setelah bukti transfer diverifikasi oleh kantor, agen dapat memantau perpindahan status jamaah di papan Kanban CRM dan memindahkan stage jamaah yang sudah negosiasi ke tahap berikutnya.
+
+### 08. [Monitoring Pipeline Kanban Jamaah Binaan](08_05_MONITORING_CRM_PIPELINE_BINAAN.md)
 - **Fase**: 3. Pengawalan Prospek Hingga Lunas
 - **Kategori**: CRM & Follow Up
 - **Deskripsi**: Papan Kanban visual khusus bagi agen untuk mengawal jamaah binaan melewati setiap tahapan: Booking ➔ DP Terbayar ➔ Berkas Lengkap ➔ Pelunasan ➔ Siap Berangkat.
 
-### 06. [Rekap Komisi Penjualan & Saldo Agen](06_06_REKAP_KOMISI_DAN_PENCAIRAN_AGEN.md)
+### 09. [Monitoring Pohon Jaringan & Performa Tim Sub-Agen](09_05B_MONITORING_POHON_JARINGAN_TIM_AGEN.md)
+- **Fase**: 4. Pengembangan Tim & Sub-Agen
+- **Kategori**: Keagenan & Jaringan
+- **Deskripsi**: Dashboard struktur pohon jaringan agen (Downline). Agen dapat memantau produktivitas sub-agen binaannya, total omzet tim, dan estimasi komisi override.
+
+### 10. [Rekap Komisi Penjualan & Saldo Agen](10_06_REKAP_KOMISI_DAN_PENCAIRAN_AGEN.md)
 - **Fase**: 4. Hasil Penjualan & Payout
 - **Kategori**: Keuangan & Reward
 - **Deskripsi**: Pusat transparansi saldo komisi agen, riwayat komisi per jamaah yang telah lunas, dan status pencairan dana oleh kantor pusat.

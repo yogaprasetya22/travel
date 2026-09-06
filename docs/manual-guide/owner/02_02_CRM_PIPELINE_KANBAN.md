@@ -1,19 +1,25 @@
 # Papan CRM Kanban Pipeline Jamaah (Leads to Closing)
 
-> **Target Peran**: `Owner (Level 1)` | **Login Akun**: `superadmin@hajjflow.com`
+> **Target Peran**: `Owner (Level 1)` | **Login Akun**: `test@example.com`
 > **Tahapan Alur**: `2. Pengawalan Leads & Prospek` | **Kategori**: `CRM & Penjualan` | **Rute / URL**: `/crm`
 
 ## 📋 Deskripsi Fitur
 Papan Kanban visual interaktif untuk mengawal alur prospek calon jamaah dari tahap Kontak Pertama, Konsultasi, Booking Kursi, Pembayaran DP, Pengumpulan Berkas, hingga Pelunasan.
 
-## 🖼️ Tampilan Antarmuka
+## 🖼️ Tampilan Antarmuka Utama
 
 ![Tampilan Papan CRM Kanban Pipeline Jamaah (Leads to Closing)](screenshots/02_crm_pipeline_kanban.png)
+
+## 🗂️ Tampilan Drawer, Modal & Aksi Detail
+
+### 📸 Tampilan Modal Tambah Leads
+
+![Tampilan Modal Tambah Leads](screenshots/02_crm_pipeline_kanban_modal_tambah_leads.png)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 
 ### ➕ Create (Tambah / Input Baru)
-- Klik "+ Tambah Leads" pada kolom tahapan manapun untuk memasukkan calon jamaah baru.
+- Klik "+ Tambah Calon Nasabah" pada tombol utama untuk memasukkan data prospek baru secara instan.
 
 ### 🔍 Read (Lihat / Pencarian / Filter Data)
 - Melihat sebaran jamaah di setiap tahapan pipeline (New Leads, Follow Up, Booking, DP, Pelunasan).

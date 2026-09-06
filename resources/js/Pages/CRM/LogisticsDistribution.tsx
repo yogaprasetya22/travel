@@ -68,7 +68,7 @@ interface LogisticsCustomer {
     }>;
     pembayaran?: Array<{
         id: number;
-        jumlah: number;
+        nominal: number;
         tipe_pembayaran: string;
         status_verifikasi: string;
     }>;

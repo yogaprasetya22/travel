@@ -1,14 +1,20 @@
 # Setup Profil, Password & Live Customizer Bio Link
 
-> **Target Peran**: `Mitra Agen (Level 2/3)` | **Login Akun**: `agent2.t2@travel.com`
+> **Target Peran**: `Mitra Agen (Level 2/3)` | **Login Akun**: `budi@example.com`
 > **Tahapan Alur**: `1. Setup Profil & Branding Mandiri` | **Kategori**: `Promosi & Profil Akun` | **Rute / URL**: `/profile`
 
 ## 📋 Deskripsi Fitur
 Pusat pengaturan profil akun agen, ganti password, nomor WhatsApp konsultasi, bio sambutan, tautan media sosial, serta live preview tampilan mobile sebelum disebarkan ke publik.
 
-## 🖼️ Tampilan Antarmuka
+## 🖼️ Tampilan Antarmuka Utama
 
 ![Tampilan Setup Profil, Password & Live Customizer Bio Link](screenshots/01_setup_bio_link_dan_profil_agen.png)
+
+## 🗂️ Tampilan Drawer, Modal & Aksi Detail
+
+### 📸 Tampilan Live Preview
+
+![Tampilan Live Preview](screenshots/01_setup_bio_link_dan_profil_agen_live_preview.png)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

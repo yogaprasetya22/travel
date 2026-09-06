@@ -10,7 +10,6 @@ use App\Models\Paket;
 use App\Models\RekeningTenant;
 use App\Models\Tenant;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -373,46 +372,29 @@ class TenantDatasetSeeder extends Seeder
             }
             $agentIds = array_map(fn ($a) => $a->id, $agents);
 
-            // 6. Bulk Seed Realistic Jamaah & Relational Transactions per Tenant
-            $totalRecords = ($tIndex === 0) ? 6500 : 9500;
-            $chunkSize = 1000;
-            $batches = ceil($totalRecords / $chunkSize);
-
-            $this->command->info("Generating {$totalRecords} relational records in {$batches} chunks for Tenant ".($tIndex + 1).'...');
-
+            // 6. Seed 10 Nasabah per Agen: 4 New Leads, 3 Follow Up, 3 Negosiasi (no Closing)
             $firstNames = ['Ahmad', 'Bambang', 'Chandra', 'Dewi', 'Eko', 'Fitri', 'Gita', 'Hadi', 'Indra', 'Joko', 'Kartika', 'Lestari', 'Muhammad', 'Nur', 'Oki', 'Putri', 'Rahmat', 'Siti', 'Tri', 'Umar', 'Wahyu', 'Yuliana', 'Zainal', 'Farhan', 'Anisa', 'Rizky', 'Ridwan', 'Aulia', 'Faisal', 'Nabila'];
             $lastNames = ['Pratama', 'Hidayat', 'Saputra', 'Wijaya', 'Kusuma', 'Santoso', 'Gunawan', 'Permana', 'Nugroho', 'Wibowo', 'Siregar', 'Lubis', 'Harahap', 'Nasution', 'Batubara', 'Tanjung', 'Pasaribu', 'Hutagalung', 'Al-Habsyi', 'Assegaf'];
             $fnCount = count($firstNames);
             $lnCount = count($lastNames);
 
-            $numAgents = count($agentIds);
+            // 4 New Leads, 3 Follow Up, 3 Negosiasi per agen
+            $stageSlots = [
+                $stage1->id, $stage1->id, $stage1->id, $stage1->id, // 4× New Leads
+                $stage2->id, $stage2->id, $stage2->id,               // 3× Follow Up
+                $stage3->id, $stage3->id, $stage3->id,               // 3× Negosiasi
+            ];
 
-            for ($b = 0; $b < $batches; $b++) {
+            $this->command->info('Generating 10 nasabah × '.count($agentIds).' agents for Tenant '.($tIndex + 1).'...');
+
+            $globalIdx = 0;
+            foreach ($agents as $agentObj) {
                 $jamaahRows = [];
-                $currentChunk = min($chunkSize, $totalRecords - ($b * $chunkSize));
+                foreach ($stageSlots as $slotStageId) {
+                    $globalIdx++;
+                    $fn = $firstNames[$globalIdx % $fnCount];
+                    $ln = $lastNames[($globalIdx * 3) % $lnCount];
 
-                for ($i = 0; $i < $currentChunk; $i++) {
-                    $recordIndex = ($b * $chunkSize) + $i + 1;
-                    $fn = $firstNames[($recordIndex + ($i * 7)) % $fnCount];
-                    $ln = $lastNames[($recordIndex * 5 + $i) % $lnCount];
-                    $fullName = "{$fn} {$ln} {$recordIndex}";
-
-                    $daysAgo = rand(0, 175);
-                    $createdAt = now()->subDays($daysAgo)->subHours(rand(1, 23))->subMinutes(rand(1, 59));
-
-                    // Realistic weighted Stage distribution
-                    $stageRand = rand(1, 100);
-                    if ($stageRand <= 38) {
-                        $stageId = $stage1->id; // New Leads
-                    } elseif ($stageRand <= 62) {
-                        $stageId = $stage2->id; // Follow Up
-                    } elseif ($stageRand <= 76) {
-                        $stageId = $stage3->id; // Negosiasi
-                    } else {
-                        $stageId = $stage4->id; // Closing
-                    }
-
-                    // Weighted Package distribution (Reguler 45%, VIP 30%, Plus 18%, Haji 7%)
                     $pkgRand = rand(1, 100);
                     if ($pkgRand <= 45) {
                         $selectedPkg = $packagesList[0];
@@ -424,113 +406,135 @@ class TenantDatasetSeeder extends Seeder
                         $selectedPkg = $packagesList[3];
                     }
 
-                    // Weighted agent allocation: superstar agents get more leads and closings
-                    $agentRoll = rand(1, 100);
-                    if ($agentRoll <= 30 && isset($agentIds[0])) {
-                        $assignedAgentId = $agentIds[0];
-                    } elseif ($agentRoll <= 55 && isset($agentIds[1])) {
-                        $assignedAgentId = $agentIds[1];
-                    } elseif ($agentRoll <= 72 && isset($agentIds[2])) {
-                        $assignedAgentId = $agentIds[2];
-                    } elseif ($agentRoll <= 88) {
-                        $assignedAgentId = $agentIds[rand(3, max(3, $numAgents - 1))];
-                    } else {
-                        $assignedAgentId = null; // Direct organic web leads
-                    }
+                    $daysAgo = rand(1, 120);
+                    $createdAt = now()->subDays($daysAgo)->subHours(rand(1, 23))->subMinutes(rand(1, 59));
 
-                    $nik = '32'.str_pad((string) ($tenant->id * 10000000000000 + $recordIndex), 14, '0', STR_PAD_LEFT);
-                    $phone = '08'.str_pad((string) (1200000000 + $recordIndex), 10, '0', STR_PAD_LEFT);
-                    $email = "jamaah{$recordIndex}.t{$tenant->id}@mailtest.id";
-                    $passport = ($stageId === $stage4->id) ? 'A'.str_pad((string) ($tenant->id * 1000000 + $recordIndex), 8, '0', STR_PAD_LEFT) : null;
-                    $depDate = ($stageId === $stage4->id) ? date('Y-m-d', strtotime('+ '.(rand(15, 120)).' days')) : null;
-                    $logStatus = ($stageId === $stage4->id) ? ((rand(1, 10) > 4) ? 'Handed_Over' : 'Ready_to_Pickup') : 'Pending';
+                    $nik = '32'.str_pad((string) ($tenant->id * 10000000000000 + $globalIdx), 14, '0', STR_PAD_LEFT);
+                    $phone = '08'.str_pad((string) (1300000000 + ($tIndex * 100000) + $globalIdx), 10, '0', STR_PAD_LEFT);
 
                     $jamaahRows[] = [
                         'tenant_id' => $tenant->id,
-                        'agen_id' => $assignedAgentId,
-                        'crm_stage_id' => $stageId,
-                        'nama_lengkap' => $fullName,
+                        'agen_id' => $agentObj->id,
+                        'crm_stage_id' => $slotStageId,
+                        'nama_lengkap' => "{$fn} {$ln} {$globalIdx}",
                         'nik' => $nik,
-                        'nomor_paspor' => $passport,
+                        'nomor_paspor' => null,
                         'no_hp' => $phone,
-                        'email' => $email,
+                        'email' => "nasabah{$globalIdx}.t{$tenant->id}@mailtest.id",
                         'paket_id' => $selectedPkg['id'],
-                        'tanggal_keberangkatan' => $depDate,
-                        'catatan_admin' => "Pendaftaran paket {$selectedPkg['id']} prospek #{$recordIndex}",
-                        'status_logistik' => $logStatus,
-                        'tanggal_serah_terima_logistik' => ($logStatus === 'Handed_Over') ? $createdAt->copy()->addDays(rand(2, 10)) : null,
+                        'tanggal_keberangkatan' => null,
+                        'catatan_admin' => "Prospek #{$globalIdx} via agen {$agentObj->name}",
+                        'status_logistik' => 'Pending',
+                        'tanggal_serah_terima_logistik' => null,
                         'created_at' => $createdAt,
                         'updated_at' => $createdAt,
                     ];
                 }
 
                 DB::table('jamaah')->insert($jamaahRows);
+            }
 
-                $insertedJamaahs = DB::table('jamaah')
+            // 6a-2. Seed a few Pending DP pembayaran for non-closing leads so Finance/Verifikasi has data
+            $sampleLeads = DB::table('jamaah')
+                ->where('tenant_id', $tenant->id)
+                ->whereIn('crm_stage_id', [$stage2->id, $stage3->id])
+                ->limit(3)
+                ->get();
+
+            $pendingPayments = [];
+            foreach ($sampleLeads as $lead) {
+                $pendingPayments[] = [
+                    'tenant_id' => $tenant->id,
+                    'jamaah_id' => $lead->id,
+                    'rekening_tenant_id' => $rekening->id,
+                    'tipe_pembayaran' => 'DP',
+                    'nominal' => 5000000.00,
+                    'bukti_transfer' => 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&auto=format&fit=crop&q=80',
+                    'status_verifikasi' => 'Pending',
+                    'verified_by' => null,
+                    'created_at' => now()->subHours(rand(1, 48)),
+                    'updated_at' => now()->subHours(rand(1, 48)),
+                ];
+            }
+            if (! empty($pendingPayments)) {
+                DB::table('pembayaran')->insert($pendingPayments);
+            }
+
+            // 6b. Seed 5 Closing jamaah per agen (with Verified payment + komisi) so /crm/customers has data
+            $this->command->info('Generating 5 closing jamaah × '.count($agents).' agents for Tenant '.($tIndex + 1).'...');
+
+            $closingIdx = 90000; // offset to avoid NIK collision
+            foreach ($agents as $agentObj) {
+                $closingRows = [];
+                for ($c = 1; $c <= 5; $c++) {
+                    $closingIdx++;
+                    $fn = $firstNames[$closingIdx % $fnCount];
+                    $ln = $lastNames[($closingIdx * 7) % $lnCount];
+
+                    $pkgRand = rand(1, 100);
+                    $selectedPkg = $pkgRand <= 45 ? $packagesList[0] : ($pkgRand <= 75 ? $packagesList[1] : ($pkgRand <= 93 ? $packagesList[2] : $packagesList[3]));
+
+                    $daysAgo = rand(15, 90);
+                    $createdAt = now()->subDays($daysAgo)->subHours(rand(1, 12));
+
+                    $closingRows[] = [
+                        'tenant_id' => $tenant->id,
+                        'agen_id' => $agentObj->id,
+                        'crm_stage_id' => $stage4->id,
+                        'nama_lengkap' => "{$fn} {$ln} C{$closingIdx}",
+                        'nik' => '32'.str_pad((string) ($tenant->id * 10000000000000 + $closingIdx), 14, '0', STR_PAD_LEFT),
+                        'nomor_paspor' => 'A'.str_pad((string) ($closingIdx), 8, '0', STR_PAD_LEFT),
+                        'no_hp' => '08'.str_pad((string) (1500000000 + $closingIdx), 10, '0', STR_PAD_LEFT),
+                        'email' => "closing{$closingIdx}.t{$tenant->id}@mailtest.id",
+                        'paket_id' => $selectedPkg['id'],
+                        'tanggal_keberangkatan' => date('Y-m-d', strtotime('+'.rand(30, 150).' days')),
+                        'catatan_admin' => "Jamaah lunas #{$closingIdx} binaan {$agentObj->name}",
+                        'status_logistik' => 'Pending',
+                        'tanggal_serah_terima_logistik' => null,
+                        'created_at' => $createdAt,
+                        'updated_at' => $createdAt,
+                    ];
+                }
+
+                DB::table('jamaah')->insert($closingRows);
+
+                // Insert Verified pembayaran + komisi for each closing jamaah
+                $insertedIds = DB::table('jamaah')
                     ->where('tenant_id', $tenant->id)
+                    ->where('crm_stage_id', $stage4->id)
+                    ->where('agen_id', $agentObj->id)
                     ->orderBy('id', 'desc')
-                    ->limit($currentChunk)
-                    ->get(['id', 'crm_stage_id', 'paket_id', 'agen_id', 'created_at'])
-                    ->reverse();
+                    ->limit(5)
+                    ->pluck('id', 'paket_id');
 
                 $pembayaranRows = [];
                 $komisiRows = [];
-                $transaksiRows = [];
+                foreach ($insertedIds as $paketId => $jamaahId) {
+                    $pkgInfo = collect($packagesList)->firstWhere('id', $paketId) ?? $packagesList[0];
+                    $txDate = now()->subDays(rand(5, 30));
 
-                foreach ($insertedJamaahs as $jItem) {
-                    $isClosing = ($jItem->crm_stage_id === $stage4->id);
-                    $isNegotiation = ($jItem->crm_stage_id === $stage3->id);
+                    $pembayaranRows[] = [
+                        'tenant_id' => $tenant->id,
+                        'jamaah_id' => $jamaahId,
+                        'rekening_tenant_id' => $rekening->id,
+                        'tipe_pembayaran' => 'Lunas',
+                        'nominal' => $pkgInfo['harga'],
+                        'bukti_transfer' => 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&auto=format&fit=crop&q=80',
+                        'status_verifikasi' => 'Verified',
+                        'verified_by' => $owner->id,
+                        'created_at' => $txDate,
+                        'updated_at' => $txDate,
+                    ];
 
-                    if ($isClosing || $isNegotiation) {
-                        $isVerified = $isClosing;
-                        $pkgInfo = null;
-                        foreach ($packagesList as $p) {
-                            if ($p['id'] === $jItem->paket_id) {
-                                $pkgInfo = $p;
-                                break;
-                            }
-                        }
-                        $pkgInfo = $pkgInfo ?? $packagesList[0];
-
-                        $nominal = $isClosing ? $pkgInfo['harga'] : (rand(3, 10) * 1000000);
-                        $payType = $isClosing ? 'Lunas' : 'DP';
-                        $txDate = Carbon::parse($jItem->created_at);
-
-                        $pembayaranRows[] = [
-                            'tenant_id' => $tenant->id,
-                            'jamaah_id' => $jItem->id,
-                            'rekening_tenant_id' => $rekening->id,
-                            'tipe_pembayaran' => $payType,
-                            'nominal' => $nominal,
-                            'bukti_transfer' => 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&auto=format&fit=crop&q=80',
-                            'status_verifikasi' => $isVerified ? 'Verified' : 'Pending',
-                            'verified_by' => $isVerified ? $owner->id : null,
-                            'created_at' => $txDate,
-                            'updated_at' => $txDate,
-                        ];
-
-                        if ($isVerified && $jItem->agen_id) {
-                            $komisiRows[] = [
-                                'tenant_id' => $tenant->id,
-                                'agen_id' => $jItem->agen_id,
-                                'jamaah_id' => $jItem->id,
-                                'nominal_komisi' => $pkgInfo['komisi'],
-                                'status_pencairan' => (rand(1, 10) > 4) ? 'Paid' : 'Ready_to_Pay',
-                                'created_at' => $txDate,
-                                'updated_at' => $txDate,
-                            ];
-
-                            $transaksiRows[] = [
-                                'tenant_id' => $tenant->id,
-                                'inventaris_id' => $invKoper->id,
-                                'jamaah_id' => $jItem->id,
-                                'qty' => 1,
-                                'tipe' => 'OUT',
-                                'created_at' => $txDate,
-                                'updated_at' => $txDate,
-                            ];
-                        }
-                    }
+                    $komisiRows[] = [
+                        'tenant_id' => $tenant->id,
+                        'agen_id' => $agentObj->id,
+                        'jamaah_id' => $jamaahId,
+                        'nominal_komisi' => $pkgInfo['komisi'],
+                        'status_pencairan' => rand(0, 1) ? 'Paid' : 'Ready_to_Pay',
+                        'created_at' => $txDate,
+                        'updated_at' => $txDate,
+                    ];
                 }
 
                 if (! empty($pembayaranRows)) {
@@ -538,9 +542,6 @@ class TenantDatasetSeeder extends Seeder
                 }
                 if (! empty($komisiRows)) {
                     DB::table('komisi_agen')->insert($komisiRows);
-                }
-                if (! empty($transaksiRows)) {
-                    DB::table('inventaris_transaksi')->insert($transaksiRows);
                 }
             }
 

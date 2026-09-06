@@ -13,6 +13,7 @@ Selamat datang di portal dokumentasi resmi. Dokumentasi telah dipisahkan ke dala
 ---
 
 ### 🔑 Akun Akses Demo:
-- **Owner / Superadmin (Level 1)**: `superadmin@hajjflow.com` | Password: `password`
-- **Mitra Agen (Level 2/3)**: `agent2.t2@travel.com` | Password: `password`
+- **Superadmin Master Platform**: `superadmin@hajjflow.com` | Password: `password`
+- **Owner / Superadmin (Level 1)**: `test@example.com` | Password: `password`
+- **Mitra Agen (Level 2/3)**: `budi@example.com` | Password: `password`
 

@@ -59,15 +59,8 @@ export default function CurrencyInput({
     };
 
     return (
-        <div
-            data-slot="input"
-            className={cn(
-                "relative flex h-8 w-full min-w-0 items-center rounded-lg border border-input bg-transparent text-base transition-colors outline-none md:text-sm dark:bg-input/30 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
-                disabled && "pointer-events-none cursor-not-allowed bg-input/50 opacity-50 dark:bg-input/80",
-                className
-            )}
-        >
-            <span className="flex items-center justify-center pl-2.5 pr-1 text-xs font-semibold text-muted-foreground select-none">
+        <div className="relative w-full">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-xs font-bold text-muted-foreground select-none">
                 {prefix}
             </span>
             <input
@@ -78,13 +71,10 @@ export default function CurrencyInput({
                 value={displayValue}
                 onChange={handleChange}
                 placeholder={placeholder}
-                style={{
-                    border: 'none',
-                    outline: 'none',
-                    boxShadow: 'none',
-                    background: 'transparent',
-                }}
-                className="h-full w-full min-w-0 bg-transparent py-1 pr-2.5 pl-0 text-sm font-medium text-foreground placeholder:text-muted-foreground border-0 outline-none ring-0 shadow-none appearance-none focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none disabled:cursor-not-allowed"
+                className={cn(
+                    "block w-full rounded-xl border border-border bg-background py-2.5 pr-3 pl-9 text-xs font-semibold text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:cursor-not-allowed disabled:bg-muted/50 disabled:opacity-50 transition-all",
+                    className
+                )}
             />
         </div>
     );

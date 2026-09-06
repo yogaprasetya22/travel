@@ -21,6 +21,7 @@ class StoreJamaahController extends Controller
             'email' => ['nullable', 'email', 'max:255'],
             'paket_id' => ['required', 'exists:paket,id'],
             'agen_id' => ['nullable', 'exists:users,id'],
+            'tanggal_keberangkatan' => ['nullable', 'date'],
             'catatan_admin' => ['nullable', 'string'],
         ]);
 

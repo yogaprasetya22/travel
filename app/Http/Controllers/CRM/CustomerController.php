@@ -4,6 +4,7 @@ namespace App\Http\Controllers\CRM;
 
 use App\Http\Controllers\Controller;
 use App\Models\Jamaah;
+use App\Models\Paket;
 use App\Models\Pembayaran;
 use App\Models\RekeningTenant;
 use App\Models\User;
@@ -22,13 +23,20 @@ class CustomerController extends Controller
         $user = $request->user();
         $tenantId = $user->getActiveTenantId();
         $search = $request->input('search');
-        $statusFilter = $request->input('status', 'ALL'); // ALL, LUNAS, CICILAN
+        $statusFilter = $request->input('status', 'ALL'); // ALL, LUNAS, BELUM_LUNAS, DP_PENDING
         $docFilter = $request->input('doc', 'ALL'); // ALL, PASSPORT_READY, PASSPORT_PENDING
+        $paketFilter = $request->input('paket_id', 'ALL');
+        $scheduleFilter = $request->input('schedule', 'ALL'); // ALL, SCHEDULED, UNSCHEDULED
         $perPage = (int) $request->input('per_page', 15);
 
         $baseQuery = Jamaah::where('jamaah.tenant_id', $tenantId)
-            ->whereHas('pembayaran', function ($q) {
-                $q->where('status_verifikasi', 'Verified');
+            ->where(function ($q) {
+                $q->whereHas('pembayaran')
+                    ->orWhereHas('crmStage', function ($sq) {
+                        $sq->where('nama_tahap', 'ilike', '%closing%')
+                            ->orWhere('nama_tahap', 'ilike', '%won%')
+                            ->orWhere('nama_tahap', 'ilike', '%selesai%');
+                    });
             });
 
         if ($user->role === 'agen') {
@@ -43,17 +51,15 @@ class CustomerController extends Controller
 
         // Calculate Overall Financial KPI Metrics for Closing Customers
         $allClosingJamaah = (clone $baseQuery)
-            ->with(['paket:id,harga', 'pembayaran' => function ($pq) {
-                $pq->where('status_verifikasi', 'Verified');
-            }, 'komisiAgen'])
+            ->with(['paket:id,harga', 'pembayaran', 'komisiAgen'])
             ->get();
 
         $totalCustomers = $allClosingJamaah->count();
         $totalRevenueTarget = $allClosingJamaah->sum(fn ($j) => (float) ($j->paket->harga ?? 0));
-        $totalPaidReceived = $allClosingJamaah->sum(fn ($j) => (float) $j->pembayaran->sum('nominal'));
+        $totalPaidReceived = $allClosingJamaah->sum(fn ($j) => (float) $j->pembayaran->where('status_verifikasi', 'Verified')->sum('nominal'));
         $totalPendingReceivables = max(0, $totalRevenueTarget - $totalPaidReceived);
         $totalCommissionPayable = $allClosingJamaah->sum(fn ($j) => (float) $j->komisiAgen->sum('nominal_komisi'));
-        $lunasCount = $allClosingJamaah->filter(fn ($j) => $j->pembayaran->sum('nominal') >= ($j->paket->harga ?? 0))->count();
+        $lunasCount = $allClosingJamaah->filter(fn ($j) => $j->pembayaran->where('status_verifikasi', 'Verified')->sum('nominal') >= ($j->paket->harga ?? 0) && ($j->paket->harga ?? 0) > 0)->count();
 
         // Apply Search
         $query = clone $baseQuery;
@@ -72,7 +78,18 @@ class CustomerController extends Controller
             });
         }
 
-        // Apply Document Filter
+        // Apply Payment / Pelunasan Filter
+        if ($statusFilter === 'LUNAS') {
+            $query->whereRaw('(SELECT COALESCE(SUM(nominal), 0) FROM pembayaran WHERE pembayaran.jamaah_id = jamaah.id AND pembayaran.status_verifikasi = \'Verified\') >= (SELECT COALESCE(harga, 0) FROM paket WHERE paket.id = jamaah.paket_id) AND (SELECT COALESCE(harga, 0) FROM paket WHERE paket.id = jamaah.paket_id) > 0');
+        } elseif ($statusFilter === 'BELUM_LUNAS') {
+            $query->whereRaw('(SELECT COALESCE(SUM(nominal), 0) FROM pembayaran WHERE pembayaran.jamaah_id = jamaah.id AND pembayaran.status_verifikasi = \'Verified\') < (SELECT COALESCE(harga, 0) FROM paket WHERE paket.id = jamaah.paket_id)');
+        } elseif ($statusFilter === 'DP_PENDING') {
+            $query->whereHas('pembayaran', function ($pq) {
+                $pq->where('status_verifikasi', 'Pending');
+            });
+        }
+
+        // Apply Document / Paspor Filter
         if ($docFilter === 'PASSPORT_READY') {
             $query->whereNotNull('jamaah.nomor_paspor')->where('jamaah.nomor_paspor', '!=', '');
         } elseif ($docFilter === 'PASSPORT_PENDING') {
@@ -81,11 +98,23 @@ class CustomerController extends Controller
             });
         }
 
+        // Apply Package Filter
+        if (! empty($paketFilter) && $paketFilter !== 'ALL') {
+            $query->where('jamaah.paket_id', $paketFilter);
+        }
+
+        // Apply Schedule Filter
+        if ($scheduleFilter === 'SCHEDULED') {
+            $query->whereNotNull('jamaah.tanggal_keberangkatan');
+        } elseif ($scheduleFilter === 'UNSCHEDULED') {
+            $query->whereNull('jamaah.tanggal_keberangkatan');
+        }
+
         $customers = $query->with([
             'paket:id,nama_paket,harga',
             'agen:id,name,email',
             'pembayaran' => function ($q) {
-                $q->where('status_verifikasi', 'Verified')->orderBy('created_at', 'asc');
+                $q->orderBy('created_at', 'asc');
             },
             'komisiAgen',
             'inventarisTransaksi.inventaris',
@@ -101,9 +130,15 @@ class CustomerController extends Controller
             ->where('is_active', true)
             ->get(['id', 'nama_bank', 'nomor_rekening', 'atas_nama']);
 
+        $pakets = Paket::where('tenant_id', $tenantId)
+            ->where('is_active', true)
+            ->orderBy('nama_paket')
+            ->get(['id', 'nama_paket', 'harga']);
+
         return Inertia::render('CRM/CustomerList', [
             'customers' => $customers,
             'banks' => $banks,
+            'pakets' => $pakets,
             'metrics' => [
                 'total_customers' => $totalCustomers,
                 'total_paid_received' => $totalPaidReceived,
@@ -115,6 +150,8 @@ class CustomerController extends Controller
                 'search' => $search ?? '',
                 'status' => $statusFilter,
                 'doc' => $docFilter,
+                'paket_id' => $paketFilter,
+                'schedule' => $scheduleFilter,
                 'per_page' => $perPage,
             ],
         ]);

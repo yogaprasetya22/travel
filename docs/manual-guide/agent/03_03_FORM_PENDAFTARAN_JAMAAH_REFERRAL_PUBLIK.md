@@ -1,14 +1,20 @@
 # Formulir Pendaftaran Online Mandiri Jamaah (Referral Link)
 
-> **Target Peran**: `Mitra Agen (Level 2/3)` | **Login Akun**: `agent2.t2@travel.com`
+> **Target Peran**: `Mitra Agen (Level 2/3)` | **Login Akun**: `budi@example.com`
 > **Tahapan Alur**: `2. Pendaftaran & Akuisisi Calon Jamaah` | **Kategori**: `Registrasi & Referral Jamaah` | **Rute / URL**: `http://barokah.localhost:8000/daftar?ref=AG-504A79`
 
 ## 📋 Deskripsi Fitur
 Formulir pendaftaran mandiri calon jamaah via tautan referral agen. Memuat informasi paket yang dipilih, data diri calon jamaah, nomor paspor, pilihan kamar, dan nomor rekening resmi travel untuk transfer DP. Agen otomatis tercatat sebagai pembina jamaah.
 
-## 🖼️ Tampilan Antarmuka
+## 🖼️ Tampilan Antarmuka Utama
 
 ![Tampilan Formulir Pendaftaran Online Mandiri Jamaah (Referral Link)](screenshots/03_form_pendaftaran_jamaah_referral_publik.png)
+
+## 🗂️ Tampilan Drawer, Modal & Aksi Detail
+
+### 📸 Tampilan Validasi Error
+
+![Tampilan Validasi Error](screenshots/03_form_pendaftaran_jamaah_referral_publik_validasi_error.png)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

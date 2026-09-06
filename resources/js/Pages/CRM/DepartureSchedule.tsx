@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import { PageProps } from '@/Types';
 import PageLayout from '@/Components/Layouts/PageLayout';
+import { toRupiah } from '@/Components/CurrencyInput';
 import {
     Calendar,
     Plane,
@@ -26,6 +27,7 @@ import {
     User,
     Check,
     Filter,
+    RotateCcw,
 } from 'lucide-react';
 
 import DataTablePagination, { PaginatedData } from '@/Components/DataTablePagination';
@@ -65,7 +67,7 @@ interface JamaahSchedule {
     } | null;
     pembayaran?: Array<{
         id: number;
-        jumlah: number;
+        nominal: number;
         tipe_pembayaran: string;
         status_verifikasi: string;
         tanggal_bayar?: string;
@@ -87,15 +89,25 @@ interface Metrics {
     total_passport_ready: number;
 }
 
+interface PackageOption {
+    id: number;
+    nama_paket: string;
+    harga: number;
+}
+
 interface DepartureScheduleProps extends PageProps {
     schedules: Record<string, JamaahSchedule[]>;
     paginatedJamaah: PaginatedData<JamaahSchedule>;
     availablePeriods?: Array<{ key: string; label: string }>;
+    pakets?: PackageOption[];
     metrics: Metrics;
     filters: {
         search: string;
         status: string;
         period?: string;
+        doc?: string;
+        paket_id?: string | number;
+        payment_status?: string;
         per_page: number;
     };
 }
@@ -104,6 +116,7 @@ export default function DepartureSchedule({
     schedules = {},
     paginatedJamaah,
     availablePeriods = [],
+    pakets = [],
     metrics,
     filters,
 }: DepartureScheduleProps) {
@@ -112,6 +125,9 @@ export default function DepartureSchedule({
     const [searchQuery, setSearchQuery] = useState(filters?.search || '');
     const [statusFilter, setStatusFilter] = useState(filters?.status || 'ALL');
     const [periodFilter, setPeriodFilter] = useState(filters?.period || 'ALL');
+    const [docFilter, setDocFilter] = useState(filters?.doc || 'ALL');
+    const [paketFilter, setPaketFilter] = useState(filters?.paket_id ? String(filters.paket_id) : 'ALL');
+    const [paymentStatusFilter, setPaymentStatusFilter] = useState(filters?.payment_status || 'ALL');
 
     // Selected Jamaah for Detailing Drawer
     const [selectedJamaah, setSelectedJamaah] = useState<JamaahSchedule | null>(null);
@@ -142,6 +158,9 @@ export default function DepartureSchedule({
                 search: debouncedSearchQuery || undefined,
                 status: statusFilter !== 'ALL' ? statusFilter : undefined,
                 period: periodFilter !== 'ALL' ? periodFilter : undefined,
+                doc: docFilter !== 'ALL' ? docFilter : undefined,
+                paket_id: paketFilter !== 'ALL' ? paketFilter : undefined,
+                payment_status: paymentStatusFilter !== 'ALL' ? paymentStatusFilter : undefined,
                 per_page: paginatedJamaah.per_page,
             },
             {
@@ -150,7 +169,24 @@ export default function DepartureSchedule({
                 replace: true,
             }
         );
-    }, [debouncedSearchQuery, statusFilter, periodFilter]);
+    }, [debouncedSearchQuery, statusFilter, periodFilter, docFilter, paketFilter, paymentStatusFilter]);
+
+    const handleResetFilters = () => {
+        setSearchQuery('');
+        setStatusFilter('ALL');
+        setPeriodFilter('ALL');
+        setDocFilter('ALL');
+        setPaketFilter('ALL');
+        setPaymentStatusFilter('ALL');
+    };
+
+    const hasActiveFilters =
+        searchQuery !== '' ||
+        statusFilter !== 'ALL' ||
+        periodFilter !== 'ALL' ||
+        docFilter !== 'ALL' ||
+        paketFilter !== 'ALL' ||
+        paymentStatusFilter !== 'ALL';
 
     useEffect(() => {
         if (selectedJamaah) {
@@ -322,28 +358,65 @@ export default function DepartureSchedule({
                 </div>
             </div>
 
-            {/* Filter Toolbar with Search, Status, and Period Dropdowns */}
-            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-card/60 p-4 rounded-2xl border border-border/80">
-                <div className="relative w-full lg:w-80">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <input
-                        type="text"
-                        placeholder="Cari nama, HP, paspor, paket, agen..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground placeholder:text-muted-foreground"
-                    />
+            {/* Comprehensive Multi-Criteria Filter Toolbar */}
+            <div className="flex flex-col gap-3.5 bg-card/60 p-4 rounded-2xl border border-border/80 shadow-xs">
+                {/* Row 1: Search & Secondary Controls */}
+                <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                    <div className="relative w-full md:w-80">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input
+                            type="text"
+                            placeholder="Cari nama, HP, paspor, paket, agen..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground placeholder:text-muted-foreground"
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-2.5 self-end md:self-auto">
+                        {hasActiveFilters && (
+                            <button
+                                type="button"
+                                onClick={handleResetFilters}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl hover:bg-rose-500/20 transition cursor-pointer"
+                            >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                <span>Reset Filter</span>
+                            </button>
+                        )}
+                        {viewMode === 'table' && <PerPageSelector value={paginatedJamaah.per_page} />}
+                    </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                    {/* Period Filter Dropdown */}
-                    <div className="flex items-center gap-2 bg-muted/60 px-3 py-1.5 rounded-xl border border-border/70 text-xs">
-                        <Calendar className="w-3.5 h-3.5 text-primary" />
-                        <span className="font-semibold text-muted-foreground">Periode:</span>
+                {/* Row 2: 5 Filter Dropdowns (Jadwal, Periode Bulan, Paspor, Paket, Pelunasan) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-3 border-t border-border/60 text-xs">
+                    {/* Filter 1: Status Jadwal Keberangkatan */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <Plane className="w-3.5 h-3.5 text-primary" />
+                            <span>Status Jadwal</span>
+                        </label>
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
+                        >
+                            <option value="ALL">Semua Status Jadwal</option>
+                            <option value="SCHEDULED">Sudah Terjadwal</option>
+                            <option value="UNSCHEDULED">Belum Terjadwal (Antrean)</option>
+                        </select>
+                    </div>
+
+                    {/* Filter 2: Periode Bulan Terbang */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <Calendar className="w-3.5 h-3.5 text-primary" />
+                            <span>Periode Terbang</span>
+                        </label>
                         <select
                             value={periodFilter}
                             onChange={(e) => setPeriodFilter(e.target.value)}
-                            className="bg-background border border-border rounded-lg px-2.5 py-1 text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
                         >
                             <option value="ALL">Semua Periode Terbang</option>
                             {availablePeriods.map((p) => (
@@ -354,32 +427,59 @@ export default function DepartureSchedule({
                         </select>
                     </div>
 
-                    {/* Status Filter Toggle */}
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground font-medium shrink-0">Status:</span>
-                        <div className="flex bg-muted/60 p-1 rounded-xl border border-border/70">
-                            {[
-                                { id: 'ALL', label: 'Semua' },
-                                { id: 'SCHEDULED', label: 'Terjadwal' },
-                                { id: 'UNSCHEDULED', label: 'Belum Terjadwal' },
-                            ].map((st) => (
-                                <button
-                                    key={st.id}
-                                    type="button"
-                                    onClick={() => setStatusFilter(st.id)}
-                                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                                        statusFilter === st.id
-                                            ? 'bg-card text-foreground shadow-xs'
-                                            : 'text-muted-foreground hover:text-foreground'
-                                    }`}
-                                >
-                                    {st.label}
-                                </button>
-                            ))}
-                        </div>
+                    {/* Filter 3: Status Paspor / Visa */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <FileCheck className="w-3.5 h-3.5 text-primary" />
+                            <span>Status Paspor</span>
+                        </label>
+                        <select
+                            value={docFilter}
+                            onChange={(e) => setDocFilter(e.target.value)}
+                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
+                        >
+                            <option value="ALL">Semua Status Paspor</option>
+                            <option value="PASSPORT_READY">Paspor Lengkap / Siap</option>
+                            <option value="PASSPORT_PENDING">Belum Ada Paspor</option>
+                        </select>
                     </div>
 
-                    {viewMode === 'table' && <PerPageSelector value={paginatedJamaah.per_page} />}
+                    {/* Filter 4: Pilihan Paket */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <Package className="w-3.5 h-3.5 text-primary" />
+                            <span>Pilihan Paket</span>
+                        </label>
+                        <select
+                            value={paketFilter}
+                            onChange={(e) => setPaketFilter(e.target.value)}
+                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
+                        >
+                            <option value="ALL">Semua Paket</option>
+                            {pakets.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                    {p.nama_paket}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Filter 5: Status Pelunasan */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
+                            <span>Status Pembayaran</span>
+                        </label>
+                        <select
+                            value={paymentStatusFilter}
+                            onChange={(e) => setPaymentStatusFilter(e.target.value)}
+                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
+                        >
+                            <option value="ALL">Semua Pembayaran</option>
+                            <option value="LUNAS">Sudah Lunas (100%)</option>
+                            <option value="BELUM_LUNAS">Belum Lunas / Cicilan</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -730,7 +830,7 @@ export default function DepartureSchedule({
                                                 <div className="text-[11px] text-muted-foreground">Status: {p.status_verifikasi}</div>
                                             </div>
                                             <div className="font-bold text-emerald-600 dark:text-emerald-400">
-                                                Rp {new Intl.NumberFormat('id-ID').format(p.jumlah)}
+                                                {toRupiah(p.nominal)}
                                             </div>
                                         </div>
                                     ))

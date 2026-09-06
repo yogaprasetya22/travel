@@ -8,6 +8,13 @@ import {
     Edit3,
     Plane,
     Eye,
+    Filter,
+    RotateCcw,
+    Calendar,
+    Package,
+    CheckCircle2,
+    Clock,
+    FileCheck,
 } from 'lucide-react';
 
 import DataTablePagination, { PaginatedData } from '@/Components/DataTablePagination';
@@ -18,23 +25,34 @@ import { useMounted } from '@/hooks/use-mounted';
 import CustomerMetricsCards, { CustomerMetrics } from './Components/CustomerMetricsCards';
 import CustomerDrawer, { Customer, BankAccount } from './Components/CustomerDrawer';
 
+interface PackageOption {
+    id: number;
+    nama_paket: string;
+    harga: number;
+}
+
 interface CustomerListProps extends PageProps {
     customers: PaginatedData<Customer>;
     banks: BankAccount[];
+    pakets?: PackageOption[];
     metrics: CustomerMetrics;
     filters: {
         search: string;
         status: string;
         doc: string;
+        paket_id?: string | number;
+        schedule?: string;
         per_page: number;
     };
 }
 
-export default function CustomerList({ customers, banks = [], metrics, filters }: CustomerListProps) {
+export default function CustomerList({ customers, banks = [], pakets = [], metrics, filters }: CustomerListProps) {
     const isMounted = useMounted();
     const [searchQuery, setSearchQuery] = useState(filters?.search || '');
     const [statusFilter, setStatusFilter] = useState(filters?.status || 'ALL');
     const [docFilter, setDocFilter] = useState(filters?.doc || 'ALL');
+    const [paketFilter, setPaketFilter] = useState(filters?.paket_id ? String(filters.paket_id) : 'ALL');
+    const [scheduleFilter, setScheduleFilter] = useState(filters?.schedule || 'ALL');
 
     // Drawer state
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -72,6 +90,8 @@ export default function CustomerList({ customers, banks = [], metrics, filters }
                 search: debouncedSearchQuery,
                 status: statusFilter,
                 doc: docFilter,
+                paket_id: paketFilter !== 'ALL' ? paketFilter : undefined,
+                schedule: scheduleFilter !== 'ALL' ? scheduleFilter : undefined,
                 per_page: customers.per_page,
             },
             {
@@ -80,7 +100,17 @@ export default function CustomerList({ customers, banks = [], metrics, filters }
                 replace: true,
             }
         );
-    }, [debouncedSearchQuery, statusFilter, docFilter]);
+    }, [debouncedSearchQuery, statusFilter, docFilter, paketFilter, scheduleFilter]);
+
+    const handleResetFilters = () => {
+        setSearchQuery('');
+        setStatusFilter('ALL');
+        setDocFilter('ALL');
+        setPaketFilter('ALL');
+        setScheduleFilter('ALL');
+    };
+
+    const hasActiveFilters = searchQuery !== '' || statusFilter !== 'ALL' || docFilter !== 'ALL' || paketFilter !== 'ALL' || scheduleFilter !== 'ALL';
 
     const handleOpenDrawer = (c: Customer, tab: 'biodata' | 'financial') => {
         setSelectedCustomer(c);
@@ -130,45 +160,109 @@ export default function CustomerList({ customers, banks = [], metrics, filters }
             {/* 4 Financial Summary KPI Cards Component */}
             <CustomerMetricsCards metrics={metrics} />
 
-            {/* Filter Toolbar */}
-            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-card/60 p-3.5 rounded-2xl border border-border/80">
-                <div className="relative w-full md:w-80">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <input
-                        type="text"
-                        placeholder="Cari nama, NIK, HP, paspor, agen..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 text-xs bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground placeholder:text-muted-foreground"
-                    />
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground font-medium shrink-0">Status Paspor:</span>
-                        <div className="flex bg-muted/60 p-1 rounded-xl border border-border/70">
-                            {[
-                                { id: 'ALL', label: 'Semua' },
-                                { id: 'PASSPORT_READY', label: 'Ada Paspor' },
-                                { id: 'PASSPORT_PENDING', label: 'Belum Ada' },
-                            ].map((st) => (
-                                <button
-                                    key={st.id}
-                                    type="button"
-                                    onClick={() => setDocFilter(st.id)}
-                                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                                        docFilter === st.id
-                                            ? 'bg-card text-foreground shadow-xs'
-                                            : 'text-muted-foreground hover:text-foreground'
-                                    }`}
-                                >
-                                    {st.label}
-                                </button>
-                            ))}
-                        </div>
+            {/* Comprehensive Multi-Criteria Filter Toolbar */}
+            <div className="flex flex-col gap-3.5 bg-card/60 p-4 rounded-2xl border border-border/80 shadow-xs">
+                {/* Row 1: Search & Secondary Controls */}
+                <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                    <div className="relative w-full md:w-80">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input
+                            type="text"
+                            placeholder="Cari nama, NIK, HP, paspor, agen..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground placeholder:text-muted-foreground"
+                        />
                     </div>
 
-                    <PerPageSelector value={customers.per_page} />
+                    <div className="flex items-center gap-2.5 self-end md:self-auto">
+                        {hasActiveFilters && (
+                            <button
+                                type="button"
+                                onClick={handleResetFilters}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl hover:bg-rose-500/20 transition cursor-pointer"
+                            >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                <span>Reset Filter</span>
+                            </button>
+                        )}
+                        <PerPageSelector value={customers.per_page} />
+                    </div>
+                </div>
+
+                {/* Row 2: Filter Categories (Pelunasan, Paspor, Paket, Jadwal) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-border/60 text-xs">
+                    {/* Filter 1: Status Pelunasan */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
+                            <span>Status Pelunasan</span>
+                        </label>
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
+                        >
+                            <option value="ALL">Semua Pelunasan</option>
+                            <option value="LUNAS">Sudah Lunas (100%)</option>
+                            <option value="BELUM_LUNAS">Belum Lunas / Cicilan</option>
+                            <option value="DP_PENDING">DP Menunggu Verifikasi</option>
+                        </select>
+                    </div>
+
+                    {/* Filter 2: Status Paspor */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <FileCheck className="w-3.5 h-3.5 text-primary" />
+                            <span>Status Paspor</span>
+                        </label>
+                        <select
+                            value={docFilter}
+                            onChange={(e) => setDocFilter(e.target.value)}
+                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
+                        >
+                            <option value="ALL">Semua Status Paspor</option>
+                            <option value="PASSPORT_READY">Paspor Lengkap</option>
+                            <option value="PASSPORT_PENDING">Belum Ada Paspor</option>
+                        </select>
+                    </div>
+
+                    {/* Filter 3: Pilihan Paket */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <Package className="w-3.5 h-3.5 text-primary" />
+                            <span>Pilihan Paket</span>
+                        </label>
+                        <select
+                            value={paketFilter}
+                            onChange={(e) => setPaketFilter(e.target.value)}
+                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
+                        >
+                            <option value="ALL">Semua Paket Umroh/Haji</option>
+                            {pakets.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                    {p.nama_paket} ({toRupiah(p.harga)})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Filter 4: Status Jadwal Keberangkatan */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <Plane className="w-3.5 h-3.5 text-primary" />
+                            <span>Jadwal Keberangkatan</span>
+                        </label>
+                        <select
+                            value={scheduleFilter}
+                            onChange={(e) => setScheduleFilter(e.target.value)}
+                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
+                        >
+                            <option value="ALL">Semua Jadwal</option>
+                            <option value="SCHEDULED">Sudah Ada Jadwal Terbang</option>
+                            <option value="UNSCHEDULED">Belum Terjadwal (Antrean)</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -189,9 +283,9 @@ export default function CustomerList({ customers, banks = [], metrics, filters }
                         <tbody className="divide-y divide-border/60 text-xs">
                             {customerList.map((c) => {
                                 const packagePrice = Number(c.paket?.harga || 0);
-                                const totalPaid = (c.pembayaran || [])
-                                    .filter((p) => p.status_verifikasi === 'Verified')
-                                    .reduce((sum, p) => sum + Number(p.nominal), 0);
+                                const verifiedPayments = (c.pembayaran || []).filter((p) => p.status_verifikasi === 'Verified');
+                                const pendingPayments = (c.pembayaran || []).filter((p) => p.status_verifikasi === 'Pending');
+                                const totalPaid = verifiedPayments.reduce((sum, p) => sum + Number(p.nominal), 0);
                                 const remainingBalance = Math.max(0, packagePrice - totalPaid);
                                 const isLunas = totalPaid >= packagePrice && packagePrice > 0;
                                 const progressPercent = packagePrice > 0 ? Math.min(100, Math.round((totalPaid / packagePrice) * 100)) : 0;
@@ -239,9 +333,19 @@ export default function CustomerList({ customers, banks = [], metrics, filters }
                                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                                                     isLunas
                                                         ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                                                        : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                                                        : pendingPayments.length > 0 && totalPaid === 0
+                                                        ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                                                        : totalPaid > 0
+                                                        ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20'
+                                                        : 'bg-muted text-muted-foreground border-border'
                                                 }`}>
-                                                    {isLunas ? 'LUNAS (100%)' : `Sisa: ${toRupiah(remainingBalance)}`}
+                                                    {isLunas
+                                                        ? 'LUNAS (100%)'
+                                                        : pendingPayments.length > 0 && totalPaid === 0
+                                                        ? 'DP Menunggu Verifikasi'
+                                                        : totalPaid > 0
+                                                        ? `Cicilan (Sisa: ${toRupiah(remainingBalance)})`
+                                                        : `Belum Bayar (Sisa: ${toRupiah(remainingBalance)})`}
                                                 </span>
                                             </div>
 
@@ -254,8 +358,11 @@ export default function CustomerList({ customers, banks = [], metrics, filters }
                                             </div>
 
                                             {/* Payment Breakdown Badge */}
-                                            <div className="text-[10px] text-muted-foreground mt-1.5">
-                                                {c.pembayaran?.length || 0}x Pembayaran Terverifikasi
+                                            <div className="text-[10px] text-muted-foreground mt-1.5 flex items-center gap-1.5">
+                                                <span>{verifiedPayments.length}x Terverifikasi</span>
+                                                {pendingPayments.length > 0 && (
+                                                    <span className="text-amber-600 dark:text-amber-400 font-semibold">• {pendingPayments.length} Menunggu Verifikasi</span>
+                                                )}
                                             </div>
                                         </td>
 

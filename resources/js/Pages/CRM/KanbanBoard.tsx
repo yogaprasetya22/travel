@@ -38,10 +38,14 @@ import {
     History,
     Clock,
     FileText,
+    Building2,
+    CreditCard,
+    UploadCloud,
 } from 'lucide-react';
 import DataTablePagination from '@/Components/DataTablePagination';
 import PerPageSelector from '@/Components/PerPageSelector';
 import { useDebounce } from '@/hooks/use-debounce';
+import CurrencyInput, { toRupiah, unformatRupiah } from '@/Components/CurrencyInput';
 
 interface Package {
     id: number;
@@ -52,6 +56,13 @@ interface Package {
 interface Agent {
     id: number;
     name: string;
+}
+
+export interface BankAccount {
+    id: number;
+    nama_bank: string;
+    nomor_rekening: string;
+    atas_nama: string;
 }
 
 interface KanbanStageItem extends CrmStage {
@@ -72,6 +83,7 @@ interface KanbanProps {
     stages: KanbanStageItem[];
     packages: Package[];
     agents: Agent[];
+    banks?: BankAccount[];
     filters: {
         search: string;
         per_page: number;
@@ -79,7 +91,7 @@ interface KanbanProps {
     };
 }
 
-export default function Kanban({ stages: initialStages, packages, agents, filters }: KanbanProps) {
+export default function Kanban({ stages: initialStages, packages, agents, banks = [], filters }: KanbanProps) {
     const { auth } = usePage<PageProps>().props;
 
     // View mode: 'kanban' (Card Pipeline) | 'table' (Tabular Listing)
@@ -209,6 +221,9 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
         sourceStage: { id: number; nama_tahap: string } | null;
     } | null>(null);
     const [stageMoveNote, setStageMoveNote] = useState('');
+    const [stageDpNominal, setStageDpNominal] = useState('');
+    const [stageBankId, setStageBankId] = useState('');
+    const [stageBuktiFile, setStageBuktiFile] = useState<File | null>(null);
 
     const handleDragStart = (e: React.DragEvent, leadId: number) => {
         e.dataTransfer.setData('text/plain', leadId.toString());
@@ -245,6 +260,9 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
             targetStage: { id: targetStage.id, nama_tahap: targetStage.nama_tahap },
         });
         setStageMoveNote('');
+        setStageDpNominal('');
+        setStageBankId(banks[0]?.id?.toString() || '');
+        setStageBuktiFile(null);
         setDraggedLeadId(null);
     };
 
@@ -272,6 +290,9 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
             targetStage: { id: targetStage.id, nama_tahap: targetStage.nama_tahap },
         });
         setStageMoveNote('');
+        setStageDpNominal('');
+        setStageBankId(banks[0]?.id?.toString() || '');
+        setStageBuktiFile(null);
     };
 
     const confirmStageMove = (note?: string) => {
@@ -318,18 +339,39 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
         setStages(nextStages);
         setPendingStageMove(null);
 
-        // Call backend update with note
-        router.patch(
-            route('crm.update-stage', leadId),
-            {
-                crm_stage_id: targetStageId,
-                catatan: note || undefined,
-            },
-            {
-                preserveScroll: true,
-                onError: () => setStages(initialStages),
-            }
-        );
+        const numericDp = Number(unformatRupiah(stageDpNominal)) || 0;
+
+        // Call backend update with note and optional DP payment
+        if (stageBuktiFile || numericDp > 0) {
+            router.post(
+                route('crm.update-stage', leadId),
+                {
+                    _method: 'PATCH',
+                    crm_stage_id: targetStageId,
+                    catatan: note || undefined,
+                    nominal_dp: numericDp > 0 ? numericDp : undefined,
+                    rekening_tenant_id: stageBankId || undefined,
+                    bukti_transfer: stageBuktiFile || undefined,
+                },
+                {
+                    preserveScroll: true,
+                    forceFormData: true,
+                    onError: () => setStages(initialStages),
+                }
+            );
+        } else {
+            router.patch(
+                route('crm.update-stage', leadId),
+                {
+                    crm_stage_id: targetStageId,
+                    catatan: note || undefined,
+                },
+                {
+                    preserveScroll: true,
+                    onError: () => setStages(initialStages),
+                }
+            );
+        }
     };
 
     const handleOpenFollowUp = (lead: any) => {
@@ -1042,16 +1084,15 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
                         <SheetTitle>Tambah Calon Nasabah Baru</SheetTitle>
                         <SheetDescription>Daftarkan prospek baru ke dalam CRM pipeline.</SheetDescription>
                     </SheetHeader>
-                    <form onSubmit={handleAddLeadSubmit} className="flex flex-col gap-4 p-4 flex-1">
+                    <form onSubmit={handleAddLeadSubmit} noValidate className="flex flex-col gap-4 p-4 flex-1">
                         <div>
-                            <InputLabel htmlFor="nama_lengkap" value="Nama Lengkap Calon Jamaah" />
+                            <InputLabel htmlFor="nama_lengkap" value="Nama Lengkap Calon Jamaah *" />
                             <TextInput
                                 id="nama_lengkap"
                                 type="text"
                                 value={addForm.data.nama_lengkap}
                                 onChange={(e) => addForm.setData('nama_lengkap', e.target.value)}
-                                className="mt-1 block w-full"
-                                required
+                                className={`mt-1 block w-full ${addForm.errors.nama_lengkap ? 'border-destructive focus:border-destructive focus:ring-destructive' : ''}`}
                                 placeholder="Misal: Bapak Hendra Pratama"
                             />
                             <InputError message={addForm.errors.nama_lengkap} className="mt-2" />
@@ -1065,21 +1106,20 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
                                     type="text"
                                     value={addForm.data.nik}
                                     onChange={(e) => addForm.setData('nik', e.target.value)}
-                                    className="mt-1 block w-full"
+                                    className={`mt-1 block w-full ${addForm.errors.nik ? 'border-destructive focus:border-destructive focus:ring-destructive' : ''}`}
                                     maxLength={16}
                                     placeholder="16 Digit NIK KTP"
                                 />
                                 <InputError message={addForm.errors.nik} className="mt-2" />
                             </div>
                             <div>
-                                <InputLabel htmlFor="no_hp" value="Nomor HP / WhatsApp" />
+                                <InputLabel htmlFor="no_hp" value="Nomor HP / WhatsApp *" />
                                 <TextInput
                                     id="no_hp"
                                     type="text"
                                     value={addForm.data.no_hp}
                                     onChange={(e) => addForm.setData('no_hp', e.target.value)}
-                                    className="mt-1 block w-full"
-                                    required
+                                    className={`mt-1 block w-full ${addForm.errors.no_hp ? 'border-destructive focus:border-destructive focus:ring-destructive' : ''}`}
                                     placeholder="08123456789"
                                 />
                                 <InputError message={addForm.errors.no_hp} className="mt-2" />
@@ -1093,7 +1133,7 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
                                 type="email"
                                 value={addForm.data.email}
                                 onChange={(e) => addForm.setData('email', e.target.value)}
-                                className="mt-1 block w-full"
+                                className={`mt-1 block w-full ${addForm.errors.email ? 'border-destructive focus:border-destructive focus:ring-destructive' : ''}`}
                                 placeholder="hendra@gmail.com"
                             />
                             <InputError message={addForm.errors.email} className="mt-2" />
@@ -1101,13 +1141,12 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <InputLabel htmlFor="paket_id" value="Pilihan Paket Umroh" />
+                                <InputLabel htmlFor="paket_id" value="Pilihan Paket Umroh *" />
                                 <select
                                     id="paket_id"
                                     value={addForm.data.paket_id}
                                     onChange={(e) => addForm.setData('paket_id', e.target.value)}
-                                    className="mt-1 block w-full bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                    required
+                                    className={`mt-1 block w-full bg-background border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 ${addForm.errors.paket_id ? 'border-destructive focus:border-destructive focus:ring-destructive' : 'border-border'}`}
                                 >
                                     <option value="">Pilih Paket...</option>
                                     {packages.map((pkg) => (
@@ -1170,70 +1209,142 @@ export default function Kanban({ stages: initialStages, packages, agents, filter
 
             {/* Modal Dialog: Konfirmasi & Catatan Pindah Tahap CRM */}
             <Dialog open={!!pendingStageMove} onOpenChange={(open) => { if (!open) setPendingStageMove(null); }}>
-                <DialogContent className="sm:max-w-md rounded-2xl p-6 bg-card border border-border">
-                    <DialogHeader>
-                        <div className="flex items-center gap-2.5 mb-1">
-                            <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                <DialogContent className="sm:max-w-xl md:max-w-2xl rounded-2xl p-6 sm:p-7 bg-card border border-border shadow-2xl">
+                    <DialogHeader className="pb-2 border-b border-border/60">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20">
                                 <ArrowRightLeft className="w-5 h-5" />
                             </div>
-                            <DialogTitle className="text-base font-bold text-foreground">
-                                Pindah Tahap CRM &amp; Catat Log
-                            </DialogTitle>
+                            <div>
+                                <DialogTitle className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+                                    Pindah Tahap CRM &amp; Catat Log
+                                </DialogTitle>
+                                <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                                    Pindahkan prospek nasabah ke tahap berikutnya dan tambahkan catatan riwayat aktivitas.
+                                </DialogDescription>
+                            </div>
                         </div>
-                        <DialogDescription className="text-xs text-muted-foreground">
-                            Pindahkan prospek nasabah ke tahap berikutnya dan tambahkan catatan riwayat aktivitas.
-                        </DialogDescription>
                     </DialogHeader>
 
                     {pendingStageMove && (
                         <div className="flex flex-col gap-4 py-2">
-                            <div className="p-3.5 rounded-xl bg-muted/50 border border-border/80 flex flex-col gap-2">
+                            {/* Lead Information & Stage Badge Summary */}
+                            <div className="p-4 rounded-xl bg-muted/40 border border-border flex flex-col gap-3">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-foreground">
-                                        {pendingStageMove.lead.nama_lengkap}
-                                    </span>
-                                    <span className="text-[11px] text-muted-foreground font-mono">
+                                    <div>
+                                        <div className="text-sm font-bold text-foreground">
+                                            {pendingStageMove.lead.nama_lengkap}
+                                        </div>
+                                        {pendingStageMove.lead.paket?.nama_paket && (
+                                            <div className="text-xs text-muted-foreground mt-0.5">
+                                                {pendingStageMove.lead.paket.nama_paket} ({toRupiah(pendingStageMove.lead.paket.harga || 0)})
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className="text-xs text-muted-foreground font-mono bg-background px-2.5 py-1 rounded-lg border border-border/80">
                                         {pendingStageMove.lead.no_hp}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-2 text-xs pt-1 border-t border-border/60">
-                                    <Badge variant="outline" className="text-[10px] font-bold">
+                                <div className="flex items-center gap-2.5 pt-2 border-t border-border/60 text-xs">
+                                    <span className="text-[11px] text-muted-foreground">Transisi:</span>
+                                    <Badge variant="outline" className="text-xs font-semibold px-2.5 py-0.5">
                                         {pendingStageMove.sourceStage?.nama_tahap || 'Tahap Asal'}
                                     </Badge>
-                                    <ArrowRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                                    <Badge className="text-[10px] font-bold bg-primary text-primary-foreground">
+                                    <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                                    <Badge className="text-xs font-bold px-2.5 py-0.5 bg-primary text-primary-foreground">
                                         {pendingStageMove.targetStage.nama_tahap}
                                     </Badge>
                                 </div>
                             </div>
 
+                            {/* Optional DP payment inputs when moving to Closing stage */}
+                            {pendingStageMove.targetStage.nama_tahap.toLowerCase().includes('closing') && (
+                                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/25 flex flex-col gap-3.5 shadow-xs">
+                                    <div className="flex items-center justify-between pb-2 border-b border-amber-500/20">
+                                        <div className="flex items-center gap-2">
+                                            <CreditCard className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                                            <span className="text-xs font-bold text-amber-900 dark:text-amber-300">
+                                                Catat Pembayaran Uang Muka / DP (Opsional)
+                                            </span>
+                                        </div>
+                                        <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded-full border border-amber-500/30">
+                                            Masuk Verifikasi Keuangan
+                                        </span>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                        <div>
+                                            <InputLabel htmlFor="stage-dp-nominal" value="Nominal DP (Rp)" className="text-xs font-semibold" />
+                                            <CurrencyInput
+                                                id="stage-dp-nominal"
+                                                value={stageDpNominal}
+                                                onChange={(val) => setStageDpNominal(String(val))}
+                                                placeholder="0"
+                                                className="mt-1.5 block w-full text-xs font-bold"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel htmlFor="stage-bank-id" value="Rekening Bank Tujuan" className="text-xs font-semibold" />
+                                            <select
+                                                id="stage-bank-id"
+                                                value={stageBankId}
+                                                onChange={(e) => setStageBankId(e.target.value)}
+                                                className="mt-1.5 block w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-primary focus:border-primary"
+                                            >
+                                                {banks.map((b) => (
+                                                    <option key={b.id} value={b.id}>
+                                                        {b.nama_bank} - {b.nomor_rekening} (a.n {b.atas_nama})
+                                                    </option>
+                                                ))}
+                                                {banks.length === 0 && (
+                                                    <option value="">Rekening Utama</option>
+                                                )}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <InputLabel htmlFor="stage-bukti-file" value="Upload Lampiran Bukti Transfer (Opsional)" className="text-xs font-semibold" />
+                                        <input
+                                            id="stage-bukti-file"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => setStageBuktiFile(e.target.files?.[0] || null)}
+                                            className="mt-1.5 block w-full text-xs rounded-xl border border-border/80 bg-background/80 p-1.5 text-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Note / Log Reason */}
                             <div className="flex flex-col gap-1.5">
-                                <InputLabel htmlFor="stage-note" value="Catatan / Alasan Perpindahan (Opsional)" />
+                                <InputLabel htmlFor="stage-note" value="Catatan / Alasan Perpindahan (Opsional)" className="text-xs font-semibold" />
                                 <textarea
                                     id="stage-note"
                                     rows={3}
                                     value={stageMoveNote}
                                     onChange={(e) => setStageMoveNote(e.target.value)}
-                                    placeholder="Contoh: Sudah bayar DP Rp 5jt via transfer BSI, paspor sudah diverifikasi, minta reschedule..."
-                                    className="w-full rounded-xl border border-border bg-background p-3 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground"
+                                    placeholder="Contoh: Sudah bayar DP Rp 5jt via transfer BSI, paspor sudah diverifikasi, siap proses perlengkapan..."
+                                    className="w-full rounded-xl border border-border bg-background p-3 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground leading-relaxed"
                                     autoFocus
                                 />
                             </div>
 
-                            <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 pt-2">
+                            <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2.5 pt-3 border-t border-border/60">
                                 <button
                                     type="button"
                                     onClick={() => setPendingStageMove(null)}
-                                    className="px-4 py-2 border border-border rounded-xl text-xs font-semibold hover:bg-muted transition cursor-pointer"
+                                    className="px-4 py-2.5 border border-border rounded-xl text-xs font-semibold hover:bg-muted transition cursor-pointer text-muted-foreground hover:text-foreground"
                                 >
                                     Batal
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => confirmStageMove(stageMoveNote)}
-                                    className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-bold transition cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
+                                    className="px-5 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-bold transition cursor-pointer shadow-xs flex items-center justify-center gap-2"
                                 >
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    <CheckCircle2 className="w-4 h-4" />
                                     <span>Simpan &amp; Pindahkan</span>
                                 </button>
                             </DialogFooter>

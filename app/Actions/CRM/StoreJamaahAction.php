@@ -32,6 +32,7 @@ class StoreJamaahAction
             'email' => $data['email'] ?? null,
             'paket_id' => $data['paket_id'],
             'agen_id' => $data['agen_id'] ?? $authUserId,
+            'tanggal_keberangkatan' => $data['tanggal_keberangkatan'] ?? null,
             'catatan_admin' => $data['catatan_admin'] ?? 'Didaftarkan oleh admin/agen di CRM.',
         ]);
     }

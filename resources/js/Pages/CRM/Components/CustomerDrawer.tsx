@@ -15,6 +15,12 @@ import {
 } from '@/Components/ui/sheet';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/Components/ui/tabs';
 import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
+import {
     Receipt,
     User,
     CheckCircle2,
@@ -24,6 +30,7 @@ import {
     Clock,
     ArrowRight,
     FileText,
+    Eye,
 } from 'lucide-react';
 
 export interface Customer {
@@ -50,6 +57,7 @@ export interface Customer {
         nominal: number;
         tipe_pembayaran: string;
         status_verifikasi: string;
+        bukti_transfer?: string | null;
         created_at: string;
     }>;
     komisi_agen: Array<{
@@ -106,10 +114,13 @@ export default function CustomerDrawer({
     const [activeDrawerTab, setActiveDrawerTab] = useState<'biodata' | 'financial' | 'riwayat'>(initialTab);
     const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
 
+    const [selectedSlip, setSelectedSlip] = useState<string | null>(null);
+
     useEffect(() => {
         if (customer) {
             setActiveDrawerTab(initialTab);
             setIsAddPaymentOpen(false);
+            setSelectedSlip(null);
         }
     }, [customer, initialTab]);
 
@@ -200,6 +211,7 @@ export default function CustomerDrawer({
     };
 
     return (
+        <>
         <Sheet open={!!customer} onOpenChange={(open) => { if (!open) onClose(); }}>
             <SheetContent side="right" className="w-full sm:max-w-xl md:max-w-2xl p-0 flex flex-col gap-0 overflow-hidden">
                 <SheetHeader>
@@ -403,13 +415,31 @@ export default function CustomerDrawer({
                                                         })}
                                                     </div>
                                                 </div>
-                                                <div className="text-right">
+                                                <div className="text-right flex flex-col items-end gap-1">
                                                     <div className="font-extrabold text-foreground">
                                                         +{toRupiah(pay.nominal)}
                                                     </div>
-                                                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                                                        Terverifikasi
-                                                    </span>
+                                                    <div className="flex items-center gap-2">
+                                                        {pay.bukti_transfer && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setSelectedSlip(pay.bukti_transfer?.startsWith('http') ? pay.bukti_transfer : `/storage/${pay.bukti_transfer}`)}
+                                                                className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                                                            >
+                                                                <Eye className="w-3 h-3" />
+                                                                <span>Lihat Bukti</span>
+                                                            </button>
+                                                        )}
+                                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                                                            pay.status_verifikasi === 'Verified'
+                                                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                                                                : pay.status_verifikasi === 'Pending'
+                                                                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                                                                : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                                                        }`}>
+                                                            {pay.status_verifikasi === 'Verified' ? 'Terverifikasi' : pay.status_verifikasi === 'Pending' ? 'Menunggu Verifikasi' : 'Ditolak'}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}
@@ -697,5 +727,37 @@ export default function CustomerDrawer({
                 )}
             </SheetContent>
         </Sheet>
+
+        {/* Modal: Pratinjau Bukti Transfer */}
+        <Dialog open={!!selectedSlip} onOpenChange={(open) => { if (!open) setSelectedSlip(null); }}>
+            <DialogContent className="sm:max-w-lg rounded-2xl p-6 bg-card border border-border">
+                <DialogHeader>
+                    <DialogTitle className="text-base font-bold text-foreground">
+                        Pratinjau Bukti Transfer
+                    </DialogTitle>
+                </DialogHeader>
+                <div className="flex flex-col items-center justify-center p-2">
+                    {selectedSlip && (
+                        <div className="w-full bg-muted/50 rounded-xl overflow-hidden flex justify-center border border-border">
+                            <img
+                                src={selectedSlip}
+                                alt="Bukti Transfer"
+                                className="object-contain max-h-[65vh] w-full rounded-lg"
+                            />
+                        </div>
+                    )}
+                </div>
+                <div className="flex justify-end pt-2">
+                    <button
+                        type="button"
+                        onClick={() => setSelectedSlip(null)}
+                        className="px-4 py-2 text-xs font-semibold text-foreground border border-border rounded-xl hover:bg-muted transition cursor-pointer"
+                    >
+                        Tutup
+                    </button>
+                </div>
+            </DialogContent>
+        </Dialog>
+        </>
     );
 }

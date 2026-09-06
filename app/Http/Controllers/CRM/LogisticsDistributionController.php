@@ -20,8 +20,16 @@ class LogisticsDistributionController extends Controller
         $tenantId = $user->getActiveTenantId();
 
         $query = Jamaah::where('tenant_id', $tenantId)
-            ->whereHas('inventarisTransaksi', function ($q) {
-                $q->where('tipe', 'OUT');
+            ->where(function ($q) {
+                $q->whereHas('inventarisTransaksi', function ($tq) {
+                    $tq->where('tipe', 'OUT');
+                })
+                    ->orWhereHas('pembayaran')
+                    ->orWhereHas('crmStage', function ($sq) {
+                        $sq->where('nama_tahap', 'ilike', '%closing%')
+                            ->orWhere('nama_tahap', 'ilike', '%won%')
+                            ->orWhere('nama_tahap', 'ilike', '%selesai%');
+                    });
             })
             ->with(['paket', 'agen', 'inventarisTransaksi.inventaris', 'crmStage', 'pembayaran']);
 
@@ -41,7 +49,12 @@ class LogisticsDistributionController extends Controller
         }
 
         if ($request->filled('status') && $request->input('status') !== 'ALL') {
-            $query->where('status_logistik', $request->input('status'));
+            $status = $request->input('status');
+            if ($status === 'Ready_to_Pickup') {
+                $query->whereIn('status_logistik', ['Pending', 'Ready_to_Pickup']);
+            } else {
+                $query->where('status_logistik', $status);
+            }
         }
 
         $perPage = (int) $request->input('per_page', 15);
@@ -62,11 +75,20 @@ class LogisticsDistributionController extends Controller
      */
     public function handover(Request $request, Jamaah $jamaah): RedirectResponse
     {
+        $user = $request->user();
+        if ($user->role !== 'super_admin_master' && $jamaah->tenant_id !== $user->getActiveTenantId()) {
+            abort(403, 'Aksi tidak diizinkan.');
+        }
+
+        if ($user->role === 'agen' && $jamaah->agen_id !== $user->id) {
+            abort(403, 'Anda hanya dapat melakukan serah terima untuk jamaah binaan Anda sendiri.');
+        }
+
         $jamaah->update([
             'status_logistik' => 'Handed_Over',
             'tanggal_serah_terima_logistik' => now(),
         ]);
 
-        return redirect()->back()->with('success', 'Perlengkapan berhasil diserahterimakan kepada jamaah/agen.');
+        return redirect()->back()->with('success', 'Perlengkapan berhasil diserahterimakan kepada jamaah.');
     }
 }

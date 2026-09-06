@@ -1,1 +1,0 @@
-import{n as e}from"./dist-yi8ex3nL.js";function t(t){return e(t.defaultTagName??`div`,t,t)}export{t};

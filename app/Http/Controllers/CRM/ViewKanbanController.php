@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CrmStage;
 use App\Models\Jamaah;
 use App\Models\Paket;
+use App\Models\RekeningTenant;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -121,6 +122,10 @@ class ViewKanbanController extends Controller
             ->orderBy('nama_paket')
             ->get();
 
+        $banks = RekeningTenant::where('tenant_id', $tenantId)
+            ->where('is_active', true)
+            ->get(['id', 'nama_bank', 'nomor_rekening', 'atas_nama']);
+
         // Agents dropdown scope
         if ($user->role === 'admin_travel') {
             $agents = User::where('tenant_id', $tenantId)
@@ -141,6 +146,7 @@ class ViewKanbanController extends Controller
             'stages' => $stagesData,
             'packages' => $packages,
             'agents' => $agents,
+            'banks' => $banks,
             'filters' => [
                 'search' => $search ?? '',
                 'per_page' => $perPage,
