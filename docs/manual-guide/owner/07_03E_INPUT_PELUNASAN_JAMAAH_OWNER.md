@@ -8,8 +8,8 @@ Proses pencatatan pelunasan akhir jamaah saat total pembayaran telah memenuhi ha
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Input Pelunasan Penuh (Lunas) Jamaah oleh Kasir (Light)](screenshots/03e_input_pelunasan_jamaah_owner_light.webp#gh-light-mode-only)
-![Tampilan Input Pelunasan Penuh (Lunas) Jamaah oleh Kasir (Dark)](screenshots/03e_input_pelunasan_jamaah_owner_dark.webp#gh-dark-mode-only)
+![Tampilan Input Pelunasan Penuh (Lunas) Jamaah oleh Kasir (Light)](screenshots/light/03e_input_pelunasan_jamaah_owner.webp#gh-light-mode-only)
+![Tampilan Input Pelunasan Penuh (Lunas) Jamaah oleh Kasir (Dark)](screenshots/dark/03e_input_pelunasan_jamaah_owner.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

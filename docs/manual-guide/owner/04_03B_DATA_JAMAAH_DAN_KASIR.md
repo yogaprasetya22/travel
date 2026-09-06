@@ -8,8 +8,8 @@ Master data seluruh jamaah terdaftar dengan fungsi Kasir untuk memverifikasi pem
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Master Data Jamaah, Kasir & Kuitansi Pembayaran (Light)](screenshots/03b_data_jamaah_dan_kasir_light.webp#gh-light-mode-only)
-![Tampilan Master Data Jamaah, Kasir & Kuitansi Pembayaran (Dark)](screenshots/03b_data_jamaah_dan_kasir_dark.webp#gh-dark-mode-only)
+![Tampilan Master Data Jamaah, Kasir & Kuitansi Pembayaran (Light)](screenshots/light/03b_data_jamaah_dan_kasir.webp#gh-light-mode-only)
+![Tampilan Master Data Jamaah, Kasir & Kuitansi Pembayaran (Dark)](screenshots/dark/03b_data_jamaah_dan_kasir.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

@@ -8,8 +8,8 @@ Kasir atau Owner memasukkan penerimaan uang muka (Down Payment / DP) jamaah ke d
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Input Pembayaran DP Jamaah oleh Owner/Kasir (Light)](screenshots/03c_input_dp_pembayaran_owner_light.webp#gh-light-mode-only)
-![Tampilan Input Pembayaran DP Jamaah oleh Owner/Kasir (Dark)](screenshots/03c_input_dp_pembayaran_owner_dark.webp#gh-dark-mode-only)
+![Tampilan Input Pembayaran DP Jamaah oleh Owner/Kasir (Light)](screenshots/light/03c_input_dp_pembayaran_owner.webp#gh-light-mode-only)
+![Tampilan Input Pembayaran DP Jamaah oleh Owner/Kasir (Dark)](screenshots/dark/03c_input_dp_pembayaran_owner.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

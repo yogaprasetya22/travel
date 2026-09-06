@@ -8,8 +8,8 @@ Modul serah terima barang perlengkapan ibadah (koper bagasi, kain ihram/mukena, 
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Distribusi & Serah Terima Logistik Perlengkapan (Light)](screenshots/04_distribusi_logistik_light.webp#gh-light-mode-only)
-![Tampilan Distribusi & Serah Terima Logistik Perlengkapan (Dark)](screenshots/04_distribusi_logistik_dark.webp#gh-dark-mode-only)
+![Tampilan Distribusi & Serah Terima Logistik Perlengkapan (Light)](screenshots/light/04_distribusi_logistik.webp#gh-light-mode-only)
+![Tampilan Distribusi & Serah Terima Logistik Perlengkapan (Dark)](screenshots/dark/04_distribusi_logistik.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

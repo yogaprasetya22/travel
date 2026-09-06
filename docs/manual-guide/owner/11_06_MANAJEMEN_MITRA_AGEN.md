@@ -8,8 +8,8 @@ Daftar seluruh agen mitra konsultan, status persetujuan akun baru, level hierark
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Manajemen Mitra Agen & Persetujuan Akun (Light)](screenshots/06_manajemen_mitra_agen_light.webp#gh-light-mode-only)
-![Tampilan Manajemen Mitra Agen & Persetujuan Akun (Dark)](screenshots/06_manajemen_mitra_agen_dark.webp#gh-dark-mode-only)
+![Tampilan Manajemen Mitra Agen & Persetujuan Akun (Light)](screenshots/light/06_manajemen_mitra_agen.webp#gh-light-mode-only)
+![Tampilan Manajemen Mitra Agen & Persetujuan Akun (Dark)](screenshots/dark/06_manajemen_mitra_agen.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

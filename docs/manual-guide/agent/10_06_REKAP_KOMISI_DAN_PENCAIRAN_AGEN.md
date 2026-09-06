@@ -8,8 +8,8 @@ Pusat transparansi saldo komisi agen, riwayat komisi per jamaah yang telah lunas
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Rekap Komisi Penjualan & Saldo Agen (Light)](screenshots/06_rekap_komisi_dan_pencairan_agen_light.webp#gh-light-mode-only)
-![Tampilan Rekap Komisi Penjualan & Saldo Agen (Dark)](screenshots/06_rekap_komisi_dan_pencairan_agen_dark.webp#gh-dark-mode-only)
+![Tampilan Rekap Komisi Penjualan & Saldo Agen (Light)](screenshots/light/06_rekap_komisi_dan_pencairan_agen.webp#gh-light-mode-only)
+![Tampilan Rekap Komisi Penjualan & Saldo Agen (Dark)](screenshots/dark/06_rekap_komisi_dan_pencairan_agen.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

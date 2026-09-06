@@ -8,8 +8,8 @@ Pengaturan profil personal direksi/owner travel, pembaruan kata sandi akun demi 
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Profil Akun, Tema & Keamanan Owner (Light)](screenshots/12_pengaturan_profil_owner_light.webp#gh-light-mode-only)
-![Tampilan Profil Akun, Tema & Keamanan Owner (Dark)](screenshots/12_pengaturan_profil_owner_dark.webp#gh-dark-mode-only)
+![Tampilan Profil Akun, Tema & Keamanan Owner (Light)](screenshots/light/12_pengaturan_profil_owner.webp#gh-light-mode-only)
+![Tampilan Profil Akun, Tema & Keamanan Owner (Dark)](screenshots/dark/12_pengaturan_profil_owner.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

@@ -8,8 +8,8 @@ Halaman Finance Payment adalah pusat validasi kasir untuk menyetujui atau menola
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Verifikasi & Persetujuan Bukti Transfer (Finance) (Light)](screenshots/03d_verifikasi_bukti_transfer_owner_light.webp#gh-light-mode-only)
-![Tampilan Verifikasi & Persetujuan Bukti Transfer (Finance) (Dark)](screenshots/03d_verifikasi_bukti_transfer_owner_dark.webp#gh-dark-mode-only)
+![Tampilan Verifikasi & Persetujuan Bukti Transfer (Finance) (Light)](screenshots/light/03d_verifikasi_bukti_transfer_owner.webp#gh-light-mode-only)
+![Tampilan Verifikasi & Persetujuan Bukti Transfer (Finance) (Dark)](screenshots/dark/03d_verifikasi_bukti_transfer_owner.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

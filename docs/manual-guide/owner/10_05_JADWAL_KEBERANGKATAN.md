@@ -8,8 +8,8 @@ Manajemen kloter keberangkatan, batas kuota kursi pesawat, hotel Makkah/Madinah,
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Jadwal, Maskapai & Manajemen Kuota Kursi (Light)](screenshots/05_jadwal_keberangkatan_light.webp#gh-light-mode-only)
-![Tampilan Jadwal, Maskapai & Manajemen Kuota Kursi (Dark)](screenshots/05_jadwal_keberangkatan_dark.webp#gh-dark-mode-only)
+![Tampilan Jadwal, Maskapai & Manajemen Kuota Kursi (Light)](screenshots/light/05_jadwal_keberangkatan.webp#gh-light-mode-only)
+![Tampilan Jadwal, Maskapai & Manajemen Kuota Kursi (Dark)](screenshots/dark/05_jadwal_keberangkatan.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

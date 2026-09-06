@@ -8,8 +8,8 @@ Pencatatan persediaan fisik perlengkapan travel di gudang (koper, kain ihram, mu
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Inventaris Stok Fisik Gudang & Barang Masuk (Light)](screenshots/09_inventaris_dan_stok_barang_light.webp#gh-light-mode-only)
-![Tampilan Inventaris Stok Fisik Gudang & Barang Masuk (Dark)](screenshots/09_inventaris_dan_stok_barang_dark.webp#gh-dark-mode-only)
+![Tampilan Inventaris Stok Fisik Gudang & Barang Masuk (Light)](screenshots/light/09_inventaris_dan_stok_barang.webp#gh-light-mode-only)
+![Tampilan Inventaris Stok Fisik Gudang & Barang Masuk (Dark)](screenshots/dark/09_inventaris_dan_stok_barang.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

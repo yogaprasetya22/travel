@@ -8,8 +8,8 @@ Laci pusat notifikasi real-time dan fitur Broadcast Announcement untuk mengirimk
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Pusat Notifikasi & Kirim Pengumuman Siaran (Broadcast) (Light)](screenshots/15_pusat_notifikasi_dan_broadcast_light.webp#gh-light-mode-only)
-![Tampilan Pusat Notifikasi & Kirim Pengumuman Siaran (Broadcast) (Dark)](screenshots/15_pusat_notifikasi_dan_broadcast_dark.webp#gh-dark-mode-only)
+![Tampilan Pusat Notifikasi & Kirim Pengumuman Siaran (Broadcast) (Light)](screenshots/light/15_pusat_notifikasi_dan_broadcast.webp#gh-light-mode-only)
+![Tampilan Pusat Notifikasi & Kirim Pengumuman Siaran (Broadcast) (Dark)](screenshots/dark/15_pusat_notifikasi_dan_broadcast.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

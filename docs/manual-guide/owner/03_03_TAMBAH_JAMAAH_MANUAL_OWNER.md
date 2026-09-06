@@ -8,8 +8,8 @@ Owner atau staf kantor dapat mendaftarkan calon jamaah secara manual langsung da
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Tambah Jamaah Baru Manual oleh Owner/Staf (CRM Create) (Light)](screenshots/03_tambah_jamaah_manual_owner_light.webp#gh-light-mode-only)
-![Tampilan Tambah Jamaah Baru Manual oleh Owner/Staf (CRM Create) (Dark)](screenshots/03_tambah_jamaah_manual_owner_dark.webp#gh-dark-mode-only)
+![Tampilan Tambah Jamaah Baru Manual oleh Owner/Staf (CRM Create) (Light)](screenshots/light/03_tambah_jamaah_manual_owner.webp#gh-light-mode-only)
+![Tampilan Tambah Jamaah Baru Manual oleh Owner/Staf (CRM Create) (Dark)](screenshots/dark/03_tambah_jamaah_manual_owner.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

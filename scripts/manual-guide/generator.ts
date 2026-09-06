@@ -31,20 +31,30 @@ export async function ensureLoggedIn(
     }
 }
 
+import themeData from '../../resources/js/lib/theme-colors.json';
+
 export async function setAppTheme(page: any, mode: 'light' | 'dark'): Promise<void> {
     const themeKey = mode === 'dark' ? 'luxury' : 'caramellatte';
-    await page.evaluate((key: string) => {
+    const allThemes = (themeData.themes || {}) as Record<string, any>;
+    const themeDef = allThemes[themeKey];
+
+    await page.evaluate(({ key, def }) => {
         localStorage.setItem('theme_preference', key);
         const root = document.documentElement;
-        if (key === 'luxury') {
+        if (def && def.variables) {
+            Object.entries(def.variables).forEach(([prop, val]) => {
+                root.style.setProperty(prop, val as string);
+            });
+        }
+        if (key === 'luxury' || def?.type === 'dark') {
             root.classList.add('dark');
             root.classList.remove('light');
         } else {
             root.classList.remove('dark');
             root.classList.add('light');
         }
-    }, themeKey);
-    await page.waitForTimeout(250);
+    }, { key: themeKey, def: themeDef });
+    await page.waitForTimeout(400);
 }
 
 export async function generateRoleSection(
@@ -57,12 +67,15 @@ export async function generateRoleSection(
     const roleTitle = roleKey === 'owner' ? 'Owner Travel (Level 1)' : 'Mitra Agen (Level 2/3)';
     const targetDir = path.join(ROOT_DOCS_DIR, roleKey);
     const ssDir = path.join(targetDir, 'screenshots');
+    const ssDirLight = path.join(ssDir, 'light');
+    const ssDirDark = path.join(ssDir, 'dark');
 
     // Clean existing directory to prevent old files
     if (fs.existsSync(targetDir)) {
         fs.rmSync(targetDir, { recursive: true, force: true });
     }
-    fs.mkdirSync(ssDir, { recursive: true });
+    fs.mkdirSync(ssDirLight, { recursive: true });
+    fs.mkdirSync(ssDirDark, { recursive: true });
 
     console.log(`\n======================================================`);
     console.log(`📘 MENYUSUN PANDUAN: ${roleTitle.toUpperCase()}`);
@@ -108,17 +121,15 @@ export async function generateRoleSection(
         await page.goto(targetUrl, { waitUntil: 'networkidle' });
         await page.waitForTimeout(1000);
 
-        fs.mkdirSync(ssDir, { recursive: true });
+        const ssFilename = `${mod.id}.webp`;
 
         // 1. Capture Light Mode Screenshot
         await setAppTheme(page, 'light');
-        const ssLight = `${mod.id}_light.webp`;
-        await page.screenshot({ path: path.join(ssDir, ssLight), fullPage: false, type: 'webp', quality: 85 });
+        await page.screenshot({ path: path.join(ssDirLight, ssFilename), fullPage: false, type: 'webp', quality: 85 });
 
         // 2. Capture Dark Mode Screenshot
         await setAppTheme(page, 'dark');
-        const ssDark = `${mod.id}_dark.webp`;
-        await page.screenshot({ path: path.join(ssDir, ssDark), fullPage: false, type: 'webp', quality: 85 });
+        await page.screenshot({ path: path.join(ssDirDark, ssFilename), fullPage: false, type: 'webp', quality: 85 });
 
         if (mod.actions) {
             try {
@@ -128,9 +139,9 @@ export async function generateRoleSection(
             }
         }
 
-        // Check for any additional screenshots taken by actions
+        // Check for any additional screenshots taken by actions in ssDir root or subfolders
         const extraScreenshots = fs.existsSync(ssDir)
-            ? fs.readdirSync(ssDir).filter((file) => file.startsWith(`${mod.id}_`) && file !== ssLight && file !== ssDark && (file.endsWith('.webp') || file.endsWith('.png')))
+            ? fs.readdirSync(ssDir).filter((file) => file.startsWith(`${mod.id}_`) && (file.endsWith('.webp') || file.endsWith('.png')))
             : [];
 
         const fileBasename = `${orderNum}_${mod.id.toUpperCase()}.md`;
@@ -141,8 +152,8 @@ export async function generateRoleSection(
         docContent += `> **Tahapan Alur**: \`${mod.workflowStage}\` | **Kategori**: \`${mod.category}\` | **Rute / URL**: \`${mod.route}\`\n\n`;
         docContent += `## 📋 Deskripsi Fitur\n${mod.description}\n\n`;
         docContent += `## 🖼️ Tampilan Antarmuka Utama\n\n`;
-        docContent += `![Tampilan ${mod.title} (Light)](screenshots/${ssLight}#gh-light-mode-only)\n`;
-        docContent += `![Tampilan ${mod.title} (Dark)](screenshots/${ssDark}#gh-dark-mode-only)\n\n`;
+        docContent += `![Tampilan ${mod.title} (Light)](screenshots/light/${ssFilename}#gh-light-mode-only)\n`;
+        docContent += `![Tampilan ${mod.title} (Dark)](screenshots/dark/${ssFilename}#gh-dark-mode-only)\n\n`;
 
         if (extraScreenshots.length > 0) {
             docContent += `## 🗂️ Tampilan Drawer, Modal & Aksi Detail\n\n`;

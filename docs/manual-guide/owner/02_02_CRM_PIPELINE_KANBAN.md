@@ -8,8 +8,8 @@ Papan Kanban visual interaktif untuk mengawal alur prospek calon jamaah dari tah
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Papan CRM Kanban Pipeline Jamaah (Leads to Closing) (Light)](screenshots/02_crm_pipeline_kanban_light.webp#gh-light-mode-only)
-![Tampilan Papan CRM Kanban Pipeline Jamaah (Leads to Closing) (Dark)](screenshots/02_crm_pipeline_kanban_dark.webp#gh-dark-mode-only)
+![Tampilan Papan CRM Kanban Pipeline Jamaah (Leads to Closing) (Light)](screenshots/light/02_crm_pipeline_kanban.webp#gh-light-mode-only)
+![Tampilan Papan CRM Kanban Pipeline Jamaah (Leads to Closing) (Dark)](screenshots/dark/02_crm_pipeline_kanban.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

@@ -8,8 +8,8 @@ Papan Kanban visual khusus bagi agen untuk mengawal jamaah binaan melewati setia
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Monitoring Pipeline Kanban Jamaah Binaan (Light)](screenshots/05_monitoring_crm_pipeline_binaan_light.webp#gh-light-mode-only)
-![Tampilan Monitoring Pipeline Kanban Jamaah Binaan (Dark)](screenshots/05_monitoring_crm_pipeline_binaan_dark.webp#gh-dark-mode-only)
+![Tampilan Monitoring Pipeline Kanban Jamaah Binaan (Light)](screenshots/light/05_monitoring_crm_pipeline_binaan.webp#gh-light-mode-only)
+![Tampilan Monitoring Pipeline Kanban Jamaah Binaan (Dark)](screenshots/dark/05_monitoring_crm_pipeline_binaan.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

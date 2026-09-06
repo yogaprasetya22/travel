@@ -8,8 +8,8 @@ Owner dapat menggeser kartu jamaah antar-kolom tahapan CRM (New Leads → Follow
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Memindahkan Stage Jamaah di Papan Kanban CRM (Light)](screenshots/03f_pindah_stage_kanban_owner_light.webp#gh-light-mode-only)
-![Tampilan Memindahkan Stage Jamaah di Papan Kanban CRM (Dark)](screenshots/03f_pindah_stage_kanban_owner_dark.webp#gh-dark-mode-only)
+![Tampilan Memindahkan Stage Jamaah di Papan Kanban CRM (Light)](screenshots/light/03f_pindah_stage_kanban_owner.webp#gh-light-mode-only)
+![Tampilan Memindahkan Stage Jamaah di Papan Kanban CRM (Dark)](screenshots/dark/03f_pindah_stage_kanban_owner.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

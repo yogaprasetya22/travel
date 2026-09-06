@@ -8,8 +8,8 @@ Pusat kendali eksekutif untuk melihat performa bisnis travel, total omzet masuk,
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Dashboard Utama & Ringkasan KPI Eksekutif (Light)](screenshots/01_dashboard_utama_owner_light.webp#gh-light-mode-only)
-![Tampilan Dashboard Utama & Ringkasan KPI Eksekutif (Dark)](screenshots/01_dashboard_utama_owner_dark.webp#gh-dark-mode-only)
+![Tampilan Dashboard Utama & Ringkasan KPI Eksekutif (Light)](screenshots/light/01_dashboard_utama_owner.webp#gh-light-mode-only)
+![Tampilan Dashboard Utama & Ringkasan KPI Eksekutif (Dark)](screenshots/dark/01_dashboard_utama_owner.webp#gh-dark-mode-only)
 
 ## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
 

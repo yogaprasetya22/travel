@@ -8,8 +8,8 @@ Visualisasi pohon jaringan (Network Tree) keagenan bertingkat untuk melihat hubu
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Monitoring Struktur Tim & Pohon Jaringan Agen (Light)](screenshots/08_monitoring_pohon_jaringan_light.webp#gh-light-mode-only)
-![Tampilan Monitoring Struktur Tim & Pohon Jaringan Agen (Dark)](screenshots/08_monitoring_pohon_jaringan_dark.webp#gh-dark-mode-only)
+![Tampilan Monitoring Struktur Tim & Pohon Jaringan Agen (Light)](screenshots/light/08_monitoring_pohon_jaringan.webp#gh-light-mode-only)
+![Tampilan Monitoring Struktur Tim & Pohon Jaringan Agen (Dark)](screenshots/dark/08_monitoring_pohon_jaringan.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

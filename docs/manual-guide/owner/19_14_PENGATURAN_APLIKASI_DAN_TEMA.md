@@ -8,8 +8,8 @@ Pusat preferensi sistem travel: pemilihan palet tema warna (Luxury, Emerald, Roy
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Pengaturan Sistem, Notifikasi & Kustomisasi Tema (Light)](screenshots/14_pengaturan_aplikasi_dan_tema_light.webp#gh-light-mode-only)
-![Tampilan Pengaturan Sistem, Notifikasi & Kustomisasi Tema (Dark)](screenshots/14_pengaturan_aplikasi_dan_tema_dark.webp#gh-dark-mode-only)
+![Tampilan Pengaturan Sistem, Notifikasi & Kustomisasi Tema (Light)](screenshots/light/14_pengaturan_aplikasi_dan_tema.webp#gh-light-mode-only)
+![Tampilan Pengaturan Sistem, Notifikasi & Kustomisasi Tema (Dark)](screenshots/dark/14_pengaturan_aplikasi_dan_tema.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 
