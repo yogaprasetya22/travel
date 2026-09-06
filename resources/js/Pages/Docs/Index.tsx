@@ -488,6 +488,22 @@ export default function DocsIndex({
             .docs-rendered-markdown img:hover {
                 transform: scale(1.005);
             }
+            .docs-rendered-markdown img[src*="_light.webp"],
+            .docs-rendered-markdown img[src*="#gh-light-mode-only"] {
+                display: block;
+            }
+            .dark .docs-rendered-markdown img[src*="_light.webp"],
+            .dark .docs-rendered-markdown img[src*="#gh-light-mode-only"] {
+                display: none !important;
+            }
+            .docs-rendered-markdown img[src*="_dark.webp"],
+            .docs-rendered-markdown img[src*="#gh-dark-mode-only"] {
+                display: none !important;
+            }
+            .dark .docs-rendered-markdown img[src*="_dark.webp"],
+            .dark .docs-rendered-markdown img[src*="#gh-dark-mode-only"] {
+                display: block !important;
+            }
             .docs-rendered-markdown hr {
                 border: 0;
                 border-top: 1px solid var(--border);

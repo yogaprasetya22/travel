@@ -8,7 +8,8 @@ Setelah bukti transfer diverifikasi oleh kantor, agen dapat memantau perpindahan
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Memantau Status Pembayaran & Pindah Stage Kanban (Agen)](screenshots/04c_monitoring_status_pembayaran_agen.webp)
+![Tampilan Memantau Status Pembayaran & Pindah Stage Kanban (Agen) (Light)](screenshots/04c_monitoring_status_pembayaran_agen_light.webp#gh-light-mode-only)
+![Tampilan Memantau Status Pembayaran & Pindah Stage Kanban (Agen) (Dark)](screenshots/04c_monitoring_status_pembayaran_agen_dark.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

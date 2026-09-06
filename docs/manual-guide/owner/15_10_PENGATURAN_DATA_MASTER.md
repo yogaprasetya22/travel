@@ -8,7 +8,8 @@ Konfigurasi sentral paket umroh & haji, nominal komisi default, fasilitas hotel,
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Pengaturan Master Paket, Rekening & CRM](screenshots/10_pengaturan_data_master.webp)
+![Tampilan Pengaturan Master Paket, Rekening & CRM (Light)](screenshots/10_pengaturan_data_master_light.webp#gh-light-mode-only)
+![Tampilan Pengaturan Master Paket, Rekening & CRM (Dark)](screenshots/10_pengaturan_data_master_dark.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

@@ -8,7 +8,8 @@ Pusat pengaturan profil akun agen, ganti password, nomor WhatsApp konsultasi, bi
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Setup Profil, Password & Live Customizer Bio Link](screenshots/01_setup_bio_link_dan_profil_agen.webp)
+![Tampilan Setup Profil, Password & Live Customizer Bio Link (Light)](screenshots/01_setup_bio_link_dan_profil_agen_light.webp#gh-light-mode-only)
+![Tampilan Setup Profil, Password & Live Customizer Bio Link (Dark)](screenshots/01_setup_bio_link_dan_profil_agen_dark.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

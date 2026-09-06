@@ -8,7 +8,8 @@ Modul keuangan untuk memvalidasi hak komisi penjualan agen atas jamaah yang tela
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Rekapitulasi & Pencairan Komisi Mitra Agen](screenshots/07_pencairan_komisi_agen.webp)
+![Tampilan Rekapitulasi & Pencairan Komisi Mitra Agen (Light)](screenshots/07_pencairan_komisi_agen_light.webp#gh-light-mode-only)
+![Tampilan Rekapitulasi & Pencairan Komisi Mitra Agen (Dark)](screenshots/07_pencairan_komisi_agen_dark.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

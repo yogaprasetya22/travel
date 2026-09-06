@@ -8,7 +8,8 @@ Setelah jamaah binaan mentransfer DP atau cicilan ke rekening travel, agen mengu
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Upload Bukti Transfer Pembayaran oleh Agen](screenshots/04b_upload_bukti_transfer_agen.webp)
+![Tampilan Upload Bukti Transfer Pembayaran oleh Agen (Light)](screenshots/04b_upload_bukti_transfer_agen_light.webp#gh-light-mode-only)
+![Tampilan Upload Bukti Transfer Pembayaran oleh Agen (Dark)](screenshots/04b_upload_bukti_transfer_agen_dark.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

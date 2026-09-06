@@ -8,7 +8,8 @@ Agen dapat mendaftarkan jamaah secara manual dari dashboard jika calon jamaah me
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Pendaftaran & Input Data Jamaah Binaan Secara Manual (Internal Agen)](screenshots/04_input_dan_pendaftaran_jamaah_internal.webp)
+![Tampilan Pendaftaran & Input Data Jamaah Binaan Secara Manual (Internal Agen) (Light)](screenshots/04_input_dan_pendaftaran_jamaah_internal_light.webp#gh-light-mode-only)
+![Tampilan Pendaftaran & Input Data Jamaah Binaan Secara Manual (Internal Agen) (Dark)](screenshots/04_input_dan_pendaftaran_jamaah_internal_dark.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

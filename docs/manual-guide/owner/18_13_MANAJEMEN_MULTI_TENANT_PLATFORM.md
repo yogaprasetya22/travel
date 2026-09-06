@@ -8,7 +8,8 @@ Pusat kendali multi-tenant platform untuk melihat seluruh travel agensi terdafta
 
 ## 🖼️ Tampilan Antarmuka Utama
 
-![Tampilan Manajemen Multi-Tenant & Entitas Travel Agensi](screenshots/13_manajemen_multi_tenant_platform.webp)
+![Tampilan Manajemen Multi-Tenant & Entitas Travel Agensi (Light)](screenshots/13_manajemen_multi_tenant_platform_light.webp#gh-light-mode-only)
+![Tampilan Manajemen Multi-Tenant & Entitas Travel Agensi (Dark)](screenshots/13_manajemen_multi_tenant_platform_dark.webp#gh-dark-mode-only)
 
 ## 🗂️ Tampilan Drawer, Modal & Aksi Detail
 

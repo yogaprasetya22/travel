@@ -31,6 +31,22 @@ export async function ensureLoggedIn(
     }
 }
 
+export async function setAppTheme(page: any, mode: 'light' | 'dark'): Promise<void> {
+    const themeKey = mode === 'dark' ? 'luxury' : 'caramellatte';
+    await page.evaluate((key: string) => {
+        localStorage.setItem('theme_preference', key);
+        const root = document.documentElement;
+        if (key === 'luxury') {
+            root.classList.add('dark');
+            root.classList.remove('light');
+        } else {
+            root.classList.remove('dark');
+            root.classList.add('light');
+        }
+    }, themeKey);
+    await page.waitForTimeout(250);
+}
+
 export async function generateRoleSection(
     page: any,
     context: any,
@@ -90,13 +106,19 @@ export async function generateRoleSection(
 
         const targetUrl = mod.route.startsWith('http') ? mod.route : `${BASE_URL}${mod.route}`;
         await page.goto(targetUrl, { waitUntil: 'networkidle' });
-        await page.waitForTimeout(1200);
+        await page.waitForTimeout(1000);
 
         fs.mkdirSync(ssDir, { recursive: true });
 
-        const screenshotName = `${mod.id}.webp`;
-        const screenshotPath = path.join(ssDir, screenshotName);
-        await page.screenshot({ path: screenshotPath, fullPage: false, type: 'webp', quality: 85 });
+        // 1. Capture Light Mode Screenshot
+        await setAppTheme(page, 'light');
+        const ssLight = `${mod.id}_light.webp`;
+        await page.screenshot({ path: path.join(ssDir, ssLight), fullPage: false, type: 'webp', quality: 85 });
+
+        // 2. Capture Dark Mode Screenshot
+        await setAppTheme(page, 'dark');
+        const ssDark = `${mod.id}_dark.webp`;
+        await page.screenshot({ path: path.join(ssDir, ssDark), fullPage: false, type: 'webp', quality: 85 });
 
         if (mod.actions) {
             try {
@@ -106,9 +128,9 @@ export async function generateRoleSection(
             }
         }
 
-        // Check for any additional screenshots taken by actions (e.g. {id}_drawer.webp, {id}_action.webp, etc.)
+        // Check for any additional screenshots taken by actions
         const extraScreenshots = fs.existsSync(ssDir)
-            ? fs.readdirSync(ssDir).filter((file) => file.startsWith(`${mod.id}_`) && (file.endsWith('.webp') || file.endsWith('.png')))
+            ? fs.readdirSync(ssDir).filter((file) => file.startsWith(`${mod.id}_`) && file !== ssLight && file !== ssDark && (file.endsWith('.webp') || file.endsWith('.png')))
             : [];
 
         const fileBasename = `${orderNum}_${mod.id.toUpperCase()}.md`;
@@ -119,7 +141,8 @@ export async function generateRoleSection(
         docContent += `> **Tahapan Alur**: \`${mod.workflowStage}\` | **Kategori**: \`${mod.category}\` | **Rute / URL**: \`${mod.route}\`\n\n`;
         docContent += `## 📋 Deskripsi Fitur\n${mod.description}\n\n`;
         docContent += `## 🖼️ Tampilan Antarmuka Utama\n\n`;
-        docContent += `![Tampilan ${mod.title}](screenshots/${screenshotName})\n\n`;
+        docContent += `![Tampilan ${mod.title} (Light)](screenshots/${ssLight}#gh-light-mode-only)\n`;
+        docContent += `![Tampilan ${mod.title} (Dark)](screenshots/${ssDark}#gh-dark-mode-only)\n\n`;
 
         if (extraScreenshots.length > 0) {
             docContent += `## 🗂️ Tampilan Drawer, Modal & Aksi Detail\n\n`;
@@ -127,6 +150,7 @@ export async function generateRoleSection(
                 const actionLabel = extra
                     .replace(`${mod.id}_`, '')
                     .replace(/\.(webp|png)$/, '')
+                    .replace(/_(light|dark)$/, '')
                     .replace(/_/g, ' ')
                     .replace(/\b\w/g, (l) => l.toUpperCase());
                 docContent += `### 📸 Tampilan ${actionLabel}\n\n`;
