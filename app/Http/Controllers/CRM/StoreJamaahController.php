@@ -16,13 +16,13 @@ class StoreJamaahController extends Controller
     {
         $validated = $request->validate([
             'nama_lengkap' => ['required', 'string', 'max:255'],
-            'nik' => ['nullable', 'string', 'length:16'],
+            'nik' => ['nullable', 'string', 'digits:16'],
             'no_hp' => ['required', 'string', 'max:20'],
             'email' => ['nullable', 'email', 'max:255'],
             'paket_id' => ['required', 'exists:paket,id'],
             'agen_id' => ['nullable', 'exists:users,id'],
             'tanggal_keberangkatan' => ['nullable', 'date'],
-            'catatan_admin' => ['nullable', 'string'],
+            'catatan_admin' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $tenantId = auth()->user()->getActiveTenantId();

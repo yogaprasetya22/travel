@@ -6,7 +6,7 @@ import TextInput from '@/Components/TextInput';
 import InputLabel from '@/Components/InputLabel';
 import InputError from '@/Components/InputError';
 import PrimaryButton from '@/Components/PrimaryButton';
-import { guestRegisterSchema, zodErrors } from '@/lib/schemas';
+import { crmLeadSchema, zodErrors } from '@/lib/schemas';
 import {
     Sheet,
     SheetContent,
@@ -413,7 +413,8 @@ export default function Kanban({ stages: initialStages, packages, agents, banks 
 
     const handleAddLeadSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const fieldErrors = zodErrors(guestRegisterSchema, addForm.data);
+        addForm.clearErrors();
+        const fieldErrors = zodErrors(crmLeadSchema, addForm.data);
         if (Object.keys(fieldErrors).length > 0) {
             Object.entries(fieldErrors).forEach(([field, msg]) => {
                 if (msg) addForm.setError(field as any, msg);
@@ -433,6 +434,15 @@ export default function Kanban({ stages: initialStages, packages, agents, banks 
     const handleUpdateLeadSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingLead) return;
+
+        editForm.clearErrors();
+        const fieldErrors = zodErrors(crmLeadSchema, editForm.data);
+        if (Object.keys(fieldErrors).length > 0) {
+            Object.entries(fieldErrors).forEach(([field, msg]) => {
+                if (msg) editForm.setError(field as any, msg);
+            });
+            return;
+        }
 
         editForm.put(route('crm.jamaah.update', editingLead.id), {
             preserveScroll: true,

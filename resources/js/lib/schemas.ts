@@ -65,10 +65,21 @@ export const updatePasswordSchema = z.object({
 
 export const guestRegisterSchema = z.object({
     nama_lengkap: z.string().min(2, 'Nama lengkap minimal 2 karakter.'),
-    nik: z.string().length(16, 'NIK harus 16 digit.').regex(/^\d+$/, 'NIK hanya boleh angka.').optional().or(z.literal('')),
-    no_hp: z.string().min(9, 'Nomor HP tidak valid.').regex(/^[0-9+\-\s]+$/, 'Format nomor HP tidak valid.'),
-    email: z.email({ error: 'Alamat email tidak valid.' }),
+    nik: z.string().regex(/^\d{16}$/, 'NIK harus 16 digit angka.').optional().or(z.literal('')),
+    no_hp: z.string().min(9, 'Nomor HP minimal 9 karakter.').regex(/^[0-9+\-\s]+$/, 'Format nomor HP tidak valid.'),
+    email: z.string().email('Alamat email tidak valid.').optional().or(z.literal('')),
     paket_id: z.string().min(1, 'Pilih paket umroh terlebih dahulu.'),
+});
+
+export const crmLeadSchema = z.object({
+    nama_lengkap: z.string().min(2, 'Nama lengkap calon jamaah minimal 2 karakter.'),
+    nik: z.string().regex(/^\d{16}$/, 'NIK harus tepat 16 digit angka.').optional().or(z.literal('')),
+    no_hp: z.string().min(9, 'Nomor HP minimal 9 karakter.').max(20, 'Nomor HP maksimal 20 karakter.').regex(/^[0-9+\-\s]+$/, 'Format nomor HP tidak valid.'),
+    email: z.string().email('Alamat email tidak valid.').optional().or(z.literal('')),
+    paket_id: z.string().min(1, 'Pilih paket umroh terlebih dahulu.'),
+    agen_id: z.string().optional().or(z.literal('')),
+    tanggal_keberangkatan: z.string().optional().or(z.literal('')),
+    catatan_admin: z.string().max(1000, 'Catatan maksimal 1000 karakter.').optional().or(z.literal('')),
 });
 
 // ─── Keagenan ────────────────────────────────────────────────────────────────
