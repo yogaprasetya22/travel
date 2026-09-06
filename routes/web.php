@@ -37,7 +37,9 @@ Route::get('/daftar/sukses', [PublicLandingController::class, 'registerSuccess']
 Route::get('/agen/{referral_code}', [AgentProfileController::class, 'show'])->name('public.agent.profile');
 
 // Documentation & Manual Guide Routes (Public & In-App)
-Route::get('/docs-assets/{role}/screenshots/{file}', [DocsController::class, 'asset'])->name('docs.asset');
+Route::get('/docs-assets/{role}/screenshots/{file}', [DocsController::class, 'asset'])
+    ->where('file', '.*')
+    ->name('docs.asset');
 Route::get('/docs/{role?}/{slug?}', [DocsController::class, 'index'])->name('docs.index');
 
 Route::get('/dashboard', DashboardController::class)

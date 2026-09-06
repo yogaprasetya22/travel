@@ -261,15 +261,15 @@ class DocsController extends Controller
     {
         // Sanitize path to prevent directory traversal
         $safeRole = basename($role);
-        $safeFile = basename($file);
+        $cleanFile = str_replace('..', '', ltrim($file, '/'));
 
-        $assetPath = $this->docsBasePath."/{$safeRole}/screenshots/{$safeFile}";
+        $assetPath = $this->docsBasePath."/{$safeRole}/screenshots/{$cleanFile}";
 
         if (! File::exists($assetPath)) {
             abort(404, 'Asset screenshot tidak ditemukan.');
         }
 
-        $mimeType = File::mimeType($assetPath) ?: 'image/png';
+        $mimeType = File::mimeType($assetPath) ?: 'image/webp';
 
         return response()->file($assetPath, [
             'Content-Type' => $mimeType,
