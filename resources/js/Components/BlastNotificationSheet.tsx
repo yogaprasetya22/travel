@@ -136,7 +136,7 @@ export function BlastNotificationSheet({
                     </div>
                 </SheetHeader>
 
-                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-5">
+                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-5 low-scrollbar">
                     {errorMsg && (
                         <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-semibold flex items-center gap-2">
                             <AlertCircle className="w-4 h-4 shrink-0" />

@@ -2,6 +2,9 @@ import * as React from 'react';
 import { router } from '@inertiajs/react';
 import PageLayout from '@/Components/Layouts/PageLayout';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useMounted } from '@/hooks/use-mounted';
+import { DateRange } from 'react-day-picker';
+import { format } from 'date-fns';
 import {
     Agent,
     AgentJamaahItem,
@@ -19,13 +22,99 @@ export default function Agents({
     metrics,
     filters,
 }: AgentsProps) {
+    const isMounted = useMounted();
     const [isCreateOpen, setIsCreateOpen] = React.useState(false);
     const [isEditOpen, setIsEditOpen] = React.useState(false);
     const [isJamaahDrawerOpen, setIsJamaahDrawerOpen] = React.useState(false);
 
     const [selectedAgent, setSelectedAgent] = React.useState<Agent | null>(null);
     const [editingAgent, setEditingAgent] = React.useState<Agent | null>(null);
+
+    // Filter states
     const [searchQuery, setSearchQuery] = React.useState(filters?.search || '');
+    const [levelFilter, setLevelFilter] = React.useState(filters?.level_id || 'ALL');
+    const [statusFilter, setStatusFilter] = React.useState(filters?.status || 'ALL');
+    const [leaderFilter, setLeaderFilter] = React.useState(filters?.leader_id || 'ALL');
+    const [startDate, setStartDate] = React.useState(filters?.start_date || '');
+    const [endDate, setEndDate] = React.useState(filters?.end_date || '');
+
+    const [dateRange, setDateRange] = React.useState<DateRange | undefined>(() => {
+        if (filters?.start_date) {
+            return {
+                from: new Date(filters.start_date),
+                to: filters.end_date ? new Date(filters.end_date) : undefined,
+            };
+        }
+        return undefined;
+    });
+
+    const debouncedSearchQuery = useDebounce(searchQuery, 350);
+    const isInitialMount = React.useRef(true);
+
+    const handleDateRangeChange = (range: DateRange | undefined) => {
+        setDateRange(range);
+        const startStr = range?.from ? format(range.from, 'yyyy-MM-dd') : '';
+        const endStr = range?.to
+            ? format(range.to, 'yyyy-MM-dd')
+            : range?.from
+            ? format(range.from, 'yyyy-MM-dd')
+            : '';
+        setStartDate(startStr);
+        setEndDate(endStr);
+    };
+
+    const handleResetFilters = () => {
+        setSearchQuery('');
+        setLevelFilter('ALL');
+        setStatusFilter('ALL');
+        setLeaderFilter('ALL');
+        setStartDate('');
+        setEndDate('');
+        setDateRange(undefined);
+        router.get(
+            route('keagenan.agents.index'),
+            {},
+            { preserveState: true, preserveScroll: true, replace: true }
+        );
+    };
+
+    // Trigger router update when filter states change
+    React.useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+
+        const params: Record<string, any> = {};
+        if (debouncedSearchQuery) params.search = debouncedSearchQuery;
+        if (levelFilter && levelFilter !== 'ALL') params.level_id = levelFilter;
+        if (statusFilter && statusFilter !== 'ALL') params.status = statusFilter;
+        if (leaderFilter && leaderFilter !== 'ALL') params.leader_id = leaderFilter;
+        if (startDate) params.start_date = startDate;
+        if (endDate) params.end_date = endDate;
+        if (agents.per_page) params.per_page = agents.per_page;
+
+        router.get(route('keagenan.agents.index'), params, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    }, [
+        debouncedSearchQuery,
+        levelFilter,
+        statusFilter,
+        leaderFilter,
+        startDate,
+        endDate,
+    ]);
+
+    const hasActiveFilters =
+        Boolean(searchQuery) ||
+        levelFilter !== 'ALL' ||
+        statusFilter !== 'ALL' ||
+        leaderFilter !== 'ALL' ||
+        Boolean(startDate) ||
+        Boolean(endDate);
 
     // State for Infinite Scroll in Jamaah Drawer
     const [jamaahList, setJamaahList] = React.useState<AgentJamaahItem[]>([]);
@@ -44,15 +133,6 @@ export default function Agents({
     } | null>(null);
 
     const scrollContainerRef = React.useRef<HTMLDivElement>(null);
-
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        router.get(
-            route('keagenan.agents.index'),
-            { search: searchQuery || undefined },
-            { preserveState: true, replace: true }
-        );
-    };
 
     // Fetch initial page 1 for the drawer
     const fetchDrawerJamaahPage1 = async (agentId: number, search: string = '') => {
@@ -103,13 +183,13 @@ export default function Agents({
         try {
             const url = new URL(route('keagenan.agents.jamaah', selectedAgent.id), window.location.origin);
             url.searchParams.set('page', String(nextPage));
-            if (debouncedDrawerSearch) url.searchParams.set('search', debouncedDrawerSearch);
+            if (drawerSearch) url.searchParams.set('search', drawerSearch);
 
             const res = await fetch(url.toString(), {
                 headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             });
 
-            if (!res.ok) throw new Error('Gagal mengambil data nasabah berikutnya');
+            if (!res.ok) throw new Error('Gagal memuat halaman berikutnya');
             const data = await res.json();
 
             const newItems: AgentJamaahItem[] = Array.isArray(data.jamaah)
@@ -127,26 +207,26 @@ export default function Agents({
         }
     };
 
+    // Auto debounce search inside Drawer
+    React.useEffect(() => {
+        if (!selectedAgent || !isJamaahDrawerOpen) return;
+        fetchDrawerJamaahPage1(selectedAgent.id, debouncedDrawerSearch);
+    }, [debouncedDrawerSearch]);
+
     const handleDrawerScroll = (e: React.UIEvent<HTMLDivElement>) => {
-        const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-        if (scrollHeight - scrollTop - clientHeight < 120) {
-            if (hasMore && !isLoadingMore && !isLoadingInitial) {
-                loadNextPage();
-            }
+        const target = e.currentTarget;
+        const reachedBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 80;
+        if (reachedBottom && hasMore && !isLoadingMore && !isLoadingInitial) {
+            loadNextPage();
         }
     };
 
-    React.useEffect(() => {
-        if (selectedAgent && isJamaahDrawerOpen) {
-            fetchDrawerJamaahPage1(selectedAgent.id, debouncedDrawerSearch);
-        }
-    }, [debouncedDrawerSearch]);
-
     const openJamaahDrawer = (agent: Agent) => {
         setSelectedAgent(agent);
+        setJamaahList([]);
         setDrawerSearch('');
         setDrawerAgentStats({
-            total_jamaah: agent.jamaah_count ?? 0,
+            total_jamaah: agent.jamaah_count || 0,
             total_omzet: 0,
         });
         setIsJamaahDrawerOpen(true);
@@ -164,6 +244,8 @@ export default function Agents({
         }
     };
 
+    if (!isMounted) return null;
+
     return (
         <PageLayout
             title="Database Mitra Agen &amp; Konsultan"
@@ -177,12 +259,23 @@ export default function Agents({
                 activeProducers={metrics?.active_producers}
             />
 
-            {/* Comprehensive Table Card */}
+            {/* Comprehensive Table Card with DatePicker & Multi-Filters */}
             <AgentTable
                 agents={agents}
+                hierarchyLevels={hierarchyLevels}
+                leaders={leaders}
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
-                onSearchSubmit={handleSearch}
+                levelFilter={levelFilter}
+                setLevelFilter={setLevelFilter}
+                statusFilter={statusFilter}
+                setStatusFilter={setStatusFilter}
+                leaderFilter={leaderFilter}
+                setLeaderFilter={setLeaderFilter}
+                dateRange={dateRange}
+                onDateRangeChange={handleDateRangeChange}
+                onResetFilters={handleResetFilters}
+                hasActiveFilters={hasActiveFilters}
                 onOpenCreate={() => setIsCreateOpen(true)}
                 onOpenEdit={openEditDrawer}
                 onOpenJamaah={openJamaahDrawer}

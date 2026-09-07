@@ -80,6 +80,10 @@ export const crmLeadSchema = z.object({
     agen_id: z.string().optional().or(z.literal('')),
     tanggal_keberangkatan: z.string().optional().or(z.literal('')),
     catatan_admin: z.string().max(1000, 'Catatan maksimal 1000 karakter.').optional().or(z.literal('')),
+    file_ktp: z.any().optional(),
+    file_kk: z.any().optional(),
+    file_foto: z.any().optional(),
+    file_paspor: z.any().optional(),
 });
 
 // ─── Keagenan ────────────────────────────────────────────────────────────────
@@ -98,7 +102,7 @@ export const inventarisSchema = z.object({
     kategori: z.string().optional(),
     satuan: z.string().optional(),
     harga_pokok: z.number().min(0, 'Harga pokok tidak boleh negatif.').optional(),
-    stok_tersedia: z.number().int().min(0, 'Stok tidak boleh negatif.'),
+    stok_tersedia: z.number().int().min(0, 'Stok tidak boleh negatif.').optional(),
     stok_minimum: z.number().int().min(0, 'Batas minimum tidak boleh negatif.'),
     lokasi_rak: z.string().optional(),
 });

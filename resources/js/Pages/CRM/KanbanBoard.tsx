@@ -41,11 +41,14 @@ import {
     Building2,
     CreditCard,
     UploadCloud,
+    Eye,
 } from 'lucide-react';
 import DataTablePagination from '@/Components/DataTablePagination';
 import PerPageSelector from '@/Components/PerPageSelector';
 import { useDebounce } from '@/hooks/use-debounce';
 import CurrencyInput, { toRupiah, unformatRupiah } from '@/Components/CurrencyInput';
+import CustomerDrawer, { Customer } from './Components/CustomerDrawer';
+import CustomerEditDrawer from './Components/CustomerEditDrawer';
 
 interface Package {
     id: number;
@@ -79,21 +82,17 @@ interface KanbanStageItem extends CrmStage {
     })[];
 }
 
-interface KanbanProps {
+interface Props extends PageProps {
     stages: KanbanStageItem[];
     packages: Package[];
     agents: Agent[];
     banks?: BankAccount[];
     filters: {
-        search: string;
-        per_page: number;
-        stage_pages: Record<string, number>;
+        search?: string;
     };
 }
 
-export default function Kanban({ stages: initialStages, packages, agents, banks = [], filters }: KanbanProps) {
-    const { auth } = usePage<PageProps>().props;
-
+export default function KanbanBoard({ auth, stages: initialStages, packages, agents, banks = [], filters }: Props) {
     // View mode: 'kanban' (Card Pipeline) | 'table' (Tabular Listing)
     const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
 
@@ -115,12 +114,17 @@ export default function Kanban({ stages: initialStages, packages, agents, banks 
     }, [initialStages]);
 
     const [draggedLeadId, setDraggedLeadId] = useState<number | null>(null);
-    const [selectedLead, setSelectedLead] = useState<any | null>(null);
-    const [editingLead, setEditingLead] = useState<any | null>(null);
-    const [followUpNote, setFollowUpNote] = useState('');
+    const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+    const [drawerInitialTab, setDrawerInitialTab] = useState<'view' | 'financial' | 'documents' | 'riwayat'>('view');
+    const [editingCustomer, setEditingCustomer] = useState<Customer | any>(null);
     const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState(filters?.search || '');
     const [selectedStageFilter, setSelectedStageFilter] = useState<string>('all');
+
+    const handleOpenDrawer = (lead: any, tab: 'view' | 'financial' | 'documents' | 'riwayat' = 'view') => {
+        setSelectedCustomer(lead);
+        setDrawerInitialTab(tab);
+    };
 
     // Live Server Search with debounce
     const debouncedSearchQuery = useDebounce(searchQuery, 350);
@@ -193,7 +197,19 @@ export default function Kanban({ stages: initialStages, packages, agents, banks 
     };
 
     // Form registration hooks for adding manual leads
-    const addForm = useForm({
+    const addForm = useForm<{
+        nama_lengkap: string;
+        nik: string;
+        no_hp: string;
+        email: string;
+        paket_id: string;
+        agen_id: string;
+        catatan_admin: string;
+        file_ktp: File | null;
+        file_kk: File | null;
+        file_foto: File | null;
+        file_paspor: File | null;
+    }>({
         nama_lengkap: '',
         nik: '',
         no_hp: '',
@@ -201,17 +217,10 @@ export default function Kanban({ stages: initialStages, packages, agents, banks 
         paket_id: '',
         agen_id: auth.user.role === 'agen' ? auth.user.id.toString() : '',
         catatan_admin: '',
-    });
-
-    // Form registration hooks for editing leads
-    const editForm = useForm({
-        nama_lengkap: '',
-        nik: '',
-        no_hp: '',
-        email: '',
-        paket_id: '',
-        agen_id: '',
-        catatan_admin: '',
+        file_ktp: null,
+        file_kk: null,
+        file_foto: null,
+        file_paspor: null,
     });
 
     // Pending Stage Move Dialog State
@@ -374,43 +383,6 @@ export default function Kanban({ stages: initialStages, packages, agents, banks 
         }
     };
 
-    const handleOpenFollowUp = (lead: any) => {
-        setSelectedLead(lead);
-        setFollowUpNote(lead.catatan_admin || '');
-    };
-
-    const handleOpenEditLead = (lead: any) => {
-        setEditingLead(lead);
-        editForm.setData({
-            nama_lengkap: lead.nama_lengkap || '',
-            nik: lead.nik || '',
-            no_hp: lead.no_hp || '',
-            email: lead.email || '',
-            paket_id: lead.paket_id ? lead.paket_id.toString() : (lead.paket?.id ? lead.paket.id.toString() : ''),
-            agen_id: lead.agen_id ? lead.agen_id.toString() : (lead.agen?.id ? lead.agen.id.toString() : ''),
-            catatan_admin: lead.catatan_admin || '',
-        });
-    };
-
-    const handleSaveNote = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!selectedLead) return;
-
-        router.patch(
-            route('crm.update-stage', selectedLead.id),
-            {
-                crm_stage_id: selectedLead.crm_stage_id,
-                catatan_admin: followUpNote,
-            },
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    setSelectedLead(null);
-                },
-            }
-        );
-    };
-
     const handleAddLeadSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         addForm.clearErrors();
@@ -422,33 +394,22 @@ export default function Kanban({ stages: initialStages, packages, agents, banks 
             return;
         }
 
-        addForm.post(route('crm.store'), {
-            preserveScroll: true,
-            onSuccess: () => {
-                setIsAddLeadOpen(false);
-                addForm.reset();
-            },
-        });
-    };
-
-    const handleUpdateLeadSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!editingLead) return;
-
-        editForm.clearErrors();
-        const fieldErrors = zodErrors(crmLeadSchema, editForm.data);
-        if (Object.keys(fieldErrors).length > 0) {
-            Object.entries(fieldErrors).forEach(([field, msg]) => {
-                if (msg) editForm.setError(field as any, msg);
-            });
+        if (!addForm.data.file_ktp) {
+            addForm.setError('file_ktp' as any, 'File KTP wajib diunggah (JPG/PNG/PDF max 5MB).');
             return;
         }
 
-        editForm.put(route('crm.jamaah.update', editingLead.id), {
+        if (!addForm.data.file_kk) {
+            addForm.setError('file_kk' as any, 'File Kartu Keluarga (KK) wajib diunggah (JPG/PNG/PDF max 5MB).');
+            return;
+        }
+
+        addForm.post(route('crm.store'), {
             preserveScroll: true,
+            forceFormData: true,
             onSuccess: () => {
-                setEditingLead(null);
-                editForm.reset();
+                setIsAddLeadOpen(false);
+                addForm.reset();
             },
         });
     };
@@ -704,17 +665,25 @@ export default function Kanban({ stages: initialStages, packages, agents, banks 
                                                     <span className="truncate">{lead.agen?.name ? `Agen: ${lead.agen.name}` : 'Direct'}</span>
                                                 </div>
 
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-1.5">
                                                     <button
-                                                        onClick={() => handleOpenEditLead(lead)}
+                                                        onClick={() => handleOpenDrawer(lead, 'view')}
+                                                        className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
+                                                        title="Lihat Detail Calon Nasabah"
+                                                    >
+                                                        <Eye className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setEditingCustomer(lead)}
                                                         className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
                                                         title="Edit Data Calon Nasabah"
                                                     >
                                                         <Edit2 className="w-3.5 h-3.5" />
                                                     </button>
                                                     <button
-                                                        onClick={() => handleOpenFollowUp(lead)}
+                                                        onClick={() => handleOpenDrawer(lead, 'riwayat')}
                                                         className="text-primary hover:underline font-semibold text-xs flex items-center gap-1 cursor-pointer"
+                                                        title="Log Follow-up & Tracking"
                                                     >
                                                         <MessageSquare className="w-3 h-3" />
                                                         <span>Follow-up</span>
@@ -849,21 +818,28 @@ export default function Kanban({ stages: initialStages, packages, agents, banks 
                                                 </select>
                                             </td>
                                             <td className="px-6 py-4 text-center">
-                                                <div className="flex items-center justify-center gap-2">
+                                                <div className="flex items-center justify-center gap-1.5">
                                                     <button
-                                                        onClick={() => handleOpenEditLead(lead)}
+                                                        onClick={() => handleOpenDrawer(lead, 'view')}
+                                                        className="p-1.5 rounded-lg border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition cursor-pointer"
+                                                        title="Lihat Detail"
+                                                    >
+                                                        <Eye className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setEditingCustomer(lead)}
                                                         className="p-1.5 rounded-lg border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition cursor-pointer"
                                                         title="Edit Data Calon Nasabah"
                                                     >
                                                         <Edit2 className="w-3.5 h-3.5" />
                                                     </button>
                                                     <button
-                                                        onClick={() => handleOpenFollowUp(lead)}
+                                                        onClick={() => handleOpenDrawer(lead, 'riwayat')}
                                                         className="p-1.5 rounded-lg border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 transition cursor-pointer font-bold text-[11px] flex items-center gap-1"
-                                                        title="Catatan Follow-up"
+                                                        title="Catatan &amp; Log Follow-up"
                                                     >
                                                         <MessageSquare className="w-3.5 h-3.5" />
-                                                        <span>Catatan</span>
+                                                        <span>Follow-up</span>
                                                     </button>
                                                 </div>
                                             </td>
@@ -897,195 +873,24 @@ export default function Kanban({ stages: initialStages, packages, agents, banks 
                 </div>
             )}
 
-            {/* Follow-up Note Modal/Drawer */}
-            <Sheet open={!!selectedLead} onOpenChange={(open) => { if (!open) setSelectedLead(null); }}>
-                <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2">
-                    <SheetHeader>
-                        <SheetTitle>Log Follow-up: {selectedLead?.nama_lengkap}</SheetTitle>
-                        <SheetDescription>
-                            Simpan rangkuman hasil interaksi atau catatan penting prospek jamaah ini.
-                        </SheetDescription>
-                    </SheetHeader>
-                    <form onSubmit={handleSaveNote} className="flex flex-col gap-4 p-4 flex-1">
-                        <div className="bg-muted/40 p-3.5 rounded-xl border border-border/50 text-xs flex flex-col gap-1">
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Paket Pilihan:</span>
-                                <span className="font-semibold text-foreground">{selectedLead?.paket?.nama_paket}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Nomor HP / WhatsApp:</span>
-                                <span className="font-semibold text-foreground">{selectedLead?.no_hp}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Mitra Agen:</span>
-                                <span className="font-semibold text-foreground">{selectedLead?.agen?.name || 'Direct / Kantor'}</span>
-                            </div>
-                        </div>
+            {/* Slide-out Drawer: Detail / Log Follow-up Calon Nasabah */}
+            <CustomerDrawer
+                customer={selectedCustomer}
+                initialTab={drawerInitialTab}
+                banks={banks}
+                onClose={() => setSelectedCustomer(null)}
+                onEdit={(cust) => {
+                    setSelectedCustomer(null);
+                    setEditingCustomer(cust);
+                }}
+            />
 
-                        <div className="flex-1 flex flex-col">
-                            <InputLabel htmlFor="catatan" value="Catatan Hasil Follow-up" />
-                            <textarea
-                                id="catatan"
-                                rows={6}
-                                value={followUpNote}
-                                onChange={(e) => setFollowUpNote(e.target.value)}
-                                placeholder="Contoh: Sudah ditelepon tanggal 1 September, jamaah tertarik paket Gold tapi menunggu konfirmasi cuti dari kantor..."
-                                className="mt-1 w-full bg-background border border-border rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground placeholder:text-muted-foreground"
-                            />
-                        </div>
-
-                        <SheetFooter>
-                            <button
-                                type="button"
-                                onClick={() => setSelectedLead(null)}
-                                className="px-4 py-2 border border-border rounded-lg text-sm"
-                            >
-                                Batal
-                            </button>
-                            <PrimaryButton type="submit">
-                                Simpan Catatan
-                            </PrimaryButton>
-                        </SheetFooter>
-                    </form>
-                </SheetContent>
-            </Sheet>
-
-            {/* Slide-out Drawer: Edit Calon Nasabah */}
-            <Sheet open={!!editingLead} onOpenChange={(open) => { if (!open) setEditingLead(null); }}>
-                <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2 flex flex-col justify-between">
-                    <div className="flex flex-col gap-5 p-4 flex-1 overflow-y-auto">
-                        <SheetHeader className="pb-3 border-b border-border/60">
-                            <SheetTitle className="text-2xl font-bold text-foreground">
-                                Edit Data Calon Nasabah
-                            </SheetTitle>
-                            <SheetDescription className="text-xs text-muted-foreground">
-                                Perbarui data diri, nomor kontak, paket yang diminati, atau penugasan agen perujuk.
-                            </SheetDescription>
-                        </SheetHeader>
-
-                        <form id="edit-lead-form" onSubmit={handleUpdateLeadSubmit} className="flex flex-col gap-4">
-                            <div>
-                                <InputLabel htmlFor="edit_nama_lengkap" value="Nama Lengkap Calon Jamaah" />
-                                <TextInput
-                                    id="edit_nama_lengkap"
-                                    type="text"
-                                    value={editForm.data.nama_lengkap}
-                                    onChange={(e) => editForm.setData('nama_lengkap', e.target.value)}
-                                    className="mt-1 block w-full"
-                                    required
-                                />
-                                <InputError message={editForm.errors.nama_lengkap} className="mt-2" />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <InputLabel htmlFor="edit_nik" value="NIK (Opsional)" />
-                                    <TextInput
-                                        id="edit_nik"
-                                        type="text"
-                                        value={editForm.data.nik}
-                                        onChange={(e) => editForm.setData('nik', e.target.value)}
-                                        className="mt-1 block w-full"
-                                        maxLength={16}
-                                        placeholder="16 Digit NIK KTP"
-                                    />
-                                    <InputError message={editForm.errors.nik} className="mt-2" />
-                                </div>
-                                <div>
-                                    <InputLabel htmlFor="edit_no_hp" value="Nomor HP / WhatsApp" />
-                                    <TextInput
-                                        id="edit_no_hp"
-                                        type="text"
-                                        value={editForm.data.no_hp}
-                                        onChange={(e) => editForm.setData('no_hp', e.target.value)}
-                                        className="mt-1 block w-full"
-                                        required
-                                    />
-                                    <InputError message={editForm.errors.no_hp} className="mt-2" />
-                                </div>
-                            </div>
-
-                            <div>
-                                <InputLabel htmlFor="edit_email" value="Alamat Email (Opsional)" />
-                                <TextInput
-                                    id="edit_email"
-                                    type="email"
-                                    value={editForm.data.email}
-                                    onChange={(e) => editForm.setData('email', e.target.value)}
-                                    className="mt-1 block w-full"
-                                />
-                                <InputError message={editForm.errors.email} className="mt-2" />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <InputLabel htmlFor="edit_paket_id" value="Pilihan Paket Umroh" />
-                                    <select
-                                        id="edit_paket_id"
-                                        value={editForm.data.paket_id}
-                                        onChange={(e) => editForm.setData('paket_id', e.target.value)}
-                                        className="mt-1 block w-full bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                        required
-                                    >
-                                        <option value="">Pilih Paket...</option>
-                                        {packages.map((pkg) => (
-                                            <option key={pkg.id} value={pkg.id}>
-                                                {pkg.nama_paket} (Rp {Number(pkg.harga).toLocaleString('id-ID')})
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <InputError message={editForm.errors.paket_id} className="mt-2" />
-                                </div>
-
-                                <div>
-                                    <InputLabel htmlFor="edit_agen_id" value="Mitra Agen Perujuk" />
-                                    <select
-                                        id="edit_agen_id"
-                                        value={editForm.data.agen_id}
-                                        onChange={(e) => editForm.setData('agen_id', e.target.value)}
-                                        disabled={auth.user.role === 'agen'}
-                                        className="mt-1 block w-full bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-muted"
-                                    >
-                                        <option value="">Direct / Kantor Pusat</option>
-                                        {agents.map((ag) => (
-                                            <option key={ag.id} value={ag.id}>
-                                                {ag.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <InputError message={editForm.errors.agen_id} className="mt-2" />
-                                </div>
-                            </div>
-
-                            <div>
-                                <InputLabel htmlFor="edit_catatan_admin" value="Catatan Kebutuhan Calon Jamaah" />
-                                <textarea
-                                    id="edit_catatan_admin"
-                                    rows={4}
-                                    value={editForm.data.catatan_admin}
-                                    onChange={(e) => editForm.setData('catatan_admin', e.target.value)}
-                                    placeholder="Catatan khusus, tanggal rencana berangkat, permintaan sekamar, dll..."
-                                    className="mt-1 w-full bg-background border border-border rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground placeholder:text-muted-foreground"
-                                />
-                                <InputError message={editForm.errors.catatan_admin} className="mt-2" />
-                            </div>
-                        </form>
-                    </div>
-
-                    <SheetFooter className="p-4 border-t border-border/60">
-                        <button
-                            type="button"
-                            onClick={() => setEditingLead(null)}
-                            className="px-4 py-2 border border-border rounded-xl text-sm font-semibold hover:bg-muted transition cursor-pointer"
-                        >
-                            Batal
-                        </button>
-                        <PrimaryButton form="edit-lead-form" type="submit" disabled={editForm.processing}>
-                            Simpan Perubahan
-                        </PrimaryButton>
-                    </SheetFooter>
-                </SheetContent>
-            </Sheet>
+            {/* Slide-out Drawer: Edit Data Calon Nasabah */}
+            <CustomerEditDrawer
+                customer={editingCustomer}
+                isOpen={!!editingCustomer}
+                onClose={() => setEditingCustomer(null)}
+            />
 
             {/* Slide-out Drawer: Tambah Calon Nasabah */}
             <Sheet open={isAddLeadOpen} onOpenChange={setIsAddLeadOpen}>
@@ -1188,11 +993,97 @@ export default function Kanban({ stages: initialStages, packages, agents, banks 
                             </div>
                         </div>
 
+                        {/* Section Upload Dokumen */}
+                        <div className="pt-3 border-t border-border/70 flex flex-col gap-3">
+                            <div>
+                                <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                                    <span>Upload Dokumen Kelengkapan Jamaah</span>
+                                </h4>
+                                <p className="text-[11px] text-muted-foreground mt-0.5">
+                                    KTP dan KK wajib diunggah untuk kelengkapan administrasi registrasi prospek.
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                {/* KTP - Mandatory */}
+                                <div>
+                                    <InputLabel htmlFor="add_file_ktp" value="File KTP (Wajib *)" />
+                                    <input
+                                        id="add_file_ktp"
+                                        type="file"
+                                        accept="image/jpeg,image/png,application/pdf"
+                                        onChange={(e) => addForm.setData('file_ktp', e.target.files?.[0] || null)}
+                                        className="mt-1 block w-full text-xs rounded-xl border border-border bg-background p-1.5 text-foreground file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+                                    />
+                                    {addForm.data.file_ktp && (
+                                        <p className="text-[10px] text-emerald-600 font-medium mt-1 truncate">
+                                            ✓ {addForm.data.file_ktp.name}
+                                        </p>
+                                    )}
+                                    <InputError message={addForm.errors.file_ktp} className="mt-1" />
+                                </div>
+
+                                {/* KK - Mandatory */}
+                                <div>
+                                    <InputLabel htmlFor="add_file_kk" value="File Kartu Keluarga (Wajib *)" />
+                                    <input
+                                        id="add_file_kk"
+                                        type="file"
+                                        accept="image/jpeg,image/png,application/pdf"
+                                        onChange={(e) => addForm.setData('file_kk', e.target.files?.[0] || null)}
+                                        className="mt-1 block w-full text-xs rounded-xl border border-border bg-background p-1.5 text-foreground file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+                                    />
+                                    {addForm.data.file_kk && (
+                                        <p className="text-[10px] text-emerald-600 font-medium mt-1 truncate">
+                                            ✓ {addForm.data.file_kk.name}
+                                        </p>
+                                    )}
+                                    <InputError message={addForm.errors.file_kk} className="mt-1" />
+                                </div>
+
+                                {/* Foto - Optional */}
+                                <div>
+                                    <InputLabel htmlFor="add_file_foto" value="Pas Foto (Opsional)" />
+                                    <input
+                                        id="add_file_foto"
+                                        type="file"
+                                        accept="image/jpeg,image/png"
+                                        onChange={(e) => addForm.setData('file_foto', e.target.files?.[0] || null)}
+                                        className="mt-1 block w-full text-xs rounded-xl border border-border bg-background p-1.5 text-foreground file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-muted file:text-foreground hover:file:bg-muted/80 cursor-pointer"
+                                    />
+                                    {addForm.data.file_foto && (
+                                        <p className="text-[10px] text-muted-foreground font-medium mt-1 truncate">
+                                            ✓ {addForm.data.file_foto.name}
+                                        </p>
+                                    )}
+                                    <InputError message={addForm.errors.file_foto} className="mt-1" />
+                                </div>
+
+                                {/* Paspor - Optional */}
+                                <div>
+                                    <InputLabel htmlFor="add_file_paspor" value="File Paspor (Opsional)" />
+                                    <input
+                                        id="add_file_paspor"
+                                        type="file"
+                                        accept="image/jpeg,image/png,application/pdf"
+                                        onChange={(e) => addForm.setData('file_paspor', e.target.files?.[0] || null)}
+                                        className="mt-1 block w-full text-xs rounded-xl border border-border bg-background p-1.5 text-foreground file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-muted file:text-foreground hover:file:bg-muted/80 cursor-pointer"
+                                    />
+                                    {addForm.data.file_paspor && (
+                                        <p className="text-[10px] text-muted-foreground font-medium mt-1 truncate">
+                                            ✓ {addForm.data.file_paspor.name}
+                                        </p>
+                                    )}
+                                    <InputError message={addForm.errors.file_paspor} className="mt-1" />
+                                </div>
+                            </div>
+                        </div>
+
                         <div>
                             <InputLabel htmlFor="catatan_admin" value="Catatan Kebutuhan Calon Jamaah" />
                             <textarea
                                 id="catatan_admin"
-                                rows={4}
+                                rows={3}
                                 value={addForm.data.catatan_admin}
                                 onChange={(e) => addForm.setData('catatan_admin', e.target.value)}
                                 placeholder="Catatan khusus, tanggal rencana berangkat, permintaan sekamar, dll..."

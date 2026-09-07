@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @property int $id
@@ -31,6 +32,11 @@ class Paket extends Model
         'tenant_id',
         'nama_paket',
         'harga',
+        'kuota',
+        'deskripsi',
+        'brosur_image',
+        'itinerary',
+        'fasilitas',
         'komisi_flat',
         'komisi_persentase',
         'periode_mulai',
@@ -40,10 +46,39 @@ class Paket extends Model
 
     protected $casts = [
         'harga' => 'float',
+        'kuota' => 'integer',
+        'itinerary' => 'array',
+        'fasilitas' => 'array',
         'komisi_flat' => 'float',
         'komisi_persentase' => 'float',
         'is_active' => 'boolean',
     ];
+
+    protected $appends = ['available_seats', 'brosur_url'];
+
+    public function getAvailableSeatsAttribute(): int
+    {
+        $bookedSeats = $this->jamaah()
+            ->whereHas('pembayaran', fn ($q) => $q->where('status_verifikasi', 'Verified'))
+            ->count();
+
+        $kuota = $this->kuota ?? 45;
+
+        return max(0, $kuota - $bookedSeats);
+    }
+
+    public function getBrosurUrlAttribute(): ?string
+    {
+        if (! $this->brosur_image) {
+            return null;
+        }
+
+        if (str_starts_with($this->brosur_image, 'http')) {
+            return $this->brosur_image;
+        }
+
+        return Storage::url($this->brosur_image);
+    }
 
     public function tenant(): BelongsTo
     {

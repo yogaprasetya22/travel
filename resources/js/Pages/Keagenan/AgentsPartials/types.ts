@@ -19,7 +19,12 @@ export interface AgentsProps {
         active_producers: number;
     };
     filters?: {
-        search: string;
-        per_page: number;
+        search?: string;
+        level_id?: string;
+        status?: string;
+        leader_id?: string;
+        start_date?: string;
+        end_date?: string;
+        per_page?: number;
     };
 }

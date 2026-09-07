@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\CRM;
 
 use App\Http\Controllers\Controller;
+use App\Models\DocumentPermission;
 use App\Models\Jamaah;
 use App\Models\Paket;
 use App\Models\Pembayaran;
 use App\Models\RekeningTenant;
-use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -23,10 +23,13 @@ class CustomerController extends Controller
         $user = $request->user();
         $tenantId = $user->getActiveTenantId();
         $search = $request->input('search');
-        $statusFilter = $request->input('status', 'ALL'); // ALL, LUNAS, BELUM_LUNAS, DP_PENDING
+        $statusFilter = $request->input('status', 'ALL'); // ALL, LUNAS, BELUM_LUNAS, DP_PENDING, DP, CICILAN, UNPAID
         $docFilter = $request->input('doc', 'ALL'); // ALL, PASSPORT_READY, PASSPORT_PENDING
         $paketFilter = $request->input('paket_id', 'ALL');
         $scheduleFilter = $request->input('schedule', 'ALL'); // ALL, SCHEDULED, UNSCHEDULED
+        $dateType = $request->input('date_type', 'created_at'); // created_at, keberangkatan
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
         $perPage = (int) $request->input('per_page', 15);
 
         $baseQuery = Jamaah::where('jamaah.tenant_id', $tenantId)
@@ -39,14 +42,12 @@ class CustomerController extends Controller
                     });
             });
 
+        // Leader Staff and Agent Hierarchy Scope:
         if ($user->role === 'agen') {
             $baseQuery->where('jamaah.agen_id', $user->id);
-        } elseif ($user->role === 'admin_travel') {
-            $subordinateAgentIds = User::where('created_by', $user->id)
-                ->where('role', 'agen')
-                ->pluck('id')
-                ->toArray();
-            $baseQuery->whereIn('jamaah.agen_id', $subordinateAgentIds);
+        } elseif ($user->level > 1) {
+            $allowedAgentIds = array_unique(array_merge([$user->id], $user->getDownlineUserIds()));
+            $baseQuery->whereIn('jamaah.agen_id', $allowedAgentIds);
         }
 
         // Calculate Overall Financial KPI Metrics for Closing Customers
@@ -67,6 +68,7 @@ class CustomerController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('jamaah.nama_lengkap', 'ilike', "%{$search}%")
                     ->orWhere('jamaah.no_hp', 'ilike', "%{$search}%")
+                    ->orWhere('jamaah.nik', 'ilike', "%{$search}%")
                     ->orWhere('jamaah.nomor_paspor', 'ilike', "%{$search}%")
                     ->orWhere('jamaah.email', 'ilike', "%{$search}%")
                     ->orWhereHas('paket', function ($pq) use ($search) {
@@ -78,11 +80,30 @@ class CustomerController extends Controller
             });
         }
 
-        // Apply Payment / Pelunasan Filter
+        // Apply Date Range Filter (Pendaftaran vs Keberangkatan)
+        if ($startDate || $endDate) {
+            $query->filterDateRange($dateType, $startDate, $endDate);
+        }
+
+        // Apply Payment / Progress Filter
         if ($statusFilter === 'LUNAS') {
             $query->whereRaw('(SELECT COALESCE(SUM(nominal), 0) FROM pembayaran WHERE pembayaran.jamaah_id = jamaah.id AND pembayaran.status_verifikasi = \'Verified\') >= (SELECT COALESCE(harga, 0) FROM paket WHERE paket.id = jamaah.paket_id) AND (SELECT COALESCE(harga, 0) FROM paket WHERE paket.id = jamaah.paket_id) > 0');
         } elseif ($statusFilter === 'BELUM_LUNAS') {
             $query->whereRaw('(SELECT COALESCE(SUM(nominal), 0) FROM pembayaran WHERE pembayaran.jamaah_id = jamaah.id AND pembayaran.status_verifikasi = \'Verified\') < (SELECT COALESCE(harga, 0) FROM paket WHERE paket.id = jamaah.paket_id)');
+        } elseif ($statusFilter === 'DP') {
+            $query->whereHas('pembayaran', function ($pq) {
+                $pq->where('status_verifikasi', 'Verified')->where('tipe_pembayaran', 'DP');
+            })->whereDoesntHave('pembayaran', function ($pq) {
+                $pq->where('status_verifikasi', 'Verified')->whereIn('tipe_pembayaran', ['Cicilan', 'Lunas']);
+            });
+        } elseif ($statusFilter === 'CICILAN') {
+            $query->whereHas('pembayaran', function ($pq) {
+                $pq->where('status_verifikasi', 'Verified')->where('tipe_pembayaran', 'Cicilan');
+            });
+        } elseif ($statusFilter === 'UNPAID') {
+            $query->whereDoesntHave('pembayaran', function ($pq) {
+                $pq->where('status_verifikasi', 'Verified');
+            });
         } elseif ($statusFilter === 'DP_PENDING') {
             $query->whereHas('pembayaran', function ($pq) {
                 $pq->where('status_verifikasi', 'Pending');
@@ -111,11 +132,13 @@ class CustomerController extends Controller
         }
 
         $customers = $query->with([
-            'paket:id,nama_paket,harga',
+            'paket:id,nama_paket,harga,kuota',
             'agen:id,name,email',
             'pembayaran' => function ($q) {
                 $q->orderBy('created_at', 'asc');
             },
+            'documents.uploader:id,name',
+            'itemDistributions.inventaris',
             'komisiAgen',
             'inventarisTransaksi.inventaris',
             'stageLogs.fromStage',
@@ -133,12 +156,17 @@ class CustomerController extends Controller
         $pakets = Paket::where('tenant_id', $tenantId)
             ->where('is_active', true)
             ->orderBy('nama_paket')
-            ->get(['id', 'nama_paket', 'harga']);
+            ->get(['id', 'nama_paket', 'harga', 'kuota']);
+
+        $documentPermissions = DocumentPermission::where('tenant_id', $tenantId)
+            ->where('role_name', $user->role ?? 'staff')
+            ->get();
 
         return Inertia::render('CRM/CustomerList', [
             'customers' => $customers,
             'banks' => $banks,
             'pakets' => $pakets,
+            'documentPermissions' => $documentPermissions,
             'metrics' => [
                 'total_customers' => $totalCustomers,
                 'total_paid_received' => $totalPaidReceived,
@@ -152,19 +180,33 @@ class CustomerController extends Controller
                 'doc' => $docFilter,
                 'paket_id' => $paketFilter,
                 'schedule' => $scheduleFilter,
+                'date_type' => $dateType,
+                'start_date' => $startDate ?? '',
+                'end_date' => $endDate ?? '',
                 'per_page' => $perPage,
             ],
         ]);
     }
 
     /**
-     * Update customer complete profile (biodata, passport, departure date, notes).
+     * Update customer complete profile (biodata, personal details, passport, departure date, emergency contacts, notes).
      */
     public function update(Request $request, Jamaah $jamaah): RedirectResponse
     {
         $validated = $request->validate([
             'nama_lengkap' => ['required', 'string', 'max:255'],
+            'jenis_kelamin' => ['nullable', 'string', 'in:L,P,Laki-laki,Perempuan'],
+            'tempat_lahir' => ['nullable', 'string', 'max:100'],
+            'tanggal_lahir' => ['nullable', 'date'],
             'nik' => ['nullable', 'string', 'max:20'],
+            'alamat_ktp' => ['nullable', 'string', 'max:500'],
+            'alamat_domisili' => ['nullable', 'string', 'max:500'],
+            'golongan_darah' => ['nullable', 'string', 'max:10'],
+            'status_pernikahan' => ['nullable', 'string', 'max:30'],
+            'riwayat_penyakit' => ['nullable', 'string', 'max:500'],
+            'kontak_darurat_nama' => ['nullable', 'string', 'max:255'],
+            'kontak_darurat_hp' => ['nullable', 'string', 'max:30'],
+            'kontak_darurat_hubungan' => ['nullable', 'string', 'max:50'],
             'no_hp' => ['required', 'string', 'max:25'],
             'email' => ['nullable', 'email', 'max:255'],
             'nomor_paspor' => ['nullable', 'string', 'max:50'],
@@ -184,7 +226,7 @@ class CustomerController extends Controller
     {
         $validated = $request->validate([
             'nominal' => ['required', 'numeric', 'min:10000'],
-            'tipe_pembayaran' => ['required', 'string', 'in:Cicilan,Pelunasan,DP,Tambahan'],
+            'tipe_pembayaran' => ['required', 'string', 'in:Cicilan,Pelunasan,DP,Tambahan,Lunas'],
             'rekening_tenant_id' => ['required', 'exists:rekening_tenant,id'],
             'bukti_transfer' => ['nullable', 'file', 'image', 'max:4096'],
         ]);

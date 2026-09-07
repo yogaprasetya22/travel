@@ -25,8 +25,61 @@ class DashboardController extends Controller
         $tenantId = $user->getActiveTenantId();
         $tenant = Tenant::find($tenantId) ?? Tenant::first();
 
+        // Parameter filter periode & kloter (Ponytail: simple, direct query filtering)
+        $period = $request->input('period', 'this_year');
+        $customStart = $request->input('start_date');
+        $customEnd = $request->input('end_date');
+        $kloterYm = $request->input('kloter_ym');
+
+        $startDate = null;
+        $endDate = null;
+
+        if ($period === 'this_year') {
+            $startDate = Carbon::now()->startOfYear();
+            $endDate = Carbon::now()->endOfYear();
+        } elseif ($period === 'last_year') {
+            $startDate = Carbon::now()->subYear()->startOfYear();
+            $endDate = Carbon::now()->subYear()->endOfYear();
+        } elseif ($period === 'this_month') {
+            $startDate = Carbon::now()->startOfMonth();
+            $endDate = Carbon::now()->endOfMonth();
+        } elseif ($period === 'custom' && $customStart && $customEnd) {
+            $startDate = Carbon::parse($customStart)->startOfDay();
+            $endDate = Carbon::parse($customEnd)->endOfDay();
+        }
+
+        // Available Kloters for filter dropdown
+        $availableKloters = Jamaah::where('tenant_id', $tenantId)
+            ->whereNotNull('tanggal_keberangkatan')
+            ->selectRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') as ym")
+            ->distinct()
+            ->orderByDesc('ym')
+            ->pluck('ym')
+            ->map(function ($ym) {
+                try {
+                    $date = Carbon::createFromFormat('Y-m', $ym);
+
+                    return [
+                        'value' => $ym,
+                        'label' => 'Kloter '.$date->translatedFormat('F Y'),
+                    ];
+                } catch (\Exception $e) {
+                    return [
+                        'value' => $ym,
+                        'label' => 'Kloter '.$ym,
+                    ];
+                }
+            })
+            ->values();
+
         // 1. Leads and Jamaah metrics
         $leadsQuery = Jamaah::where('tenant_id', $tenantId);
+        if ($startDate && $endDate) {
+            $leadsQuery->whereBetween('created_at', [$startDate, $endDate]);
+        }
+        if ($kloterYm) {
+            $leadsQuery->whereRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') = ?", [$kloterYm]);
+        }
         if ($user->role === 'agen') {
             $leadsQuery->where('agen_id', $user->id);
         }
@@ -34,18 +87,37 @@ class DashboardController extends Controller
 
         // 2. Closing / Verified DP metrics
         $closingQuery = Jamaah::where('tenant_id', $tenantId)
-            ->whereHas('pembayaran', function ($q) {
+            ->whereHas('pembayaran', function ($q) use ($startDate, $endDate) {
                 $q->where('status_verifikasi', 'Verified');
+                if ($startDate && $endDate) {
+                    $q->whereBetween('created_at', [$startDate, $endDate]);
+                }
             });
+        if ($kloterYm) {
+            $closingQuery->whereRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') = ?", [$kloterYm]);
+        }
         if ($user->role === 'agen') {
             $closingQuery->where('agen_id', $user->id);
         }
         $closingCount = $closingQuery->count();
 
         // 3. Total Omzet of Active Tenant
-        $totalOmzet = (float) Pembayaran::where('tenant_id', $tenantId)
-            ->where('status_verifikasi', 'Verified')
-            ->sum('nominal');
+        $omzetQuery = Pembayaran::where('tenant_id', $tenantId)
+            ->where('status_verifikasi', 'Verified');
+        if ($startDate && $endDate) {
+            $omzetQuery->whereBetween('created_at', [$startDate, $endDate]);
+        }
+        if ($kloterYm) {
+            $omzetQuery->whereHas('jamaah', function ($q) use ($kloterYm) {
+                $q->whereRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') = ?", [$kloterYm]);
+            });
+        }
+        if ($user->role === 'agen') {
+            $omzetQuery->whereHas('jamaah', function ($q) use ($user) {
+                $q->where('agen_id', $user->id);
+            });
+        }
+        $totalOmzet = (float) $omzetQuery->sum('nominal');
 
         // 4. Logistics Ready metrics (Jamaah whose inventory has been deducted)
         $logisticsReadyQuery = Jamaah::where('tenant_id', $tenantId)
@@ -53,20 +125,34 @@ class DashboardController extends Controller
                 $q->where('tipe', 'OUT');
             })
             ->with(['paket', 'agen', 'inventarisTransaksi.inventaris']);
+        if ($startDate && $endDate) {
+            $logisticsReadyQuery->whereBetween('created_at', [$startDate, $endDate]);
+        }
+        if ($kloterYm) {
+            $logisticsReadyQuery->whereRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') = ?", [$kloterYm]);
+        }
         if ($user->role === 'agen') {
             $logisticsReadyQuery->where('agen_id', $user->id);
         }
-        $logisticsReadyList = $logisticsReadyQuery->latest()->take(6)->get();
+        $logisticsReadyList = (clone $logisticsReadyQuery)->latest()->take(6)->get();
         $logisticsReadyCount = $logisticsReadyQuery->count();
 
         // 5. Commission metrics
         $commissionQuery = KomisiAgen::where('tenant_id', $tenantId);
+        if ($startDate && $endDate) {
+            $commissionQuery->whereBetween('created_at', [$startDate, $endDate]);
+        }
+        if ($kloterYm) {
+            $commissionQuery->whereHas('jamaah', function ($q) use ($kloterYm) {
+                $q->whereRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') = ?", [$kloterYm]);
+            });
+        }
         if ($user->role === 'agen') {
             $commissionQuery->where('agen_id', $user->id);
         }
-        $totalCommission = (float) $commissionQuery->sum('nominal_komisi');
-        $paidCommission = (float) $commissionQuery->where('status_pencairan', 'Paid')->sum('nominal_komisi');
-        $readyCommission = (float) $commissionQuery->where('status_pencairan', 'Ready_to_Pay')->sum('nominal_komisi');
+        $totalCommission = (float) (clone $commissionQuery)->sum('nominal_komisi');
+        $paidCommission = (float) (clone $commissionQuery)->where('status_pencairan', 'Paid')->sum('nominal_komisi');
+        $readyCommission = (float) (clone $commissionQuery)->where('status_pencairan', 'Ready_to_Pay')->sum('nominal_komisi');
 
         // 6. Recent pending payment verification (for admin/owner/superadmin)
         $pendingPayments = [];
@@ -79,28 +165,71 @@ class DashboardController extends Controller
                 ->get();
         }
 
-        // 7. Analytics: 6-Month Monthly Trend (Omzet & Leads)
+        // 7. Analytics: Monthly Trend (Dynamically adapt to chosen period)
         $monthlyTrend = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $date = Carbon::now()->subMonths($i);
-            $monthOmzet = (float) Pembayaran::where('tenant_id', $tenantId)
+        $monthsToDisplay = [];
+        if ($period === 'this_year') {
+            for ($m = 1; $m <= 12; $m++) {
+                $monthsToDisplay[] = Carbon::create(Carbon::now()->year, $m, 1);
+            }
+        } elseif ($period === 'last_year') {
+            for ($m = 1; $m <= 12; $m++) {
+                $monthsToDisplay[] = Carbon::create(Carbon::now()->year - 1, $m, 1);
+            }
+        } elseif ($startDate && $endDate) {
+            $cursor = $startDate->copy()->startOfMonth();
+            while ($cursor <= $endDate && count($monthsToDisplay) < 24) {
+                $monthsToDisplay[] = $cursor->copy();
+                $cursor->addMonth();
+            }
+        } else {
+            // Default 6 months
+            for ($i = 5; $i >= 0; $i--) {
+                $monthsToDisplay[] = Carbon::now()->subMonths($i)->startOfMonth();
+            }
+        }
+
+        foreach ($monthsToDisplay as $date) {
+            $monthOmzetQuery = Pembayaran::where('tenant_id', $tenantId)
                 ->where('status_verifikasi', 'Verified')
                 ->whereYear('created_at', $date->year)
-                ->whereMonth('created_at', $date->month)
-                ->sum('nominal');
+                ->whereMonth('created_at', $date->month);
+            if ($kloterYm) {
+                $monthOmzetQuery->whereHas('jamaah', function ($q) use ($kloterYm) {
+                    $q->whereRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') = ?", [$kloterYm]);
+                });
+            }
+            if ($user->role === 'agen') {
+                $monthOmzetQuery->whereHas('jamaah', function ($q) use ($user) {
+                    $q->where('agen_id', $user->id);
+                });
+            }
+            $monthOmzet = (float) $monthOmzetQuery->sum('nominal');
 
-            $monthLeads = Jamaah::where('tenant_id', $tenantId)
+            $monthLeadsQuery = Jamaah::where('tenant_id', $tenantId)
                 ->whereYear('created_at', $date->year)
-                ->whereMonth('created_at', $date->month)
-                ->count();
+                ->whereMonth('created_at', $date->month);
+            if ($kloterYm) {
+                $monthLeadsQuery->whereRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') = ?", [$kloterYm]);
+            }
+            if ($user->role === 'agen') {
+                $monthLeadsQuery->where('agen_id', $user->id);
+            }
+            $monthLeads = $monthLeadsQuery->count();
 
-            $monthClosing = Jamaah::where('tenant_id', $tenantId)
-                ->whereHas('pembayaran', function ($q) {
-                    $q->where('status_verifikasi', 'Verified');
-                })
-                ->whereYear('created_at', $date->year)
-                ->whereMonth('created_at', $date->month)
-                ->count();
+            $monthClosingQuery = Jamaah::where('tenant_id', $tenantId)
+                ->whereHas('pembayaran', function ($q) use ($date) {
+                    $q->where('status_verifikasi', 'Verified')
+                        ->whereYear('created_at', $date->year)
+                        ->whereMonth('created_at', $date->month);
+                });
+            if ($kloterYm) {
+                $monthClosingQuery->whereRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') = ?", [$kloterYm]);
+            }
+            if ($user->role === 'agen') {
+                $monthClosingQuery->where('agen_id', $user->id);
+            }
+            $monthClosing = $monthClosingQuery->count();
 
             $monthlyTrend[] = [
                 'month' => $date->translatedFormat('M Y'),
@@ -114,16 +243,36 @@ class DashboardController extends Controller
         $packages = Paket::where('tenant_id', $tenantId)->get();
         $omzetByPackage = [];
         foreach ($packages as $pkg) {
-            $pkgOmzet = (float) Pembayaran::where('tenant_id', $tenantId)
+            $pkgOmzetQuery = Pembayaran::where('tenant_id', $tenantId)
                 ->where('status_verifikasi', 'Verified')
-                ->whereHas('jamaah', function ($q) use ($pkg) {
+                ->whereHas('jamaah', function ($q) use ($pkg, $kloterYm) {
                     $q->where('paket_id', $pkg->id);
-                })
-                ->sum('nominal');
+                    if ($kloterYm) {
+                        $q->whereRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') = ?", [$kloterYm]);
+                    }
+                });
+            if ($startDate && $endDate) {
+                $pkgOmzetQuery->whereBetween('created_at', [$startDate, $endDate]);
+            }
+            if ($user->role === 'agen') {
+                $pkgOmzetQuery->whereHas('jamaah', function ($q) use ($user) {
+                    $q->where('agen_id', $user->id);
+                });
+            }
+            $pkgOmzet = (float) $pkgOmzetQuery->sum('nominal');
 
-            $pkgJamaah = Jamaah::where('tenant_id', $tenantId)
-                ->where('paket_id', $pkg->id)
-                ->count();
+            $pkgJamaahQuery = Jamaah::where('tenant_id', $tenantId)
+                ->where('paket_id', $pkg->id);
+            if ($startDate && $endDate) {
+                $pkgJamaahQuery->whereBetween('created_at', [$startDate, $endDate]);
+            }
+            if ($kloterYm) {
+                $pkgJamaahQuery->whereRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') = ?", [$kloterYm]);
+            }
+            if ($user->role === 'agen') {
+                $pkgJamaahQuery->where('agen_id', $user->id);
+            }
+            $pkgJamaah = $pkgJamaahQuery->count();
 
             $omzetByPackage[] = [
                 'name' => $pkg->nama_paket,
@@ -134,29 +283,44 @@ class DashboardController extends Controller
         }
 
         // 9. Analytics: Omzet By Kloter Keberangkatan
-        $departureMonths = Jamaah::where('tenant_id', $tenantId)
-            ->whereNotNull('tanggal_keberangkatan')
-            ->selectRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') as ym")
+        $departureMonthsQuery = Jamaah::where('tenant_id', $tenantId)
+            ->whereNotNull('tanggal_keberangkatan');
+        if ($startDate && $endDate) {
+            $departureMonthsQuery->whereBetween('tanggal_keberangkatan', [$startDate, $endDate]);
+        }
+        $departureMonths = $departureMonthsQuery->selectRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') as ym")
             ->distinct()
             ->orderBy('ym')
-            ->take(6)
+            ->take(12)
             ->pluck('ym');
 
         $omzetByKloter = [];
         foreach ($departureMonths as $ym) {
-            $date = Carbon::createFromFormat('Y-m', $ym);
-            $kloterLabel = 'Kloter '.$date->translatedFormat('M Y');
+            try {
+                $date = Carbon::createFromFormat('Y-m', $ym);
+                $kloterLabel = 'Kloter '.$date->translatedFormat('M Y');
+            } catch (\Exception $e) {
+                $kloterLabel = 'Kloter '.$ym;
+            }
 
-            $kloterOmzet = (float) Pembayaran::where('tenant_id', $tenantId)
+            $kloterOmzetQuery = Pembayaran::where('tenant_id', $tenantId)
                 ->where('status_verifikasi', 'Verified')
                 ->whereHas('jamaah', function ($q) use ($ym) {
                     $q->whereRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') = ?", [$ym]);
-                })
-                ->sum('nominal');
+                });
+            if ($user->role === 'agen') {
+                $kloterOmzetQuery->whereHas('jamaah', function ($q) use ($user) {
+                    $q->where('agen_id', $user->id);
+                });
+            }
+            $kloterOmzet = (float) $kloterOmzetQuery->sum('nominal');
 
-            $kloterJamaah = Jamaah::where('tenant_id', $tenantId)
-                ->whereRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') = ?", [$ym])
-                ->count();
+            $kloterJamaahQuery = Jamaah::where('tenant_id', $tenantId)
+                ->whereRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') = ?", [$ym]);
+            if ($user->role === 'agen') {
+                $kloterJamaahQuery->where('agen_id', $user->id);
+            }
+            $kloterJamaah = $kloterJamaahQuery->count();
 
             $omzetByKloter[] = [
                 'kloter' => $kloterLabel,
@@ -167,7 +331,17 @@ class DashboardController extends Controller
 
         // 10. Analytics: Package Distribution (Donut)
         $packageDistribution = Paket::where('tenant_id', $tenantId)
-            ->withCount('jamaah')
+            ->withCount(['jamaah' => function ($q) use ($startDate, $endDate, $kloterYm, $user) {
+                if ($startDate && $endDate) {
+                    $q->whereBetween('created_at', [$startDate, $endDate]);
+                }
+                if ($kloterYm) {
+                    $q->whereRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') = ?", [$kloterYm]);
+                }
+                if ($user->role === 'agen') {
+                    $q->where('agen_id', $user->id);
+                }
+            }])
             ->orderByDesc('jamaah_count')
             ->get()
             ->map(function ($p) {
@@ -180,7 +354,17 @@ class DashboardController extends Controller
 
         // 11. Analytics: CRM Funnel
         $crmFunnel = CrmStage::where('tenant_id', $tenantId)
-            ->withCount('jamaah')
+            ->withCount(['jamaah' => function ($q) use ($startDate, $endDate, $kloterYm, $user) {
+                if ($startDate && $endDate) {
+                    $q->whereBetween('created_at', [$startDate, $endDate]);
+                }
+                if ($kloterYm) {
+                    $q->whereRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') = ?", [$kloterYm]);
+                }
+                if ($user->role === 'agen') {
+                    $q->where('agen_id', $user->id);
+                }
+            }])
             ->orderBy('urutan')
             ->get()
             ->map(function ($s) {
@@ -194,12 +378,22 @@ class DashboardController extends Controller
         // 12. Analytics: Top 5 Agents Leaderboard
         $topAgents = User::where('tenant_id', $tenantId)
             ->where('role', 'agen')
-            ->withCount(['jamaah as closing_count' => function ($q) {
+            ->withCount(['jamaah as closing_count' => function ($q) use ($startDate, $endDate, $kloterYm) {
+                if ($startDate && $endDate) {
+                    $q->whereBetween('created_at', [$startDate, $endDate]);
+                }
+                if ($kloterYm) {
+                    $q->whereRaw("TO_CHAR(tanggal_keberangkatan, 'YYYY-MM') = ?", [$kloterYm]);
+                }
                 $q->whereHas('pembayaran', function ($qp) {
                     $qp->where('status_verifikasi', 'Verified');
                 });
             }])
-            ->withSum('komisi as total_komisi', 'nominal_komisi')
+            ->withSum(['komisi as total_komisi' => function ($q) use ($startDate, $endDate) {
+                if ($startDate && $endDate) {
+                    $q->whereBetween('created_at', [$startDate, $endDate]);
+                }
+            }], 'nominal_komisi')
             ->orderByDesc('closing_count')
             ->take(5)
             ->get()
@@ -219,6 +413,13 @@ class DashboardController extends Controller
                 'nama_travel' => $tenant?->nama_travel ?? 'Travel Active',
                 'domain_atau_subdomain' => $tenant?->domain_atau_subdomain ?? 'app',
             ],
+            'filters' => [
+                'period' => $period,
+                'start_date' => $customStart,
+                'end_date' => $customEnd,
+                'kloter_ym' => $kloterYm,
+            ],
+            'availableKloters' => $availableKloters,
             'stats' => [
                 'total_leads' => $totalLeads,
                 'closing_count' => $closingCount,

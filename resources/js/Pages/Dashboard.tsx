@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
 import { PageProps } from '@/Types';
 import PageLayout from '@/Components/Layouts/PageLayout';
 import {
@@ -23,6 +23,10 @@ import {
     Calendar,
     Plane,
     Wallet,
+    Filter,
+    Printer,
+    RotateCcw,
+    CalendarDays,
 } from 'lucide-react';
 import {
     ResponsiveContainer,
@@ -140,12 +144,26 @@ interface PendingPayment {
     };
 }
 
+interface FilterState {
+    period: string;
+    start_date?: string | null;
+    end_date?: string | null;
+    kloter_ym?: string | null;
+}
+
+interface AvailableKloter {
+    value: string;
+    label: string;
+}
+
 interface DashboardProps extends PageProps {
     tenant: {
         id: number;
         nama_travel: string;
         domain_atau_subdomain: string;
     };
+    filters?: FilterState;
+    availableKloters?: AvailableKloter[];
     stats: DashboardStats;
     analytics?: DashboardAnalytics;
     logisticsReadyList: LogisticsItem[];
@@ -156,6 +174,13 @@ const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'
 
 export default function Dashboard({
     tenant,
+    filters = {
+        period: 'this_year',
+        start_date: null,
+        end_date: null,
+        kloter_ym: null,
+    },
+    availableKloters = [],
     stats,
     analytics = {
         monthly_trend: [],
@@ -172,10 +197,64 @@ export default function Dashboard({
     const isSuperAdmin = auth.user.role === 'super_admin_master';
     const isAgent = auth.user.role === 'agen';
 
+    // Filter controls state
+    const [period, setPeriod] = useState(filters.period || 'this_year');
+    const [startDate, setStartDate] = useState(filters.start_date || '');
+    const [endDate, setEndDate] = useState(filters.end_date || '');
+    const [kloterYm, setKloterYm] = useState(filters.kloter_ym || '');
+
     // Omzet Dimension Tab: 'monthly' | 'package' | 'kloter'
     const [omzetDimension, setOmzetDimension] = useState<'monthly' | 'package' | 'kloter'>('monthly');
 
     const totalPackageJamaah = (analytics.package_distribution || []).reduce((acc, p) => acc + p.value, 0);
+
+    const applyFilter = (newPeriod?: string, newKloter?: string) => {
+        const p = newPeriod !== undefined ? newPeriod : period;
+        const k = newKloter !== undefined ? newKloter : kloterYm;
+
+        router.get(
+            route('dashboard'),
+            {
+                period: p,
+                start_date: p === 'custom' ? startDate : undefined,
+                end_date: p === 'custom' ? endDate : undefined,
+                kloter_ym: k || undefined,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+            }
+        );
+    };
+
+    const resetFilter = () => {
+        setPeriod('this_year');
+        setStartDate('');
+        setEndDate('');
+        setKloterYm('');
+        router.get(route('dashboard'), { period: 'this_year' }, { preserveState: true, preserveScroll: true });
+    };
+
+    const handlePrint = () => {
+        window.print();
+    };
+
+    const isFiltered =
+        period !== 'this_year' ||
+        Boolean(kloterYm) ||
+        Boolean(startDate) ||
+        Boolean(endDate);
+
+    const getPeriodLabel = () => {
+        if (period === 'this_year') return `Tahun ${new Date().getFullYear()}`;
+        if (period === 'last_year') return `Tahun ${new Date().getFullYear() - 1}`;
+        if (period === 'this_month') return 'Bulan Ini';
+        if (period === 'all') return 'Semua Waktu (Historis)';
+        if (period === 'custom') {
+            return `${startDate || '...'} s.d. ${endDate || '...'}`;
+        }
+        return period;
+    };
 
     const CustomTooltip = ({ active, payload, label }: any) => {
         if (active && payload && payload.length) {
@@ -200,10 +279,24 @@ export default function Dashboard({
             title="Dashboard Overview"
             breadcrumbParent="Overview"
             breadcrumbPage="Dashboard"
-            contentClass="p-6 md:p-8 flex flex-col gap-6 w-full max-w-none"
+            contentClass="p-6 md:p-8 flex flex-col gap-6 w-full max-w-none print:p-0 print:gap-4"
         >
-            {/* Header Greeting */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border/80 shadow-xs">
+            {/* Print Header (Only shows when printing/PDF export) */}
+            <div className="hidden print:flex flex-col gap-1 pb-4 mb-2 border-b border-gray-300">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h1 className="text-xl font-bold text-black">{tenant?.nama_travel || 'Travel Aktif'}</h1>
+                        <p className="text-xs text-gray-600">Laporan Eksekutif Kinerja Operasional & Keuangan</p>
+                    </div>
+                    <div className="text-right text-xs text-gray-500">
+                        <p>Dicetak pada: {new Date().toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' })}</p>
+                        <p className="font-semibold text-black">Periode: {getPeriodLabel()} {kloterYm && `| Kloter ${kloterYm}`}</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Header Greeting (Hidden on Print) */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border/80 shadow-xs print:hidden">
                 <div>
                     <div className="flex flex-wrap items-center gap-2.5">
                         <div className="h-8 w-1.5 rounded-full bg-primary" />
@@ -240,6 +333,101 @@ export default function Dashboard({
                         <Users className="w-4 h-4" />
                         <span>Buka Papan CRM</span>
                     </Link>
+                </div>
+            </div>
+
+            {/* Global Multi-Year & Kloter Period Filter Bar */}
+            <div className="bg-card/70 backdrop-blur-md p-4 rounded-2xl border border-border/80 shadow-xs flex flex-wrap items-center justify-between gap-4 print:hidden">
+                <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground mr-1">
+                        <Filter className="w-4 h-4 text-primary" />
+                        <span>Filter Periode:</span>
+                    </div>
+
+                    {/* Period Preset Dropdown */}
+                    <select
+                        value={period}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            setPeriod(val);
+                            if (val !== 'custom') {
+                                applyFilter(val, undefined);
+                            }
+                        }}
+                        className="bg-background text-foreground text-xs font-semibold px-3 py-2 rounded-xl border border-border focus:ring-2 focus:ring-primary/30 focus:outline-none transition cursor-pointer"
+                    >
+                        <option value="this_year">Tahun Ini ({new Date().getFullYear()})</option>
+                        <option value="last_year">Tahun Lalu ({new Date().getFullYear() - 1})</option>
+                        <option value="this_month">Bulan Ini</option>
+                        <option value="all">Semua Waktu (Histori Lengkap)</option>
+                        <option value="custom">Rentang Tanggal Khusus...</option>
+                    </select>
+
+                    {/* Kloter Dropdown */}
+                    <select
+                        value={kloterYm}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            setKloterYm(val);
+                            applyFilter(undefined, val);
+                        }}
+                        className="bg-background text-foreground text-xs font-semibold px-3 py-2 rounded-xl border border-border focus:ring-2 focus:ring-primary/30 focus:outline-none transition cursor-pointer"
+                    >
+                        <option value="">Semua Kloter Keberangkatan</option>
+                        {availableKloters.map((k) => (
+                            <option key={k.value} value={k.value}>
+                                {k.label}
+                            </option>
+                        ))}
+                    </select>
+
+                    {/* Custom Date Range Inputs */}
+                    {period === 'custom' && (
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                className="bg-background text-foreground text-xs px-2.5 py-1.5 rounded-lg border border-border focus:outline-none"
+                            />
+                            <span className="text-xs text-muted-foreground">s.d.</span>
+                            <input
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                className="bg-background text-foreground text-xs px-2.5 py-1.5 rounded-lg border border-border focus:outline-none"
+                            />
+                            <button
+                                onClick={() => applyFilter('custom', undefined)}
+                                className="px-3 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:opacity-90 transition shadow-xs"
+                            >
+                                Terapkan
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Reset Button if filtered */}
+                    {isFiltered && (
+                        <button
+                            onClick={resetFilter}
+                            title="Kembalikan ke filter default"
+                            className="inline-flex items-center gap-1.5 px-3 py-2 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground text-xs font-medium rounded-xl border border-border transition"
+                        >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>Reset</span>
+                        </button>
+                    )}
+                </div>
+
+                {/* Print / Report PDF Trigger */}
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handlePrint}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-card hover:bg-muted text-foreground border border-border/80 font-semibold rounded-xl transition text-xs shadow-xs"
+                    >
+                        <Printer className="w-4 h-4 text-primary" />
+                        <span>Cetak Ringkasan Laporan</span>
+                    </button>
                 </div>
             </div>
 
@@ -347,7 +535,7 @@ export default function Dashboard({
                                 </h3>
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                                {omzetDimension === 'monthly' && 'Grafik tren omzet bulanan dan pendaftaran prospek dalam 6 bulan terakhir.'}
+                                {omzetDimension === 'monthly' && `Grafik tren omzet bulanan dan pendaftaran prospek (${getPeriodLabel()}).`}
                                 {omzetDimension === 'package' && 'Perbandingan total omzet dan kontribusi penjualan per varian paket umroh.'}
                                 {omzetDimension === 'kloter' && 'Distribusi omzet pembayaran berdasarkan jadwal bulan keberangkatan kloter.'}
                             </p>

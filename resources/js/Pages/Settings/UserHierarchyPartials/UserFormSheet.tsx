@@ -436,7 +436,7 @@ export function EditUserSheet({
                     <SheetTitle>Edit Pengguna: {editingUser?.name}</SheetTitle>
                     <SheetDescription>Perbarui data profil karyawan, hak akses jabatan, kontak, serta nomor rekening bank.</SheetDescription>
                 </SheetHeader>
-                <form onSubmit={handleSubmit} className="flex flex-col gap-6 p-6 flex-1 overflow-y-auto no-scrollbar">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-6 p-6 flex-1 overflow-y-auto low-scrollbar">
                     {/* SECTION 1: Akun & Posisi Organisasi */}
                     <div className="flex flex-col gap-3 p-4 rounded-2xl bg-card border border-border/80 shadow-xs">
                         <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider">

@@ -352,7 +352,7 @@ export function NotificationDrawer() {
                     </SheetHeader>
 
                     {/* Notifications List Body */}
-                    <div className="flex-1 overflow-y-auto divide-y divide-border/60 p-2">
+                    <div className="flex-1 overflow-y-auto divide-y divide-border/60 p-2 low-scrollbar">
                         {isLoading && notifications.length === 0 ? (
                             <div className="p-12 text-center text-xs text-muted-foreground">
                                 Memuat notifikasi...

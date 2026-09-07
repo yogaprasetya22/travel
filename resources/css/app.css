@@ -88,4 +88,53 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* Low / Sleek Minimal Scrollbar */
+  .low-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.25) transparent;
+  }
+  .low-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .low-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .low-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.25);
+    border-radius: 9999px;
+    transition: background-color 0.2s ease;
+  }
+  .low-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
 }
+
+@media print {
+  @page {
+    size: auto;
+    margin: 8mm 12mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .no-print,
+  [data-slot="dialog-overlay"],
+  button {
+    display: none !important;
+  }
+}
+
+

@@ -83,7 +83,7 @@ export function AddAgentSheet({
                     <SheetTitle>Tambah Mitra Agen Baru</SheetTitle>
                     <SheetDescription>Daftarkan akun lengkap mitra agen / konsultan umroh baru beserta data rekening.</SheetDescription>
                 </SheetHeader>
-                <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6 overflow-y-auto flex-1">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6 overflow-y-auto flex-1 low-scrollbar">
                     <div>
                         <InputLabel htmlFor="create-name" value="Nama Lengkap Agen *" />
                         <TextInput
@@ -390,7 +390,7 @@ export function EditAgentSheet({
                     <SheetTitle>Edit Data Mitra Agen</SheetTitle>
                     <SheetDescription>Perbarui data profil, kontak, jabatan, dan rekening bank agen.</SheetDescription>
                 </SheetHeader>
-                <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6 overflow-y-auto flex-1">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6 overflow-y-auto flex-1 low-scrollbar">
                     <div>
                         <InputLabel htmlFor="edit-name" value="Nama Lengkap Agen *" />
                         <TextInput

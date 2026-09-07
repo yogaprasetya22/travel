@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useForm } from '@inertiajs/react';
+import { useForm, router } from '@inertiajs/react';
 import TextInput from '@/Components/TextInput';
 import InputLabel from '@/Components/InputLabel';
 import InputError from '@/Components/InputError';
@@ -17,8 +17,20 @@ import {
     Calendar,
     Banknote,
     Percent,
+    Plus,
+    Trash2,
+    UploadCloud,
+    MapPin,
+    Package,
 } from 'lucide-react';
 import { PackageItem, InventoryItem } from './types';
+
+interface ItineraryRow {
+    day: number;
+    title: string;
+    description: string;
+    location?: string;
+}
 
 interface AddPackageModalProps {
     isOpen: boolean;
@@ -28,37 +40,93 @@ interface AddPackageModalProps {
 
 export function AddPackageModal({ isOpen, onClose, inventoryItems }: AddPackageModalProps) {
     const [commissionType, setCommissionType] = useState<'flat' | 'percentage'>('flat');
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const [itineraries, setItineraries] = useState<ItineraryRow[]>([
+        { day: 1, title: 'Keberangkatan & Tiba di Jeddah/Madinah', description: 'Kumpul di Bandara Soekarno-Hatta, penerbangan langsung menuju Arab Saudi, check-in hotel.', location: 'Bandara & Hotel' },
+    ]);
+
+    const { data, setData, post, processing, errors, reset } = useForm<{
+        nama_paket: string;
+        harga: string;
+        kuota: string;
+        deskripsi: string;
+        brosur_image: File | null;
+        itinerary: string;
+        komisi_flat: string;
+        komisi_persentase: string;
+        periode_mulai: string;
+        periode_selesai: string;
+        is_active: boolean;
+        inventaris_ids: number[];
+    }>({
         nama_paket: '',
         harga: '',
+        kuota: '45',
+        deskripsi: '',
+        brosur_image: null,
+        itinerary: '[]',
         komisi_flat: '1500000',
         komisi_persentase: '5',
         periode_mulai: '',
         periode_selesai: '',
         is_active: true,
-        inventaris_ids: [] as number[],
+        inventaris_ids: [],
     });
 
     useEffect(() => {
         if (isOpen) {
             reset();
             setCommissionType('flat');
-            setData({
-                nama_paket: '',
-                harga: '',
-                komisi_flat: '1500000',
-                komisi_persentase: '5',
-                periode_mulai: '',
-                periode_selesai: '',
-                is_active: true,
-                inventaris_ids: [],
-            });
+            setItineraries([
+                { day: 1, title: 'Keberangkatan & Tiba di Jeddah/Madinah', description: 'Kumpul di Bandara Soekarno-Hatta, penerbangan langsung menuju Arab Saudi, check-in hotel.', location: 'Bandara & Hotel' },
+            ]);
         }
     }, [isOpen]);
 
+    const addItineraryDay = () => {
+        const nextDay = itineraries.length + 1;
+        setItineraries((prev) => [
+            ...prev,
+            { day: nextDay, title: `Aktivitas Ibadah Hari ke-${nextDay}`, description: '', location: '' },
+        ]);
+    };
+
+    const removeItineraryDay = (index: number) => {
+        setItineraries((prev) => prev.filter((_, i) => i !== index).map((row, i) => ({ ...row, day: i + 1 })));
+    };
+
+    const updateItineraryField = (index: number, field: keyof ItineraryRow, val: any) => {
+        setItineraries((prev) => {
+            const next = [...prev];
+            next[index] = { ...next[index], [field]: val };
+            return next;
+        });
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('settings.master.store-package'), {
+
+        // Attach json string of itinerary
+        const formData = new FormData();
+        formData.append('nama_paket', data.nama_paket);
+        formData.append('harga', data.harga);
+        formData.append('kuota', data.kuota || '45');
+        formData.append('deskripsi', data.deskripsi);
+        if (data.brosur_image) {
+            formData.append('brosur_image', data.brosur_image);
+        }
+        formData.append('itinerary', JSON.stringify(itineraries));
+        formData.append('komisi_flat', data.komisi_flat);
+        formData.append('komisi_persentase', data.komisi_persentase);
+        formData.append('periode_mulai', data.periode_mulai);
+        formData.append('periode_selesai', data.periode_selesai);
+        formData.append('is_active', data.is_active ? '1' : '0');
+
+        data.inventaris_ids.forEach((id) => {
+            formData.append('inventaris_ids[]', id.toString());
+        });
+
+        router.post(route('settings.master.store-package'), formData, {
+            forceFormData: true,
             preserveScroll: true,
             onSuccess: () => {
                 reset();
@@ -69,41 +137,143 @@ export function AddPackageModal({ isOpen, onClose, inventoryItems }: AddPackageM
 
     return (
         <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-            <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2">
-                <SheetHeader>
-                    <SheetTitle>Tambah Paket Umroh & Haji</SheetTitle>
-                    <SheetDescription>Daftarkan produk paket travel, skema komisi agen (standar / persentase), dan paket perlengkapan.</SheetDescription>
+            <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2 p-0 flex flex-col overflow-hidden">
+                <SheetHeader className="p-6 pb-2 border-b border-border">
+                    <SheetTitle>Tambah Paket Umroh &amp; Haji</SheetTitle>
+                    <SheetDescription>Daftarkan produk paket travel, itinerary hari per hari, kuota kursi, dan brosur visual.</SheetDescription>
                 </SheetHeader>
-                <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-4 flex-1 overflow-y-auto">
+
+                <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6 flex-1 overflow-y-auto">
                     <div>
-                        <InputLabel htmlFor="nama_paket" value="Nama Paket" />
+                        <InputLabel htmlFor="nama_paket" value="Nama Paket *" />
                         <TextInput
                             id="nama_paket"
                             type="text"
                             value={data.nama_paket}
-                            className="mt-1 block w-full"
+                            className="mt-1 block w-full text-xs"
                             onChange={(e) => setData('nama_paket', e.target.value)}
                             required
                             placeholder="Misal: Umroh Ramadhan VIP 2027"
                         />
-                        <InputError message={errors.nama_paket} className="mt-2" />
+                        <InputError message={errors.nama_paket} className="mt-1" />
                     </div>
 
-                    <div>
-                        <InputLabel htmlFor="harga" value="Harga Paket" />
-                        <div className="mt-1">
-                            <CurrencyInput
-                                id="harga"
-                                value={data.harga}
-                                onChange={(val) => setData('harga', val)}
-                                placeholder="35.000.000"
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <InputLabel htmlFor="harga" value="Harga Paket (Rp) *" />
+                            <div className="mt-1">
+                                <CurrencyInput
+                                    id="harga"
+                                    value={data.harga}
+                                    onChange={(val) => setData('harga', val)}
+                                    placeholder="35.000.000"
+                                    required
+                                />
+                            </div>
+                            <InputError message={errors.harga} className="mt-1" />
+                        </div>
+                        <div>
+                            <InputLabel htmlFor="kuota" value="Total Kuota Seat *" />
+                            <TextInput
+                                id="kuota"
+                                type="number"
+                                min={1}
+                                value={data.kuota}
+                                className="mt-1 block w-full text-xs"
+                                onChange={(e) => setData('kuota', e.target.value)}
                                 required
                             />
                         </div>
-                        <InputError message={errors.harga} className="mt-2" />
                     </div>
 
-                    {/* Commission Type Switcher */}
+                    <div>
+                        <InputLabel htmlFor="deskripsi" value="Ringkasan Deskripsi Paket" />
+                        <textarea
+                            id="deskripsi"
+                            rows={2}
+                            value={data.deskripsi}
+                            onChange={(e) => setData('deskripsi', e.target.value)}
+                            className="mt-1 block w-full rounded-xl border border-border bg-background p-2.5 text-xs text-foreground"
+                            placeholder="Penjelasan keunggulan hotel, maskapai, dan durasi program..."
+                        />
+                    </div>
+
+                    {/* Brosur Upload */}
+                    <div>
+                        <InputLabel value="Foto / Desain Brosur Poster (JPG/PNG maks 5MB)" />
+                        <input
+                            type="file"
+                            accept=".jpg,.jpeg,.png,.webp"
+                            onChange={(e) => setData('brosur_image', e.target.files?.[0] || null)}
+                            className="mt-1 block w-full text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary cursor-pointer"
+                        />
+                    </div>
+
+                    {/* Itinerary Dynamic Repeater (Poin 8) */}
+                    <div className="flex flex-col gap-3 p-4 bg-muted/30 rounded-2xl border border-border">
+                        <div className="flex justify-between items-center">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                                <Calendar className="w-3.5 h-3.5" /> Jadwal Kegiatan Harian (Itinerary)
+                            </h4>
+                            <button
+                                type="button"
+                                onClick={addItineraryDay}
+                                className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline cursor-pointer"
+                            >
+                                <Plus className="w-3.5 h-3.5" /> Tambah Hari (Day)
+                            </button>
+                        </div>
+
+                        <div className="space-y-3">
+                            {itineraries.map((row, idx) => (
+                                <div key={idx} className="p-3 bg-card border border-border rounded-xl flex flex-col gap-2">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-6 h-6 rounded-lg bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                                                H{row.day}
+                                            </span>
+                                            <input
+                                                type="text"
+                                                value={row.title}
+                                                onChange={(e) => updateItineraryField(idx, 'title', e.target.value)}
+                                                className="text-xs font-bold py-1 px-2 rounded-lg border border-border bg-background w-48 sm:w-64"
+                                                placeholder="Judul Hari (misal: Ziarah Kota Madinah)"
+                                            />
+                                        </div>
+                                        {itineraries.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removeItineraryDay(idx)}
+                                                className="p-1 text-muted-foreground hover:text-rose-500 transition"
+                                                title="Hapus Hari"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        <input
+                                            type="text"
+                                            value={row.location || ''}
+                                            onChange={(e) => updateItineraryField(idx, 'location', e.target.value)}
+                                            className="text-[11px] py-1 px-2 rounded-lg border border-border bg-background"
+                                            placeholder="Lokasi (misal: Masjid Nabawi, Raudhah)"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={row.description}
+                                            onChange={(e) => updateItineraryField(idx, 'description', e.target.value)}
+                                            className="text-[11px] py-1 px-2 rounded-lg border border-border bg-background"
+                                            placeholder="Deskripsi kegiatan..."
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Commission Settings */}
                     <div className="flex flex-col gap-2 p-4 rounded-xl bg-muted/40 border border-border">
                         <InputLabel value="Skema Komisi Agen" />
                         <div className="grid grid-cols-2 gap-2 mt-1">
@@ -150,12 +320,11 @@ export function AddPackageModal({ isOpen, onClose, inventoryItems }: AddPackageM
                                         placeholder="1.500.000"
                                     />
                                 </div>
-                                <InputError message={errors.komisi_flat} className="mt-2" />
                             </div>
                         ) : (
-                            <div className="mt-2">
+                            <div className="mt-2 flex flex-col gap-2">
                                 <InputLabel htmlFor="komisi_persentase" value="Persentase Komisi (%)" />
-                                <div className="relative mt-1 flex items-center">
+                                <div className="relative flex items-center">
                                     <TextInput
                                         id="komisi_persentase"
                                         type="number"
@@ -163,100 +332,34 @@ export function AddPackageModal({ isOpen, onClose, inventoryItems }: AddPackageM
                                         max="100"
                                         step="0.1"
                                         value={data.komisi_persentase}
-                                        className="block w-full pr-8"
+                                        className="block w-full pr-8 text-xs"
                                         onChange={(e) => setData('komisi_persentase', e.target.value)}
                                         placeholder="5"
                                     />
                                     <span className="absolute right-3 text-sm font-bold text-muted-foreground">%</span>
                                 </div>
-                                <p className="text-[11px] text-muted-foreground mt-1">
-                                    Perkiraan komisi per jamaah: <strong className="text-foreground">{toRupiah((Number(data.harga || 0) * Number(data.komisi_persentase || 0)) / 100)}</strong>
-                                </p>
-                                <InputError message={errors.komisi_persentase} className="mt-2" />
+                                <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between text-xs">
+                                    <span className="text-muted-foreground">Hasil Estimasi Komisi:</span>
+                                    <span className="font-extrabold text-primary">
+                                        {toRupiah((parseFloat(data.harga.replace(/[^0-9]/g, '')) || 0) * (parseFloat(data.komisi_persentase) || 0) / 100)}{' '}
+                                        <span className="font-normal text-[10px] text-muted-foreground">/ jamaah</span>
+                                    </span>
+                                </div>
                             </div>
                         )}
                     </div>
 
-                    {/* Active Period Configuration */}
-                    <div className="flex flex-col gap-3 p-4 rounded-xl bg-muted/40 border border-border">
-                        <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-primary" />
-                            <span className="text-xs font-bold text-foreground">Pengaturan Periode Aktif Paket</span>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
-                            <div>
-                                <InputLabel htmlFor="pkg_periode_mulai" value="Tanggal Mulai Berlaku (Opsional)" />
-                                <TextInput
-                                    id="pkg_periode_mulai"
-                                    type="date"
-                                    value={data.periode_mulai}
-                                    className="mt-1 block w-full text-xs"
-                                    onChange={(e) => setData('periode_mulai', e.target.value)}
-                                />
-                                <InputError message={errors.periode_mulai} className="mt-1" />
-                            </div>
-                            <div>
-                                <InputLabel htmlFor="pkg_periode_selesai" value="Tanggal Berakhir (Opsional)" />
-                                <TextInput
-                                    id="pkg_periode_selesai"
-                                    type="date"
-                                    value={data.periode_selesai}
-                                    className="mt-1 block w-full text-xs"
-                                    onChange={(e) => setData('periode_selesai', e.target.value)}
-                                />
-                                <InputError message={errors.periode_selesai} className="mt-1" />
-                            </div>
-                        </div>
-                        <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer pt-1">
-                            <input
-                                type="checkbox"
-                                checked={data.is_active}
-                                onChange={(e) => setData('is_active', e.target.checked)}
-                                className="rounded border-border text-primary focus:ring-primary"
-                            />
-                            <span>Status Paket Langsung Aktif Ditawarkan</span>
-                        </label>
-                    </div>
-
-                    {/* Inventory items attachment */}
-                    {inventoryItems.length > 0 && (
-                        <div className="flex flex-col gap-2">
-                            <InputLabel value="Paket Logistik & Perlengkapan Bawaan" />
-                            <div className="grid grid-cols-1 gap-2 max-h-36 overflow-y-auto p-2 border border-border rounded-xl bg-background">
-                                {inventoryItems.map((inv) => {
-                                    const isChecked = data.inventaris_ids.includes(inv.id);
-                                    return (
-                                        <label key={inv.id} className="flex items-center gap-2.5 text-xs text-foreground cursor-pointer p-1.5 rounded-lg hover:bg-muted">
-                                            <input
-                                                type="checkbox"
-                                                checked={isChecked}
-                                                onChange={(e) => {
-                                                    const current = data.inventaris_ids;
-                                                    if (e.target.checked) {
-                                                        setData('inventaris_ids', [...current, inv.id]);
-                                                    } else {
-                                                        setData('inventaris_ids', current.filter((id) => id !== inv.id));
-                                                    }
-                                                }}
-                                                className="rounded border-border text-primary focus:ring-primary"
-                                            />
-                                            <span>{inv.nama_barang}</span>
-                                        </label>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-
-                    <SheetFooter>
+                    <SheetFooter className="p-4 border-t border-border flex justify-end gap-2">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 border border-border rounded-xl text-sm font-medium cursor-pointer"
+                            className="px-4 py-2 border border-border rounded-xl text-xs font-bold"
                         >
                             Batal
                         </button>
-                        <PrimaryButton disabled={processing}>Simpan Paket</PrimaryButton>
+                        <PrimaryButton disabled={processing}>
+                            {processing ? 'Menyimpan...' : 'Simpan Paket & Itinerary'}
+                        </PrimaryButton>
                     </SheetFooter>
                 </form>
             </SheetContent>
@@ -265,102 +368,264 @@ export function AddPackageModal({ isOpen, onClose, inventoryItems }: AddPackageM
 }
 
 interface EditPackageModalProps {
-    editingPackage: PackageItem | null;
+    isOpen: boolean;
     onClose: () => void;
+    pkg: PackageItem | null;
     inventoryItems: InventoryItem[];
 }
 
-export function EditPackageModal({ editingPackage, onClose, inventoryItems }: EditPackageModalProps) {
-    const [editCommissionType, setEditCommissionType] = useState<'flat' | 'percentage'>('flat');
-    const { data, setData, put, processing, errors, reset } = useForm({
+export function EditPackageModal({ isOpen, onClose, pkg, inventoryItems }: EditPackageModalProps) {
+    const [commissionType, setCommissionType] = useState<'flat' | 'percentage'>('flat');
+    const [itineraries, setItineraries] = useState<ItineraryRow[]>([]);
+
+    const { data, setData, put, processing, errors } = useForm<{
+        nama_paket: string;
+        harga: string;
+        kuota: string;
+        deskripsi: string;
+        brosur_image: File | null;
+        itinerary: string;
+        komisi_flat: string;
+        komisi_persentase: string;
+        periode_mulai: string;
+        periode_selesai: string;
+        is_active: boolean;
+        inventaris_ids: number[];
+    }>({
         nama_paket: '',
         harga: '',
+        kuota: '45',
+        deskripsi: '',
+        brosur_image: null,
+        itinerary: '[]',
         komisi_flat: '0',
         komisi_persentase: '0',
         periode_mulai: '',
         periode_selesai: '',
         is_active: true,
-        inventaris_ids: [] as number[],
+        inventaris_ids: [],
     });
 
     useEffect(() => {
-        if (editingPackage) {
-            const isPct = Number(editingPackage.komisi_persentase) > 0;
-            setEditCommissionType(isPct ? 'percentage' : 'flat');
-
+        if (pkg) {
             setData({
-                nama_paket: editingPackage.nama_paket,
-                harga: editingPackage.harga.toString(),
-                komisi_flat: (editingPackage.komisi_flat || 0).toString(),
-                komisi_persentase: (editingPackage.komisi_persentase || 0).toString(),
-                periode_mulai: editingPackage.periode_mulai ? editingPackage.periode_mulai.split('T')[0] : '',
-                periode_selesai: editingPackage.periode_selesai ? editingPackage.periode_selesai.split('T')[0] : '',
-                is_active: editingPackage.is_active !== false,
-                inventaris_ids: (editingPackage.inventaris || []).map((i) => i.id),
+                nama_paket: pkg.nama_paket || '',
+                harga: pkg.harga?.toString() || '0',
+                kuota: pkg.kuota?.toString() || '45',
+                deskripsi: pkg.deskripsi || '',
+                brosur_image: null,
+                itinerary: JSON.stringify(pkg.itinerary || []),
+                komisi_flat: pkg.komisi_flat?.toString() || '0',
+                komisi_persentase: pkg.komisi_persentase?.toString() || '0',
+                periode_mulai: pkg.periode_mulai || '',
+                periode_selesai: pkg.periode_selesai || '',
+                is_active: pkg.is_active ?? true,
+                inventaris_ids: pkg.inventaris?.map((i) => i.id) || [],
             });
+
+            setCommissionType(pkg.komisi_persentase && pkg.komisi_persentase > 0 ? 'percentage' : 'flat');
+            setItineraries(Array.isArray(pkg.itinerary) && pkg.itinerary.length > 0
+                ? pkg.itinerary
+                : [{ day: 1, title: 'Keberangkatan & Tiba di Jeddah', description: 'Penerbangan langsung & check in hotel.', location: 'Bandara' }]);
         }
-    }, [editingPackage]);
+    }, [pkg, isOpen]);
+
+    const addItineraryDay = () => {
+        const nextDay = itineraries.length + 1;
+        setItineraries((prev) => [
+            ...prev,
+            { day: nextDay, title: `Aktivitas Ibadah Hari ke-${nextDay}`, description: '', location: '' },
+        ]);
+    };
+
+    const removeItineraryDay = (index: number) => {
+        setItineraries((prev) => prev.filter((_, i) => i !== index).map((row, i) => ({ ...row, day: i + 1 })));
+    };
+
+    const updateItineraryField = (index: number, field: keyof ItineraryRow, val: any) => {
+        setItineraries((prev) => {
+            const next = [...prev];
+            next[index] = { ...next[index], [field]: val };
+            return next;
+        });
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!editingPackage) return;
+        if (!pkg) return;
 
-        put(route('settings.master.update-package', editingPackage.id), {
+        const formData = new FormData();
+        formData.append('_method', 'PUT');
+        formData.append('nama_paket', data.nama_paket);
+        formData.append('harga', data.harga);
+        formData.append('kuota', data.kuota || '45');
+        formData.append('deskripsi', data.deskripsi);
+        if (data.brosur_image) {
+            formData.append('brosur_image', data.brosur_image);
+        }
+        formData.append('itinerary', JSON.stringify(itineraries));
+        formData.append('komisi_flat', data.komisi_flat);
+        formData.append('komisi_persentase', data.komisi_persentase);
+        formData.append('periode_mulai', data.periode_mulai);
+        formData.append('periode_selesai', data.periode_selesai);
+        formData.append('is_active', data.is_active ? '1' : '0');
+
+        data.inventaris_ids.forEach((id) => {
+            formData.append('inventaris_ids[]', id.toString());
+        });
+
+        router.post(route('settings.master.update-package', pkg.id), formData, {
+            forceFormData: true,
             preserveScroll: true,
             onSuccess: () => {
-                reset();
                 onClose();
             },
         });
     };
 
     return (
-        <Sheet open={!!editingPackage} onOpenChange={(open) => { if (!open) onClose(); }}>
-            <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2">
-                <SheetHeader>
-                    <SheetTitle>Edit Paket Umroh & Haji</SheetTitle>
-                    <SheetDescription>Perbarui rincian harga paket, skema komisi agen, masa aktif, atau paket inventaris bawaan.</SheetDescription>
+        <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+            <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2 p-0 flex flex-col overflow-hidden">
+                <SheetHeader className="p-6 pb-2 border-b border-border">
+                    <SheetTitle>Edit Paket: {pkg?.nama_paket}</SheetTitle>
+                    <SheetDescription>Perbarui rincian harga, kuota seat, itinerary jadwal harian, dan brosur paket.</SheetDescription>
                 </SheetHeader>
-                <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-4 flex-1 overflow-y-auto">
+
+                <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6 flex-1 overflow-y-auto">
                     <div>
-                        <InputLabel htmlFor="edit_nama_paket" value="Nama Paket" />
+                        <InputLabel htmlFor="edit_nama_paket" value="Nama Paket *" />
                         <TextInput
                             id="edit_nama_paket"
                             type="text"
                             value={data.nama_paket}
-                            className="mt-1 block w-full"
+                            className="mt-1 block w-full text-xs"
                             onChange={(e) => setData('nama_paket', e.target.value)}
                             required
                         />
-                        <InputError message={errors.nama_paket} className="mt-2" />
                     </div>
 
-                    <div>
-                        <InputLabel htmlFor="edit_harga" value="Harga Paket" />
-                        <div className="mt-1">
-                            <CurrencyInput
-                                id="edit_harga"
-                                value={data.harga}
-                                onChange={(val) => setData('harga', val)}
-                                placeholder="35.000.000"
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <InputLabel htmlFor="edit_harga" value="Harga Paket (Rp) *" />
+                            <div className="mt-1">
+                                <CurrencyInput
+                                    id="edit_harga"
+                                    value={data.harga}
+                                    onChange={(val) => setData('harga', val)}
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <InputLabel htmlFor="edit_kuota" value="Total Kuota Seat *" />
+                            <TextInput
+                                id="edit_kuota"
+                                type="number"
+                                min={1}
+                                value={data.kuota}
+                                className="mt-1 block w-full text-xs"
+                                onChange={(e) => setData('kuota', e.target.value)}
                                 required
                             />
                         </div>
-                        <InputError message={errors.harga} className="mt-2" />
                     </div>
 
-                    {/* Commission Type Switcher */}
+                    <div>
+                        <InputLabel value="Ringkasan Deskripsi Paket" />
+                        <textarea
+                            rows={2}
+                            value={data.deskripsi}
+                            onChange={(e) => setData('deskripsi', e.target.value)}
+                            className="mt-1 block w-full rounded-xl border border-border bg-background p-2.5 text-xs text-foreground"
+                        />
+                    </div>
+
+                    {/* Brosur Upload */}
+                    <div>
+                        <InputLabel value="Ganti Foto / Desain Brosur (Opsional)" />
+                        <input
+                            type="file"
+                            accept=".jpg,.jpeg,.png,.webp"
+                            onChange={(e) => setData('brosur_image', e.target.files?.[0] || null)}
+                            className="mt-1 block w-full text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary cursor-pointer"
+                        />
+                    </div>
+
+                    {/* Itinerary Dynamic Repeater */}
+                    <div className="flex flex-col gap-3 p-4 bg-muted/30 rounded-2xl border border-border">
+                        <div className="flex justify-between items-center">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                                <Calendar className="w-3.5 h-3.5" /> Jadwal Kegiatan Harian (Itinerary)
+                            </h4>
+                            <button
+                                type="button"
+                                onClick={addItineraryDay}
+                                className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline cursor-pointer"
+                            >
+                                <Plus className="w-3.5 h-3.5" /> Tambah Hari
+                            </button>
+                        </div>
+
+                        <div className="space-y-3">
+                            {itineraries.map((row, idx) => (
+                                <div key={idx} className="p-3 bg-card border border-border rounded-xl flex flex-col gap-2">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-6 h-6 rounded-lg bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                                                H{row.day}
+                                            </span>
+                                            <input
+                                                type="text"
+                                                value={row.title}
+                                                onChange={(e) => updateItineraryField(idx, 'title', e.target.value)}
+                                                className="text-xs font-bold py-1 px-2 rounded-lg border border-border bg-background w-48 sm:w-64"
+                                                placeholder="Judul Hari"
+                                            />
+                                        </div>
+                                        {itineraries.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removeItineraryDay(idx)}
+                                                className="p-1 text-muted-foreground hover:text-rose-500 transition"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        <input
+                                            type="text"
+                                            value={row.location || ''}
+                                            onChange={(e) => updateItineraryField(idx, 'location', e.target.value)}
+                                            className="text-[11px] py-1 px-2 rounded-lg border border-border bg-background"
+                                            placeholder="Lokasi..."
+                                        />
+                                        <input
+                                            type="text"
+                                            value={row.description}
+                                            onChange={(e) => updateItineraryField(idx, 'description', e.target.value)}
+                                            className="text-[11px] py-1 px-2 rounded-lg border border-border bg-background"
+                                            placeholder="Deskripsi kegiatan..."
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Commission Settings */}
                     <div className="flex flex-col gap-2 p-4 rounded-xl bg-muted/40 border border-border">
                         <InputLabel value="Skema Komisi Agen" />
                         <div className="grid grid-cols-2 gap-2 mt-1">
                             <button
                                 type="button"
                                 onClick={() => {
-                                    setEditCommissionType('flat');
+                                    setCommissionType('flat');
                                     setData('komisi_persentase', '0');
                                 }}
                                 className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition cursor-pointer border ${
-                                    editCommissionType === 'flat'
+                                    commissionType === 'flat'
                                         ? 'bg-primary text-primary-foreground border-primary shadow-xs'
                                         : 'bg-background text-muted-foreground border-border hover:text-foreground'
                                 }`}
@@ -371,11 +636,11 @@ export function EditPackageModal({ editingPackage, onClose, inventoryItems }: Ed
                             <button
                                 type="button"
                                 onClick={() => {
-                                    setEditCommissionType('percentage');
+                                    setCommissionType('percentage');
                                     setData('komisi_flat', '0');
                                 }}
                                 className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition cursor-pointer border ${
-                                    editCommissionType === 'percentage'
+                                    commissionType === 'percentage'
                                         ? 'bg-primary text-primary-foreground border-primary shadow-xs'
                                         : 'bg-background text-muted-foreground border-border hover:text-foreground'
                                 }`}
@@ -385,7 +650,7 @@ export function EditPackageModal({ editingPackage, onClose, inventoryItems }: Ed
                             </button>
                         </div>
 
-                        {editCommissionType === 'flat' ? (
+                        {commissionType === 'flat' ? (
                             <div className="mt-2">
                                 <InputLabel htmlFor="edit_komisi_flat" value="Nominal Komisi Flat" />
                                 <div className="mt-1">
@@ -396,12 +661,11 @@ export function EditPackageModal({ editingPackage, onClose, inventoryItems }: Ed
                                         placeholder="1.500.000"
                                     />
                                 </div>
-                                <InputError message={errors.komisi_flat} className="mt-2" />
                             </div>
                         ) : (
-                            <div className="mt-2">
+                            <div className="mt-2 flex flex-col gap-2">
                                 <InputLabel htmlFor="edit_komisi_persentase" value="Persentase Komisi (%)" />
-                                <div className="relative mt-1 flex items-center">
+                                <div className="relative flex items-center">
                                     <TextInput
                                         id="edit_komisi_persentase"
                                         type="number"
@@ -409,100 +673,34 @@ export function EditPackageModal({ editingPackage, onClose, inventoryItems }: Ed
                                         max="100"
                                         step="0.1"
                                         value={data.komisi_persentase}
-                                        className="block w-full pr-8"
+                                        className="block w-full pr-8 text-xs"
                                         onChange={(e) => setData('komisi_persentase', e.target.value)}
                                         placeholder="5"
                                     />
                                     <span className="absolute right-3 text-sm font-bold text-muted-foreground">%</span>
                                 </div>
-                                <p className="text-[11px] text-muted-foreground mt-1">
-                                    Perkiraan komisi per jamaah: <strong className="text-foreground">{toRupiah((Number(data.harga || 0) * Number(data.komisi_persentase || 0)) / 100)}</strong>
-                                </p>
-                                <InputError message={errors.komisi_persentase} className="mt-2" />
+                                <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between text-xs">
+                                    <span className="text-muted-foreground">Hasil Estimasi Komisi:</span>
+                                    <span className="font-extrabold text-primary">
+                                        {toRupiah((parseFloat(data.harga.replace(/[^0-9]/g, '')) || 0) * (parseFloat(data.komisi_persentase) || 0) / 100)}{' '}
+                                        <span className="font-normal text-[10px] text-muted-foreground">/ jamaah</span>
+                                    </span>
+                                </div>
                             </div>
                         )}
                     </div>
 
-                    {/* Active Period Configuration */}
-                    <div className="flex flex-col gap-3 p-4 rounded-xl bg-muted/40 border border-border">
-                        <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-primary" />
-                            <span className="text-xs font-bold text-foreground">Pengaturan Periode Aktif Paket</span>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
-                            <div>
-                                <InputLabel htmlFor="edit_pkg_periode_mulai" value="Tanggal Mulai Berlaku (Opsional)" />
-                                <TextInput
-                                    id="edit_pkg_periode_mulai"
-                                    type="date"
-                                    value={data.periode_mulai}
-                                    className="mt-1 block w-full text-xs"
-                                    onChange={(e) => setData('periode_mulai', e.target.value)}
-                                />
-                                <InputError message={errors.periode_mulai} className="mt-1" />
-                            </div>
-                            <div>
-                                <InputLabel htmlFor="edit_pkg_periode_selesai" value="Tanggal Berakhir (Opsional)" />
-                                <TextInput
-                                    id="edit_pkg_periode_selesai"
-                                    type="date"
-                                    value={data.periode_selesai}
-                                    className="mt-1 block w-full text-xs"
-                                    onChange={(e) => setData('periode_selesai', e.target.value)}
-                                />
-                                <InputError message={errors.periode_selesai} className="mt-1" />
-                            </div>
-                        </div>
-                        <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer pt-1">
-                            <input
-                                type="checkbox"
-                                checked={data.is_active}
-                                onChange={(e) => setData('is_active', e.target.checked)}
-                                className="rounded border-border text-primary focus:ring-primary"
-                            />
-                            <span>Status Paket Langsung Aktif Ditawarkan</span>
-                        </label>
-                    </div>
-
-                    {/* Inventory items attachment */}
-                    {inventoryItems.length > 0 && (
-                        <div className="flex flex-col gap-2">
-                            <InputLabel value="Paket Logistik & Perlengkapan Bawaan" />
-                            <div className="grid grid-cols-1 gap-2 max-h-36 overflow-y-auto p-2 border border-border rounded-xl bg-background">
-                                {inventoryItems.map((inv) => {
-                                    const isChecked = data.inventaris_ids.includes(inv.id);
-                                    return (
-                                        <label key={inv.id} className="flex items-center gap-2.5 text-xs text-foreground cursor-pointer p-1.5 rounded-lg hover:bg-muted">
-                                            <input
-                                                type="checkbox"
-                                                checked={isChecked}
-                                                onChange={(e) => {
-                                                    const current = data.inventaris_ids;
-                                                    if (e.target.checked) {
-                                                        setData('inventaris_ids', [...current, inv.id]);
-                                                    } else {
-                                                        setData('inventaris_ids', current.filter((id) => id !== inv.id));
-                                                    }
-                                                }}
-                                                className="rounded border-border text-primary focus:ring-primary"
-                                            />
-                                            <span>{inv.nama_barang}</span>
-                                        </label>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-
-                    <SheetFooter>
+                    <SheetFooter className="p-4 border-t border-border flex justify-end gap-2">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 border border-border rounded-xl text-sm font-medium cursor-pointer"
+                            className="px-4 py-2 border border-border rounded-xl text-xs font-bold"
                         >
                             Batal
                         </button>
-                        <PrimaryButton disabled={processing}>Simpan Perubahan</PrimaryButton>
+                        <PrimaryButton disabled={processing}>
+                            {processing ? 'Menyimpan...' : 'Perbarui Paket'}
+                        </PrimaryButton>
                     </SheetFooter>
                 </form>
             </SheetContent>

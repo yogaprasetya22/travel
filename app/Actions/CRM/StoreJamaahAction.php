@@ -4,6 +4,8 @@ namespace App\Actions\CRM;
 
 use App\Models\CrmStage;
 use App\Models\Jamaah;
+use App\Models\JamaahDocument;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
 
 class StoreJamaahAction
@@ -23,7 +25,7 @@ class StoreJamaahAction
             ]);
         }
 
-        return Jamaah::create([
+        $jamaah = Jamaah::create([
             'tenant_id' => $tenantId,
             'crm_stage_id' => $firstStage->id,
             'nama_lengkap' => $data['nama_lengkap'],
@@ -35,5 +37,35 @@ class StoreJamaahAction
             'tanggal_keberangkatan' => ! empty($data['tanggal_keberangkatan']) ? $data['tanggal_keberangkatan'] : null,
             'catatan_admin' => ! empty($data['catatan_admin']) ? $data['catatan_admin'] : 'Didaftarkan oleh admin/agen di CRM.',
         ]);
+
+        // Save uploaded documents (KTP & KK mandatory, Foto & Paspor optional)
+        $docUploads = [
+            'file_ktp' => 'ktp',
+            'file_kk' => 'kk',
+            'file_foto' => 'foto',
+            'file_paspor' => 'paspor',
+        ];
+
+        foreach ($docUploads as $fileInput => $docType) {
+            if (isset($data[$fileInput]) && $data[$fileInput] instanceof UploadedFile) {
+                $file = $data[$fileInput];
+                $filename = time()."_{$docType}_".preg_replace('/[^a-zA-Z0-9._-]/', '', $file->getClientOriginalName());
+                $path = $file->storeAs("tenants/{$tenantId}/jamaah/{$jamaah->id}/documents", $filename, 'public');
+
+                JamaahDocument::create([
+                    'tenant_id' => $tenantId,
+                    'jamaah_id' => $jamaah->id,
+                    'type' => $docType,
+                    'title' => strtoupper($docType).' - '.$jamaah->nama_lengkap,
+                    'file_path' => $path,
+                    'file_name' => $file->getClientOriginalName(),
+                    'mime_type' => $file->getClientMimeType(),
+                    'file_size' => $file->getSize(),
+                    'uploaded_by' => $authUserId ?? auth()->id(),
+                ]);
+            }
+        }
+
+        return $jamaah;
     }
 }

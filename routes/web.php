@@ -5,6 +5,7 @@ use App\Http\Controllers\CRM\CustomerController;
 use App\Http\Controllers\CRM\DepartureScheduleController;
 use App\Http\Controllers\CRM\GuestRegisterFormController;
 use App\Http\Controllers\CRM\GuestRegisterSubmitController;
+use App\Http\Controllers\CRM\JamaahDocumentController;
 use App\Http\Controllers\CRM\LogisticsDistributionController;
 use App\Http\Controllers\CRM\StoreJamaahController;
 use App\Http\Controllers\CRM\UpdateJamaahController;
@@ -75,8 +76,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/crm/customers', [CustomerController::class, 'index'])->name('crm.customers.index');
     Route::put('/crm/customers/{jamaah}', [CustomerController::class, 'update'])->name('crm.customers.update');
     Route::post('/crm/customers/{jamaah}/payment', [CustomerController::class, 'recordPayment'])->name('crm.customers.payment');
+    Route::post('/crm/jamaah/{jamaah}/documents', [JamaahDocumentController::class, 'store'])->name('crm.jamaah.documents.store');
+    Route::delete('/crm/documents/{document}', [JamaahDocumentController::class, 'destroy'])->name('crm.jamaah.documents.destroy');
     Route::get('/crm/logistics', [LogisticsDistributionController::class, 'index'])->name('crm.logistics.index');
     Route::post('/crm/logistics/{jamaah}/handover', [LogisticsDistributionController::class, 'handover'])->name('crm.logistics.handover');
+    Route::post('/crm/logistics/{jamaah}/item-handover', [LogisticsDistributionController::class, 'saveItemHandover'])->name('crm.logistics.item-handover');
     Route::get('/crm/schedules', [DepartureScheduleController::class, 'index'])->name('crm.schedules.index');
     Route::post('/crm/schedules/{jamaah}/update-departure', [DepartureScheduleController::class, 'updateDeparture'])->name('crm.schedules.update-departure');
 
@@ -100,6 +104,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/settings/master/package/{paket}', [MasterDataController::class, 'updatePackage'])->name('settings.master.update-package');
     Route::patch('/settings/master/package/{paket}/toggle', [MasterDataController::class, 'togglePackage'])->name('settings.master.toggle-package');
     Route::delete('/settings/master/package/{paket}', [MasterDataController::class, 'destroyPackage'])->name('settings.master.destroy-package');
+    Route::post('/settings/master/document-permissions', [MasterDataController::class, 'saveDocumentPermissions'])->name('settings.master.document-permissions');
     Route::post('/settings/master/bank', [MasterDataController::class, 'storeBank'])->name('settings.master.store-bank');
     Route::get('/settings/banks', [MasterDataController::class, 'index'])->name('settings.banks.index');
     Route::get('/settings/stages', [MasterDataController::class, 'index'])->name('settings.stages.index');
@@ -125,6 +130,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/inventaris', [InventarisController::class, 'store'])->name('inventaris.store');
     Route::put('/inventaris/{item}', [InventarisController::class, 'update'])->name('inventaris.update');
     Route::post('/inventaris/{item}/adjust', [InventarisController::class, 'adjust'])->name('inventaris.adjust');
+    Route::post('/inventaris/{item}/distribute', [InventarisController::class, 'distribute'])->name('inventaris.distribute');
 });
 
 // Guest B2C Registration Routes

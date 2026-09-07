@@ -38,6 +38,7 @@ class UpdateStageAction
 
         $updateData = [
             'crm_stage_id' => $crmStageId,
+            'updated_at' => now(),
         ];
 
         if (! empty($catatan)) {
@@ -45,5 +46,6 @@ class UpdateStageAction
         }
 
         $jamaah->update($updateData);
+        $jamaah->touch();
     }
 }

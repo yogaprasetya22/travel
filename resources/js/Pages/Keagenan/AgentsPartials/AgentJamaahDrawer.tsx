@@ -167,7 +167,7 @@ export function AgentJamaahDrawer({
                 <div
                     ref={scrollContainerRef as any}
                     onScroll={onScroll}
-                    className="flex-1 overflow-y-auto no-scrollbar p-6 flex flex-col gap-3"
+                    className="flex-1 overflow-y-auto low-scrollbar p-6 flex flex-col gap-3"
                 >
                     {isLoadingInitial && (
                         <div className="py-20 flex flex-col items-center justify-center gap-3 text-muted-foreground">

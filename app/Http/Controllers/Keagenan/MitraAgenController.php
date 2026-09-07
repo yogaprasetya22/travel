@@ -28,6 +28,11 @@ class MitraAgenController extends Controller
 
         $perPage = (int) $request->input('per_page', 15);
         $search = $request->input('search');
+        $levelId = $request->input('level_id');
+        $status = $request->input('status');
+        $leaderId = $request->input('leader_id');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
         $tenantId = $user->getActiveTenantId();
 
         $query = User::where('tenant_id', $tenantId)
@@ -44,6 +49,31 @@ class MitraAgenController extends Controller
                     ->orWhere('kota', 'ilike', "%{$search}%")
                     ->orWhere('referral_code', 'ilike', "%{$search}%");
             });
+        }
+
+        if (! empty($levelId) && $levelId !== 'ALL') {
+            $query->where('hierarchy_level_id', $levelId);
+        }
+
+        if (! empty($leaderId) && $leaderId !== 'ALL') {
+            $query->where('created_by', $leaderId);
+        }
+
+        if (! empty($status) && $status !== 'ALL') {
+            if ($status === 'PRODUCING') {
+                $query->has('jamaah');
+            } elseif ($status === 'NON_PRODUCING') {
+                $query->doesntHave('jamaah');
+            } elseif ($status === 'ACTIVE') {
+                $query->where('status_karyawan', 'aktif');
+            }
+        }
+
+        if (! empty($startDate)) {
+            $query->whereDate('created_at', '>=', $startDate);
+        }
+        if (! empty($endDate)) {
+            $query->whereDate('created_at', '<=', $endDate);
         }
 
         $agents = $query->orderBy('name')
@@ -75,6 +105,11 @@ class MitraAgenController extends Controller
             'metrics' => $metrics,
             'filters' => [
                 'search' => $search ?? '',
+                'level_id' => $levelId ?? 'ALL',
+                'status' => $status ?? 'ALL',
+                'leader_id' => $leaderId ?? 'ALL',
+                'start_date' => $startDate ?? '',
+                'end_date' => $endDate ?? '',
                 'per_page' => $perPage,
             ],
         ]);

@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Pembayaran;
 
 use App\Http\Controllers\Controller;
+use App\Mail\PaymentApprovedInvoiceMail;
 use App\Models\Pembayaran;
 use App\Models\User;
 use App\Notifications\PaymentVerifiedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class VerifyPembayaranController extends Controller
 {
@@ -50,8 +52,14 @@ class VerifyPembayaranController extends Controller
                 foreach ($admins as $admin) {
                     $admin->notify($notification);
                 }
+
+                // Kirim email invoice resmi ke jamaah (ditunda di runtime aplikasi, aktif jika dikonfigurasi / saat test)
+                $isMailEnabled = config('services.payment_invoice_mail.enabled', app()->environment('testing'));
+                if ($isMailEnabled && ! empty($jamaah?->email)) {
+                    Mail::to($jamaah->email)->send(new PaymentApprovedInvoiceMail($pembayaran));
+                }
             } catch (\Throwable $e) {
-                Log::warning('Payment verification broadcast error: '.$e->getMessage());
+                Log::warning('Payment verification broadcast or email error: '.$e->getMessage());
             }
         }
 

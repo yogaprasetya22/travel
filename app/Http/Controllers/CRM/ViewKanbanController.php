@@ -71,29 +71,20 @@ class ViewKanbanController extends Controller
                 ->join('paket', 'jamaah.paket_id', '=', 'paket.id')
                 ->sum('paket.harga');
 
-            // Paginated initial slice
+            // Paginated initial slice (ordered by updated_at desc so newly moved/updated leads appear at the top)
             $paginatedLeads = (clone $stageQuery)
                 ->with([
-                    'paket:id,nama_paket,harga',
+                    'paket:id,nama_paket,harga,kuota',
                     'agen:id,name,email',
+                    'documents.uploader:id,name',
+                    'pembayaran',
+                    'komisiAgen',
                     'stageLogs.fromStage',
                     'stageLogs.toStage',
                     'stageLogs.user:id,name',
                 ])
-                ->select([
-                    'id',
-                    'tenant_id',
-                    'agen_id',
-                    'crm_stage_id',
-                    'nama_lengkap',
-                    'nik',
-                    'no_hp',
-                    'email',
-                    'paket_id',
-                    'catatan_admin',
-                    'created_at',
-                ])
-                ->orderBy('id', 'desc')
+                ->orderBy('jamaah.updated_at', 'desc')
+                ->orderBy('jamaah.id', 'desc')
                 ->take($perPage)
                 ->get();
 
@@ -198,26 +189,17 @@ class ViewKanbanController extends Controller
         }
 
         $paginator = $query->with([
-            'paket:id,nama_paket,harga',
+            'paket:id,nama_paket,harga,kuota',
             'agen:id,name,email',
+            'documents.uploader:id,name',
+            'pembayaran',
+            'komisiAgen',
             'stageLogs.fromStage',
             'stageLogs.toStage',
             'stageLogs.user:id,name',
         ])
-            ->select([
-                'id',
-                'tenant_id',
-                'agen_id',
-                'crm_stage_id',
-                'nama_lengkap',
-                'nik',
-                'no_hp',
-                'email',
-                'paket_id',
-                'catatan_admin',
-                'created_at',
-            ])
-            ->orderBy('id', 'desc')
+            ->orderBy('jamaah.updated_at', 'desc')
+            ->orderBy('jamaah.id', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json([

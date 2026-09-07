@@ -131,6 +131,13 @@ export interface PackageItem {
     id: number;
     nama_paket: string;
     harga: number;
+    kuota?: number;
+    available_seats?: number;
+    deskripsi?: string | null;
+    brosur_image?: string | null;
+    brosur_url?: string | null;
+    itinerary?: Array<{ day: number; title: string; description: string; location?: string }> | null;
+    fasilitas?: string[] | null;
     komisi_flat: number;
     komisi_persentase: number;
     periode_mulai?: string | null;
@@ -147,6 +154,13 @@ export interface Paket {
     tenant_id: number;
     nama_paket: string;
     harga: number;
+    kuota?: number;
+    available_seats?: number;
+    deskripsi?: string | null;
+    brosur_image?: string | null;
+    brosur_url?: string | null;
+    itinerary?: Array<{ day: number; title: string; description: string; location?: string }> | null;
+    fasilitas?: string[] | null;
     komisi_flat: number;
     komisi_persentase: number;
     tenant?: Tenant;

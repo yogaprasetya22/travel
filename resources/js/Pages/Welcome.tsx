@@ -25,18 +25,38 @@ import {
     LogIn,
     Landmark,
     BookOpen,
+    Eye,
+    Tag,
+    X,
 } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
+
+interface ItineraryItem {
+    day: number;
+    title: string;
+    description: string;
+    location?: string;
+}
 
 interface PaketItem {
     id: number;
     nama_paket: string;
     harga: number;
-    komisi_flat?: number;
-    komisi_persentase?: number;
+    kuota?: number;
+    available_seats?: number;
+    deskripsi?: string | null;
+    brosur_url?: string | null;
+    itinerary?: ItineraryItem[] | null;
+    fasilitas?: string[] | null;
     inventaris?: Array<{
         id: number;
         nama_barang: string;
@@ -79,6 +99,8 @@ export default function Welcome({
     const cleanPhone = rawPhone.replace(/[^0-9]/g, '').replace(/^0/, '62');
     const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Assalamu'alaikum CS ${travelName}, saya ingin konsultasi seputar informasi paket Umroh & Haji.`)}`;
 
+    const [selectedPackage, setSelectedPackage] = useState<PaketItem | null>(null);
+
     return (
         <div 
             className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-white font-sans"
@@ -87,434 +109,436 @@ export default function Welcome({
             <Head title={`Beranda Resmi - ${travelName}`} />
 
             {/* Top Announcement Bar */}
-            <div className="bg-primary text-foreground-foreground text-[10px] sm:text-xs py-2 px-4 text-center font-medium flex flex-wrap items-center justify-center gap-1 sm:gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-foreground animate-pulse hidden sm:block" />
+            <div className="bg-primary text-primary-foreground text-[10px] sm:text-xs py-2 px-4 text-center font-medium flex flex-wrap items-center justify-center gap-1 sm:gap-2">
+                <Sparkles className="w-3.5 h-3.5 text-primary-foreground animate-pulse hidden sm:block" />
                 <span>Pendaftaran Musim Umroh 1448 H Telah Dibuka</span>
                 <span className="hidden sm:inline"> Resmi Berizin Kemenag RI</span>
                 <Link
                     href={route('public.register')}
-                    className="underline font-bold text-foreground hover:text-white transition-colors ml-1 whitespace-nowrap"
+                    className="underline font-bold hover:opacity-80 transition-opacity ml-1 whitespace-nowrap"
                 >
                     Daftar Sekarang &rarr;
                 </Link>
             </div>
 
             {/* Navbar */}
-            <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-primary">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
-                    {/* Brand Logo */}
-                    <div className="flex items-center gap-2.5 sm:gap-3.5">
-                        <ApplicationLogo className="w-9 h-9 sm:w-11 sm:h-11 shrink-0" />
-                        <div className="flex flex-col">
-                            <span className="font-extrabold text-sm sm:text-lg tracking-tight text-foreground leading-tight">
-                                {travelName}
-                            </span>
-                            <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-foreground hidden sm:block">
-                                Penyelenggara Resmi Ibadah Umroh
-                            </span>
+            <nav className="sticky top-0 z-40 bg-card/80 backdrop-blur-md border-b border-border">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16 sm:h-20">
+                        {/* Brand Logo & Name */}
+                        <div className="flex items-center gap-3">
+                            {tenant?.logo ? (
+                                <img src={tenant.logo} alt={travelName} className="h-10 w-auto rounded-xl shadow-xs" />
+                            ) : (
+                                <div className="p-2 rounded-xl bg-primary text-primary-foreground">
+                                    <ApplicationLogo className="w-6 h-6 fill-current" />
+                                </div>
+                            )}
+                            <div className="flex flex-col">
+                                <span className="font-black text-base sm:text-lg tracking-tight text-foreground">{travelName}</span>
+                                <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">PPIU Resmi Kemenag</span>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Nav Links */}
-                    <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-foreground">
-                        <a href="#paket" className="hover:text-primary transition-colors">
-                            Paket Umroh
-                        </a>
-                        <a href="#keunggulan" className="hover:text-primary transition-colors">
-                            Keunggulan
-                        </a>
-                        <a href="#kontak" className="hover:text-primary transition-colors">
-                            Kontak CS
-                        </a>
-                        {tenant?.is_docs_enabled !== false && (
-                            <Link href="/docs" className="hover:text-primary transition-colors flex items-center gap-1.5 text-primary">
-                                <BookOpen className="w-4 h-4" />
-                                <span>Buku Panduan</span>
-                            </Link>
-                        )}
-                    </nav>
+                        {/* Navigation Links (Desktop) */}
+                        <div className="hidden md:flex items-center gap-8 text-xs font-bold text-foreground">
+                            <a href="#paket" className="hover:text-primary transition-colors">Brosur Paket</a>
+                            <a href="#keunggulan" className="hover:text-primary transition-colors">Keunggulan</a>
+                            <a href="#pembayaran" className="hover:text-primary transition-colors">Rekening Resmi</a>
+                            {tenant?.is_docs_enabled && (
+                                <Link href={route('docs.index')} className="hover:text-primary transition-colors flex items-center gap-1">
+                                    <BookOpen className="w-3.5 h-3.5" /> Panduan
+                                </Link>
+                            )}
+                        </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex items-center gap-2 sm:gap-3">
-                        {auth?.user ? (
-                            <Link href={route('dashboard')}>
-                                <Button className="bg-primary hover:bg-primary text-white rounded-lg sm:rounded-xl text-xs font-bold gap-1 sm:gap-2 shadow-sm px-3 sm:px-4 h-8 sm:h-10">
-                                    <span className="hidden sm:inline">Buka Portal</span>
-                                    <span className="sm:hidden">Portal</span>
-                                    <ArrowRight className="w-3.5 h-3.5" />
-                                </Button>
-                            </Link>
-                        ) : (
-                            <>
-                                {canLogin && (
-                                    <Link href={route('login')} className="hidden sm:block">
-                                        <Button
-                                            variant="outline"
-                                            className="border-primary hover:bg-background text-foreground rounded-xl text-xs font-bold gap-1.5"
-                                        >
-                                            <LogIn className="w-3.5 h-3.5" />
-                                            <span>Login</span>
+                        {/* Right Action Buttons */}
+                        <div className="flex items-center gap-3">
+                            <a
+                                href={waUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border border-border bg-card hover:bg-muted transition text-foreground"
+                            >
+                                <MessageCircle className="w-4 h-4 text-emerald-500" />
+                                <span>Konsultasi WA</span>
+                            </a>
+
+                            {auth?.user ? (
+                                <Link href={route('dashboard')}>
+                                    <Button className="rounded-xl text-xs font-bold px-4 py-2 bg-primary text-primary-foreground shadow-xs">
+                                        Dashboard
+                                    </Button>
+                                </Link>
+                            ) : (
+                                canLogin && (
+                                    <Link href={route('login')}>
+                                        <Button variant="outline" className="rounded-xl text-xs font-bold px-4 py-2 border-border">
+                                            <LogIn className="w-3.5 h-3.5 mr-1.5" /> Masuk Staf
                                         </Button>
                                     </Link>
-                                )}
-                                <Link href={route('public.register')}>
-                                    <Button className="bg-gradient-to-r from-primary to-primary hover:from-primary hover:to-primary text-white rounded-lg sm:rounded-xl text-xs font-bold gap-1 sm:gap-1.5 shadow-md shadow-primary/25 px-3 sm:px-4 h-8 sm:h-10">
-                                        <span className="hidden sm:inline">Daftar Online</span>
-                                        <span className="sm:hidden">Daftar</span>
-                                        <ChevronRight className="w-3.5 h-3.5" />
-                                    </Button>
-                                </Link>
-                            </>
-                        )}
+                                )
+                            )}
+                        </div>
                     </div>
                 </div>
-            </header>
+            </nav>
 
-            {/* Hero Section with Coffee Themed Accents */}
-            <section className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-32 bg-gradient-to-b from-background via-background to-background">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            {/* Hero Section */}
+            <section className="relative overflow-hidden py-16 sm:py-24 bg-gradient-to-b from-primary/5 via-background to-background">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                        {/* Hero Text */}
                         <div className="lg:col-span-7 flex flex-col gap-6 text-left">
-                            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-background border border-primary text-foreground w-fit shadow-xs">
-                                <Award className="w-4 h-4 text-foreground" />
-                                <span className="text-xs font-bold tracking-tight">
-                                    Izin Resmi Kemenag RI &bull; Pasti Berangkat
-                                </span>
-                            </div>
-
-                            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-tight">
-                                Wujudkan Ibadah Suci{' '}
-                                <span className="bg-gradient-to-r from-primary to-primary bg-clip-text text-transparent">
-                                    Penuh Berkah &amp; Ketenangan
-                                </span>
+                            <Badge className="w-fit bg-primary/10 text-primary border-primary/20 font-bold text-xs px-3 py-1 rounded-full">
+                                ✨ Perjalanan Ibadah Khusyuk &amp; Nyaman
+                            </Badge>
+                            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-foreground tracking-tight leading-tight">
+                                Menuju Baitullah dengan Layanan Amanah &amp; Terpercaya
                             </h1>
-
-                            <p className="text-sm sm:text-base text-foreground leading-relaxed max-w-2xl font-medium">
-                                Nikmati pengalaman ibadah Umroh dan Haji Khusus dengan bimbingan sesuai Sunnah, akomodasi hotel bintang terbaik dekat Masjidil Haram, maskapai direct tanpa transit, serta pendampingan mutawwif berpengalaman.
+                            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                                Bersama <strong>{travelName}</strong>, wujudkan impian ibadah Umroh dan Haji Anda dengan kepastian jadwal, akomodasi hotel dekat pelataran masjid, bimbingan manasik komprehensif, dan mutawwif bersertifikat.
                             </p>
 
-                            {/* Hero CTAs */}
                             <div className="flex flex-wrap items-center gap-4 pt-2">
-                                <Link href={route('public.register')}>
-                                    <Button
-                                        size="lg"
-                                        className="bg-primary hover:bg-primary text-white rounded-2xl px-6 py-6 font-extrabold text-sm gap-2 shadow-xl shadow-primary/25 transition-all hover:scale-[1.02]"
-                                    >
-                                        <span>Daftar Calon Jamaah Sekarang</span>
+                                <a href="#paket">
+                                    <Button size="lg" className="rounded-2xl text-xs sm:text-sm font-black px-6 py-6 bg-primary text-primary-foreground shadow-lg hover:shadow-primary/20 transition-all gap-2">
+                                        <span>Lihat Brosur Paket &amp; Itinerary</span>
                                         <ArrowRight className="w-4 h-4" />
                                     </Button>
-                                </Link>
-
-                                <a href="#paket">
-                                    <Button
-                                        size="lg"
-                                        variant="outline"
-                                        className="border-primary/40 hover:bg-background text-foreground rounded-2xl px-6 py-6 font-bold text-sm gap-2 shadow-xs"
-                                    >
-                                        <span>Lihat Pilihan Paket</span>
-                                    </Button>
                                 </a>
-                            </div>
-
-                            {/* Trust Badges */}
-                            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-primary">
-                                <div>
-                                    <div className="text-xl sm:text-2xl font-black text-foreground">100%</div>
-                                    <div className="text-xs text-foreground font-medium">Pasti Berangkat</div>
-                                </div>
-                                <div>
-                                    <div className="text-xl sm:text-2xl font-black text-foreground">5.000+</div>
-                                    <div className="text-xs text-foreground font-medium">Jamaah Terlayani</div>
-                                </div>
-                                <div>
-                                    <div className="text-xl sm:text-2xl font-black text-foreground">Bintang 5</div>
-                                    <div className="text-xs text-foreground font-medium">Hotel Dekat Haram</div>
-                                </div>
+                                <Link href={route('public.register')}>
+                                    <Button size="lg" variant="outline" className="rounded-2xl text-xs sm:text-sm font-bold px-6 py-6 border-border hover:bg-muted">
+                                        Pendaftaran Online
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
 
-                        {/* Hero Visual Card */}
-                        <div className="lg:col-span-5 relative">
-                            <div className="relative mx-auto rounded-3xl bg-card p-8 text-foreground shadow-2xl shadow-primary/10 border border-border overflow-hidden flex flex-col gap-6">
-                                {/* Decorative Glow */}
-                                <div className="absolute -right-12 -top-12 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-                                <div className="absolute -left-12 -bottom-12 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-
-                                <div className="relative z-10 flex items-center justify-between border-b border-border pb-4">
-                                    <div className="flex items-center gap-2.5">
-                                        <div className="p-2 rounded-xl bg-primary/10 text-primary backdrop-blur-xs">
-                                            <Compass className="w-5 h-5 text-primary" />
-                                        </div>
-                                        <div>
-                                            <div className="font-extrabold text-sm text-foreground">Musim Umroh 1448 H</div>
-                                            <div className="text-[11px] text-foreground/70">Pemberangkatan Reguler &amp; VIP</div>
-                                        </div>
+                        <div className="lg:col-span-5 flex justify-center">
+                            <div className="relative w-full max-w-md bg-card border border-border/80 rounded-3xl p-6 shadow-xl flex flex-col gap-5">
+                                <div className="flex items-center justify-between pb-4 border-b border-border">
+                                    <div>
+                                        <div className="text-xs font-bold text-primary uppercase">Program Unggulan</div>
+                                        <div className="text-base font-black text-foreground">Musim Umroh 1448 H</div>
                                     </div>
-                                    <Badge className="bg-primary text-primary-foreground font-extrabold text-[10px] shadow-sm">
+                                    <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 font-bold text-xs">
                                         TERSEDIA
                                     </Badge>
                                 </div>
-
-                                <div className="relative z-10 flex flex-col gap-3">
-                                    <div className="text-xs text-foreground/80 uppercase font-semibold tracking-wider">
-                                        Fasilitas Utama Jamaah:
+                                <div className="space-y-3 text-xs text-muted-foreground">
+                                    <div className="flex items-center gap-2.5">
+                                        <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                                        <span>Penerbangan Direct Tanpa Transit</span>
                                     </div>
-                                    <div className="grid grid-cols-1 gap-2.5 text-xs text-foreground/90 font-medium">
-                                        <div className="flex items-center gap-2">
-                                            <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                                            <span>Tiket Pesawat Saudi / Garuda PP Direct</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                                            <span>Hotel Madinah &amp; Makkah &le; 100m Pelataran</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                                            <span>Full Board Makanan Menu Nusantara 3x Sehari</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                                            <span>Handling, Visa Umroh &amp; Asuransi Lengkap</span>
-                                        </div>
+                                    <div className="flex items-center gap-2.5">
+                                        <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                                        <span>Hotel Makkah &amp; Madinah Dekat Masjid</span>
+                                    </div>
+                                    <div className="flex items-center gap-2.5">
+                                        <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                                        <span>Menu Makanan Cita Rasa Nusantara 3x Sehari</span>
+                                    </div>
+                                    <div className="flex items-center gap-2.5">
+                                        <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                                        <span>Handling &amp; Perlengkapan Lengkap Exclusive</span>
                                     </div>
                                 </div>
-
-                                <div className="relative z-10 pt-4 border-t border-border flex items-center justify-between">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] text-foreground/70">Mulai dari</span>
-                                        <span className="text-lg font-black text-foreground">
-                                            Rp {packages[0]?.harga ? packages[0].harga.toLocaleString('id-ID') : '28.500.000'}
-                                        </span>
-                                    </div>
-                                    <Link href={route('public.register')}>
-                                        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-black shadow-md">
-                                            Booking Sekarang
-                                        </Button>
-                                    </Link>
-                                </div>
+                                <Link href={route('public.register')}>
+                                    <Button className="w-full rounded-xl text-xs font-bold py-5 bg-primary text-primary-foreground shadow-md">
+                                        Booking Kursi Sekarang
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Packages Section (#paket) */}
-            <section id="paket" className="py-20 bg-background border-t border-primary">
+            {/* Packages Section (#paket) - BROSUR ONLY + CLICK TO MODAL */}
+            <section id="paket" className="py-20 bg-background border-t border-border">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center max-w-3xl mx-auto mb-14 flex flex-col gap-3">
-                        <Badge variant="secondary" className="w-fit mx-auto bg-background text-foreground border-primary font-bold text-xs">
-                            PILIHAN TERBAIK
+                        <Badge variant="secondary" className="w-fit mx-auto bg-primary/10 text-primary border-primary/20 font-bold text-xs">
+                            BROSUR &amp; ITINERARY RESMI
                         </Badge>
                         <h2 className="text-3xl font-black text-foreground tracking-tight">
-                            Katalog Paket Umroh &amp; Haji Pilihan
+                            Katalog Brosur Paket Umroh &amp; Haji
                         </h2>
-                        <p className="text-xs sm:text-sm text-foreground">
-                            Pilih program paket keberangkatan yang sesuai dengan kebutuhan ibadah Anda dan keluarga.
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                            Klik pada brosur paket untuk melihat rincian jadwal hari per hari (itinerary), fasilitas hotel, dan sisa kursi tersedia.
                         </p>
                     </div>
 
                     {packages.length === 0 ? (
-                        <div className="text-center py-12 text-sm text-foreground">
+                        <div className="text-center py-12 text-sm text-muted-foreground">
                             Belum ada paket yang dipublikasikan saat ini. Hubungi kami via WhatsApp untuk reservasi khusus.
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {packages.map((pkg, idx) => (
-                                <Card
-                                    key={pkg.id}
-                                    className={`rounded-3xl border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden flex flex-col justify-between ${
-                                        idx === 0
-                                            ? 'border-primary bg-card ring-2 ring-primary/10'
-                                            : 'border-primary bg-card'
-                                    }`}
-                                >
-                                    <div className="p-6 sm:p-7 flex flex-col gap-5">
-                                        <div className="flex items-start justify-between">
+                            {packages.map((pkg) => {
+                                const availableSeats = pkg.available_seats !== undefined ? pkg.available_seats : (pkg.kuota || 45);
+                                const totalKuota = pkg.kuota || 45;
+
+                                return (
+                                    <div
+                                        key={pkg.id}
+                                        onClick={() => setSelectedPackage(pkg)}
+                                        className="group bg-card rounded-3xl border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-2xl overflow-hidden cursor-pointer flex flex-col justify-between"
+                                    >
+                                        {/* Brochure Visual Poster Banner */}
+                                        <div className="relative aspect-[4/3] w-full bg-muted/60 overflow-hidden flex items-center justify-center">
+                                            {pkg.brosur_url ? (
+                                                <img
+                                                    src={pkg.brosur_url}
+                                                    alt={pkg.nama_paket}
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                />
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center p-6 text-center gap-2 text-muted-foreground">
+                                                    <Compass className="w-12 h-12 text-primary/60 animate-spin-slow" />
+                                                    <span className="font-bold text-sm text-foreground">{pkg.nama_paket}</span>
+                                                    <span className="text-xs">Brosur Resmi Keberangkatan</span>
+                                                </div>
+                                            )}
+
+                                            {/* Available Seats Badge on Poster */}
+                                            <div className="absolute top-3 right-3 z-10">
+                                                <Badge className={`font-bold text-xs shadow-md border ${
+                                                    availableSeats > 5
+                                                        ? 'bg-emerald-600 text-white border-emerald-500'
+                                                        : availableSeats > 0
+                                                        ? 'bg-amber-600 text-white border-amber-500'
+                                                        : 'bg-rose-600 text-white border-rose-500'
+                                                }`}>
+                                                    {availableSeats > 0 ? `Sisa ${availableSeats} Kursi` : 'Kuota Penuh'}
+                                                </Badge>
+                                            </div>
+
+                                            {/* Price Overlay */}
+                                            <div className="absolute bottom-3 left-3 z-10 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-xl text-white">
+                                                <div className="text-[10px] uppercase font-semibold text-white/80">Biaya All-In Mulai</div>
+                                                <div className="text-base font-black text-amber-400">
+                                                    Rp {pkg.harga.toLocaleString('id-ID')}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Card Info Details */}
+                                        <div className="p-5 flex flex-col gap-4">
                                             <div>
-                                                <h3 className="text-lg font-black text-foreground">
+                                                <h3 className="font-black text-lg text-foreground group-hover:text-primary transition-colors">
                                                     {pkg.nama_paket}
                                                 </h3>
-                                                <p className="text-xs text-foreground mt-0.5">Program 9-12 Hari Ibadah</p>
+                                                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                                    {pkg.deskripsi || 'Program ibadah umroh berkualitas dengan akomodasi hotel bintang dan pembimbing bersertifikat.'}
+                                                </p>
                                             </div>
-                                            {idx === 0 && (
-                                                <Badge className="bg-primary text-white font-extrabold text-[10px]">
-                                                    POPULER
-                                                </Badge>
-                                            )}
-                                        </div>
 
-                                        <div className="py-3 px-4 rounded-2xl bg-background border border-primary">
-                                            <span className="text-[11px] text-foreground font-medium block">Biaya Paket All-In</span>
-                                            <span className="text-2xl font-black text-foreground">
-                                                Rp {pkg.harga.toLocaleString('id-ID')}
-                                            </span>
-                                            <span className="text-[10px] text-foreground block mt-0.5">/ orang (Quad Room)</span>
-                                        </div>
-
-                                        <div className="flex flex-col gap-2.5 text-xs text-foreground">
-                                            <div className="flex items-center gap-2">
-                                                <CheckCircle2 className="w-4 h-4 text-foreground shrink-0" />
-                                                <span>Hotel Madinah &amp; Makkah Berbintang</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <CheckCircle2 className="w-4 h-4 text-foreground shrink-0" />
-                                                <span>Konsumsi Menu Indonesia 3x Sehari</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <CheckCircle2 className="w-4 h-4 text-foreground shrink-0" />
-                                                <span>Bimbingan Manasik Sebelum Berangkat</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <CheckCircle2 className="w-4 h-4 text-foreground shrink-0" />
-                                                <span>Air Zamzam 5 Liter (Sesuai Regulasi)</span>
+                                            <div className="flex items-center justify-between pt-3 border-t border-border/80 text-xs">
+                                                <span className="text-muted-foreground flex items-center gap-1 font-semibold">
+                                                    <Eye className="w-4 h-4 text-primary" /> Klik untuk Itinerary
+                                                </span>
+                                                <span className="text-xs font-bold text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                                                    Detail &amp; Jadwal <ChevronRight className="w-4 h-4" />
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div className="p-6 sm:p-7 pt-0 border-t border-border">
-                                        <Link href={route('public.register', { paket: pkg.id })}>
-                                            <Button className="w-full bg-primary hover:bg-primary text-white rounded-xl text-xs font-bold py-5 gap-2 shadow-md shadow-primary/20">
-                                                <span>Pilih &amp; Daftar Paket Ini</span>
-                                                <ArrowRight className="w-3.5 h-3.5" />
-                                            </Button>
-                                        </Link>
-                                    </div>
-                                </Card>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
             </section>
 
             {/* Why Choose Us (#keunggulan) */}
-            <section id="keunggulan" className="py-20 bg-background border-t border-primary">
+            <section id="keunggulan" className="py-20 bg-muted/30 border-t border-border">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center max-w-3xl mx-auto mb-14 flex flex-col gap-3">
-                        <Badge variant="secondary" className="w-fit mx-auto bg-background text-foreground border-primary font-bold text-xs">
+                        <Badge variant="secondary" className="w-fit mx-auto bg-primary/10 text-primary border-primary/20 font-bold text-xs">
                             KEPERCAYAAN &amp; AMANAH
                         </Badge>
                         <h2 className="text-3xl font-black text-foreground tracking-tight">
                             Kenapa Memilih {travelName}?
                         </h2>
-                        <p className="text-xs sm:text-sm text-foreground">
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                             Standar pelayanan prima yang kami dedikasikan penuh untuk kenyamanan ibadah para tamu Allah.
                         </p>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <Card className="rounded-2xl border border-primary bg-card p-6 shadow-xs flex flex-col gap-3">
-                            <div className="p-3 rounded-2xl bg-background text-foreground w-fit">
+                        <Card className="rounded-2xl border border-border bg-card p-6 shadow-xs flex flex-col gap-3">
+                            <div className="p-3 rounded-2xl bg-primary/10 text-primary w-fit">
                                 <ShieldCheck className="w-6 h-6" />
                             </div>
-                            <h3 className="font-extrabold text-base text-foreground">Legalitas Resmi Kemenag</h3>
-                            <p className="text-xs text-foreground leading-relaxed font-medium">
-                                Terdaftar dan berizin resmi sebagai PPIU Kemenag RI, menjamin transparansi dan keamanan dana jamaah.
+                            <h3 className="font-extrabold text-base text-foreground">Legalitas PPIU Resmi</h3>
+                            <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                                Terdaftar dan berizin resmi Kemenag RI, menjamin transparansi, kepastian keberangkatan, dan keamanan dana jamaah.
                             </p>
                         </Card>
 
-                        <Card className="rounded-2xl border border-primary bg-card p-6 shadow-xs flex flex-col gap-3">
-                            <div className="p-3 rounded-2xl bg-background text-foreground w-fit">
+                        <Card className="rounded-2xl border border-border bg-card p-6 shadow-xs flex flex-col gap-3">
+                            <div className="p-3 rounded-2xl bg-primary/10 text-primary w-fit">
                                 <Building2 className="w-6 h-6" />
                             </div>
-                            <h3 className="font-extrabold text-base text-foreground">Hotel Bintang Dekat Masjid</h3>
-                            <p className="text-xs text-foreground leading-relaxed font-medium">
-                                Akomodasi strategis hanya beberapa langkah dari pelataran Masjidil Haram &amp; Masjid Nabawi.
+                            <h3 className="font-extrabold text-base text-foreground">Hotel Dekat Masjid</h3>
+                            <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                                Akomodasi strategis hanya beberapa langkah dari pelataran Masjidil Haram Makkah &amp; Masjid Nabawi Madinah.
                             </p>
                         </Card>
 
-                        <Card className="rounded-2xl border border-primary bg-card p-6 shadow-xs flex flex-col gap-3">
-                            <div className="p-3 rounded-2xl bg-background text-foreground w-fit">
+                        <Card className="rounded-2xl border border-border bg-card p-6 shadow-xs flex flex-col gap-3">
+                            <div className="p-3 rounded-2xl bg-primary/10 text-primary w-fit">
                                 <Plane className="w-6 h-6" />
                             </div>
-                            <h3 className="font-extrabold text-base text-foreground">Penerbangan Direct</h3>
-                            <p className="text-xs text-foreground leading-relaxed font-medium">
-                                Menggunakan maskapai terkemuka dengan penerbangan langsung tanpa transit yang melelahkan.
+                            <h3 className="font-extrabold text-base text-foreground">Penerbangan Nyaman</h3>
+                            <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                                Menggunakan maskapai penerbangan terkemuka langsung ke Jeddah / Madinah tanpa transit yang melelahkan.
                             </p>
                         </Card>
 
-                        <Card className="rounded-2xl border border-primary bg-card p-6 shadow-xs flex flex-col gap-3">
-                            <div className="p-3 rounded-2xl bg-background text-foreground w-fit">
+                        <Card className="rounded-2xl border border-border bg-card p-6 shadow-xs flex flex-col gap-3">
+                            <div className="p-3 rounded-2xl bg-primary/10 text-primary w-fit">
                                 <Star className="w-6 h-6" />
                             </div>
-                            <h3 className="font-extrabold text-base text-foreground">Mutawwif Bersertifikat</h3>
-                            <p className="text-xs text-foreground leading-relaxed font-medium">
-                                Dibimbing langsung oleh ustadz dan mutawwif yang berkompeten, ramah, dan berpengalaman.
+                            <h3 className="font-extrabold text-base text-foreground">Pembimbing Ahli</h3>
+                            <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                                Dibimbing langsung oleh ustadz dan mutawwif bersertifikat yang berkompeten, ramah, dan berpengalaman.
                             </p>
                         </Card>
                     </div>
                 </div>
             </section>
 
-            {/* CTA Final Section */}
-            <section className="py-16 bg-card border-t border-border text-foreground font-black">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center gap-6">
-                    <h2 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight text-foreground">
-                        Siap Melangkahkan Kaki Menuju Baitullah?
-                    </h2>
-                    <p className="text-xs sm:text-sm text-foreground/80 max-w-2xl font-normal">
-                        Daftarkan diri Anda dan keluarga secara online sekarang. Tim konsultan ibadah kami siap membantu seluruh proses persiapan dari awal hingga kepulangan.
-                    </p>
-                    <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-                        <Link href={route('public.register')}>
-                            <Button
-                                size="lg"
-                                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl px-8 py-6 font-extrabold text-sm shadow-xl"
-                            >
-                                Daftar Sekarang Secara Online
-                            </Button>
-                        </Link>
-                        <a href={waUrl} target="_blank" rel="noopener noreferrer">
-                            <Button
-                                size="lg"
-                                variant="outline"
-                                className="border-border hover:bg-muted text-foreground rounded-2xl px-6 py-6 font-bold text-sm gap-2"
-                            >
-                                <MessageCircle className="w-4 h-4 text-emerald-500" />
-                                Konsultasi CS ({cleanPhone.replace(/^62/, '+62 ')})
-                            </Button>
-                        </a>
+            {/* Bank Accounts Section (#pembayaran) */}
+            <section id="pembayaran" className="py-20 bg-background border-t border-border">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center max-w-3xl mx-auto mb-12 flex flex-col gap-3">
+                        <Badge variant="secondary" className="w-fit mx-auto bg-primary/10 text-primary border-primary/20 font-bold text-xs">
+                            TRANSAKSI AMAN
+                        </Badge>
+                        <h2 className="text-3xl font-black text-foreground tracking-tight">
+                            Rekening Bank Resmi Travel
+                        </h2>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                            Seluruh transaksi pembayaran DP dan pelunasan hanya ditransfer ke rekening resmi atas nama perusahaan travel.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                        {banks.map((b) => (
+                            <div key={b.id} className="p-5 rounded-2xl bg-card border border-border shadow-xs flex flex-col gap-2">
+                                <div className="flex items-center gap-2 font-bold text-sm text-primary">
+                                    <Landmark className="w-4 h-4" /> {b.nama_bank}
+                                </div>
+                                <div className="text-lg font-mono font-black text-foreground tracking-wider">{b.nomor_rekening}</div>
+                                <div className="text-xs text-muted-foreground">a.n. <strong>{b.atas_nama}</strong></div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </section>
 
-            {/* Floating WhatsApp Action Button */}
-            <a
-                href={waUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm px-4 py-3 rounded-full shadow-2xl hover:scale-105 transition-all duration-200"
-                title="Chat WhatsApp CS Resmi"
-            >
-                <MessageCircle className="w-5 h-5 fill-white" />
-                <span className="hidden sm:inline">Hubungi CS WhatsApp</span>
-            </a>
-
-            {/* Footer (#kontak) */}
-            <footer id="kontak" className="bg-card text-foreground py-12 border-t border-border">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold">
-                            <Landmark className="w-4 h-4" />
-                        </div>
-                        <span className="font-bold text-sm text-foreground">{travelName}</span>
-                    </div>
-
-                    <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-foreground/70">
-                        <a href="#paket" className="hover:text-primary transition-colors">Paket Umroh</a>
-                        <a href="#keunggulan" className="hover:text-primary transition-colors">Keunggulan</a>
-                        <a href={waUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1">
-                            <PhoneCall className="w-3.5 h-3.5 text-emerald-500" />
-                            WhatsApp: +{cleanPhone}
-                        </a>
-                        <Link href={route('login')} className="hover:text-primary transition-colors">Login Staf / Agen</Link>
-                    </div>
-
-                    <div className="text-xs text-foreground/60 text-center sm:text-right">
-                        &copy; {new Date().getFullYear()} {travelName}. All rights reserved.
-                    </div>
-                </div>
+            {/* Footer */}
+            <footer className="py-12 bg-card border-t border-border text-center text-xs text-muted-foreground">
+                <p>&copy; {new Date().getFullYear()} {travelName}. Seluruh hak cipta dilindungi.</p>
             </footer>
+
+            {/* DETAIL PAKET & ITINERARY MODAL (POIN 12) */}
+            <Dialog open={!!selectedPackage} onOpenChange={(open) => { if (!open) setSelectedPackage(null); }}>
+                <DialogContent className="max-w-3xl w-full max-h-[85vh] flex flex-col p-0 overflow-hidden">
+                    <DialogHeader className="p-6 pb-3 border-b border-border flex flex-row items-center justify-between">
+                        <div>
+                            <DialogTitle className="text-xl font-bold">{selectedPackage?.nama_paket}</DialogTitle>
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                                Detail Brosur, Itinerary Jadwal Harian &amp; Sisa Kursi
+                            </div>
+                        </div>
+                    </DialogHeader>
+
+                    {selectedPackage && (
+                        <div className="p-6 flex-1 overflow-y-auto flex flex-col gap-6">
+                            {/* Poster / Brosur Preview */}
+                            {selectedPackage.brosur_url && (
+                                <div className="rounded-2xl overflow-hidden border border-border shadow-sm max-h-80 flex items-center justify-center bg-black/5">
+                                    <img
+                                        src={selectedPackage.brosur_url}
+                                        alt={selectedPackage.nama_paket}
+                                        className="w-full h-auto max-h-80 object-contain"
+                                    />
+                                </div>
+                            )}
+
+                            {/* Summary Bar */}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-2xl bg-muted/40 border border-border">
+                                <div>
+                                    <div className="text-[11px] text-muted-foreground uppercase font-bold">Biaya Paket</div>
+                                    <div className="text-lg font-black text-primary">Rp {selectedPackage.harga.toLocaleString('id-ID')}</div>
+                                </div>
+                                <div>
+                                    <div className="text-[11px] text-muted-foreground uppercase font-bold">Sisa Kursi Tersedia</div>
+                                    <div className="text-lg font-bold text-foreground">
+                                        {selectedPackage.available_seats !== undefined ? selectedPackage.available_seats : (selectedPackage.kuota || 45)} / {selectedPackage.kuota || 45} Seat
+                                    </div>
+                                </div>
+                                <div className="flex items-center sm:justify-end">
+                                    <Link href={route('public.register', { paket: selectedPackage.id })}>
+                                        <Button className="rounded-xl text-xs font-bold px-4 py-2 bg-primary text-primary-foreground shadow-md">
+                                            Daftar Paket Ini
+                                        </Button>
+                                    </Link>
+                                </div>
+                            </div>
+
+                            {/* Deskripsi */}
+                            {selectedPackage.deskripsi && (
+                                <div className="flex flex-col gap-1.5">
+                                    <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">Deskripsi Paket</h4>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                        {selectedPackage.deskripsi}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Itinerary Section */}
+                            <div className="flex flex-col gap-3">
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                                    <Calendar className="w-4 h-4 text-primary" /> Jadwal Kegiatan Harian (Itinerary)
+                                </h4>
+
+                                {(!selectedPackage.itinerary || selectedPackage.itinerary.length === 0) ? (
+                                    <div className="p-4 rounded-xl bg-muted/20 text-center text-xs text-muted-foreground border border-dashed border-border">
+                                        Itinerary lengkap hari per hari akan dibagikan saat manasik resmi.
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {selectedPackage.itinerary.map((itin, idx) => (
+                                            <div key={idx} className="p-3.5 rounded-xl bg-card border border-border/80 flex items-start gap-3 text-xs shadow-2xs">
+                                                <div className="w-7 h-7 rounded-lg bg-primary text-primary-foreground font-black flex items-center justify-center shrink-0 text-xs">
+                                                    H{itin.day || (idx + 1)}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="font-bold text-foreground text-sm">
+                                                        {itin.title}
+                                                    </div>
+                                                    {itin.location && (
+                                                        <div className="text-[11px] text-primary font-medium flex items-center gap-1 mt-0.5">
+                                                            <MapPin className="w-3 h-3" /> {itin.location}
+                                                        </div>
+                                                    )}
+                                                    <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                                                        {itin.description}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

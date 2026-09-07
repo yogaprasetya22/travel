@@ -23,6 +23,12 @@ class StoreJamaahController extends Controller
             'agen_id' => ['nullable', 'exists:users,id'],
             'tanggal_keberangkatan' => ['nullable', 'date'],
             'catatan_admin' => ['nullable', 'string', 'max:1000'],
+            // Mandatory Documents (KTP & KK)
+            'file_ktp' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'file_kk' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            // Optional Documents (Foto & Paspor)
+            'file_foto' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'file_paspor' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
         ]);
 
         $tenantId = auth()->user()->getActiveTenantId();

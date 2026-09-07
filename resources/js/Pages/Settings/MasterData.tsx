@@ -5,6 +5,7 @@ import {
     Package,
     Landmark,
     Share2,
+    ShieldCheck,
 } from 'lucide-react';
 import {
     MasterDataProps,
@@ -17,14 +18,20 @@ import { AddPackageModal, EditPackageModal } from './MasterDataPartials/PackageM
 import { BanksTab } from './MasterDataPartials/BanksTab';
 import { BankModal } from './MasterDataPartials/BankModal';
 import { SourcesTab } from './MasterDataPartials/SourcesTab';
+import { DocumentRbacTab, DocumentPermissionItem } from './MasterDataPartials/DocumentRbacTab';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/Components/ui/tabs';
+
+interface ExtendedMasterDataProps extends MasterDataProps {
+    documentPermissions?: DocumentPermissionItem[];
+}
 
 export default function MasterData({
     stages = [],
     packages = [],
     banks = [],
     inventoryItems = [],
-}: MasterDataProps) {
+    documentPermissions = [],
+}: ExtendedMasterDataProps) {
     const [currentTab, setCurrentTab] = useState<string>(() => {
         if (typeof window !== 'undefined') {
             const path = window.location.pathname;
@@ -32,6 +39,7 @@ export default function MasterData({
             if (path.includes('banks')) return 'banks';
             if (path.includes('packages')) return 'packages';
             if (path.includes('stages')) return 'stages';
+            if (path.includes('rbac') || search.includes('tab=rbac')) return 'rbac';
             if (path.includes('sources') || search.includes('tab=sources')) return 'sources';
         }
         return 'stages';
@@ -43,6 +51,7 @@ export default function MasterData({
         if (path.includes('banks')) setCurrentTab('banks');
         else if (path.includes('packages')) setCurrentTab('packages');
         else if (path.includes('stages')) setCurrentTab('stages');
+        else if (path.includes('rbac') || search.includes('tab=rbac')) setCurrentTab('rbac');
         else if (path.includes('sources') || search.includes('tab=sources')) setCurrentTab('sources');
     }, []);
 
@@ -53,6 +62,7 @@ export default function MasterData({
             stages: '/settings/stages',
             packages: '/settings/packages',
             banks: '/settings/banks',
+            rbac: '/settings/master?tab=rbac',
             sources: '/settings/master?tab=sources',
         };
         if (tabRoutes[val]) {
@@ -64,6 +74,7 @@ export default function MasterData({
         stages: 'Tahapan CRM (Pipeline)',
         packages: 'Paket Umroh & Haji',
         banks: 'Rekening Bank',
+        rbac: 'Hak Akses Dokumen (RBAC)',
         sources: 'Sumber Prospek',
     };
 
@@ -96,7 +107,7 @@ export default function MasterData({
                         </h1>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1 ml-4">
-                        Kelola data referensi tahapan pipeline CRM, paket umroh &amp; haji, rekening bank resmi, dan klasifikasi prospek.
+                        Kelola data referensi tahapan pipeline CRM, paket umroh &amp; itinerary, hak akses dokumen (RBAC), rekening bank resmi, dan klasifikasi prospek.
                     </p>
                 </div>
             </div>
@@ -107,7 +118,7 @@ export default function MasterData({
                 onValueChange={handleTabChange}
                 className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start w-full"
             >
-                {/* Navigation Categories Sidebar (Horizontal Segmented Pills on Mobile, Vertical List on Desktop) */}
+                {/* Navigation Categories Sidebar */}
                 <div className="lg:col-span-3 w-full">
                     <TabsList
                         className="flex flex-row lg:flex-col items-stretch justify-start w-full p-1.5 lg:p-2 bg-card/60 backdrop-blur-md rounded-2xl border border-border/80 shadow-xs gap-1.5 overflow-x-auto no-scrollbar h-auto bg-transparent"
@@ -125,7 +136,15 @@ export default function MasterData({
                             className="flex items-center justify-start gap-2.5 px-3.5 py-2.5 lg:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all text-left w-auto lg:w-full shrink-0 cursor-pointer data-active:bg-primary data-active:text-primary-foreground data-active:shadow-xs text-foreground/80 hover:bg-muted/80 hover:text-foreground border-0 shadow-none after:hidden"
                         >
                             <Package className="w-4 h-4 shrink-0" />
-                            <span className="whitespace-nowrap">2. Paket Umroh &amp; Haji</span>
+                            <span className="whitespace-nowrap">2. Paket Umroh &amp; Itinerary</span>
+                        </TabsTrigger>
+
+                        <TabsTrigger
+                            value="rbac"
+                            className="flex items-center justify-start gap-2.5 px-3.5 py-2.5 lg:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all text-left w-auto lg:w-full shrink-0 cursor-pointer data-active:bg-primary data-active:text-primary-foreground data-active:shadow-xs text-foreground/80 hover:bg-muted/80 hover:text-foreground border-0 shadow-none after:hidden"
+                        >
+                            <ShieldCheck className="w-4 h-4 shrink-0" />
+                            <span className="whitespace-nowrap">3. Hak Akses Dokumen (RBAC)</span>
                         </TabsTrigger>
 
                         <TabsTrigger
@@ -133,7 +152,7 @@ export default function MasterData({
                             className="flex items-center justify-start gap-2.5 px-3.5 py-2.5 lg:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all text-left w-auto lg:w-full shrink-0 cursor-pointer data-active:bg-primary data-active:text-primary-foreground data-active:shadow-xs text-foreground/80 hover:bg-muted/80 hover:text-foreground border-0 shadow-none after:hidden"
                         >
                             <Landmark className="w-4 h-4 shrink-0" />
-                            <span className="whitespace-nowrap">3. Rekening Bank Travel</span>
+                            <span className="whitespace-nowrap">4. Rekening Bank Travel</span>
                         </TabsTrigger>
 
                         <TabsTrigger
@@ -141,7 +160,7 @@ export default function MasterData({
                             className="flex items-center justify-start gap-2.5 px-3.5 py-2.5 lg:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all text-left w-auto lg:w-full shrink-0 cursor-pointer data-active:bg-primary data-active:text-primary-foreground data-active:shadow-xs text-foreground/80 hover:bg-muted/80 hover:text-foreground border-0 shadow-none after:hidden"
                         >
                             <Share2 className="w-4 h-4 shrink-0" />
-                            <span className="whitespace-nowrap">4. Sumber Prospek (Lead Sources)</span>
+                            <span className="whitespace-nowrap">5. Sumber Prospek</span>
                         </TabsTrigger>
                     </TabsList>
                 </div>
@@ -165,7 +184,12 @@ export default function MasterData({
                         />
                     </TabsContent>
 
-                    {/* 3. BANKS TAB */}
+                    {/* 3. RBAC DOKUMEN TAB */}
+                    <TabsContent value="rbac" className="flex flex-col gap-6 m-0 outline-none">
+                        <DocumentRbacTab documentPermissions={documentPermissions} />
+                    </TabsContent>
+
+                    {/* 4. BANKS TAB */}
                     <TabsContent value="banks" className="flex flex-col gap-6 m-0 outline-none">
                         <BanksTab
                             banks={banks}
@@ -173,38 +197,36 @@ export default function MasterData({
                         />
                     </TabsContent>
 
-                    {/* 4. SOURCES TAB */}
+                    {/* 5. SOURCES TAB */}
                     <TabsContent value="sources" className="flex flex-col gap-6 m-0 outline-none">
                         <SourcesTab />
                     </TabsContent>
                 </div>
             </Tabs>
 
-            {/* Drawer: Add Stage */}
+            {/* Modals */}
             <StageModal
                 isOpen={isAddStageOpen}
                 onClose={() => setIsAddStageOpen(false)}
                 nextUrutan={stages.length + 1}
             />
 
-            {/* Drawer: Add Package */}
             <AddPackageModal
                 isOpen={isAddPackageOpen}
                 onClose={() => setIsAddPackageOpen(false)}
                 inventoryItems={inventoryItems}
             />
 
-            {/* Drawer: Edit Package */}
             <EditPackageModal
-                editingPackage={editingPackage}
+                isOpen={isEditPackageOpen}
                 onClose={() => {
                     setIsEditPackageOpen(false);
                     setEditingPackage(null);
                 }}
+                pkg={editingPackage}
                 inventoryItems={inventoryItems}
             />
 
-            {/* Drawer: Add Bank */}
             <BankModal
                 isOpen={isAddBankOpen}
                 onClose={() => setIsAddBankOpen(false)}

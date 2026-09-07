@@ -15,6 +15,7 @@ import {
     CheckCircle2,
     Clock,
     FileCheck,
+    Receipt,
 } from 'lucide-react';
 
 import DataTablePagination, { PaginatedData } from '@/Components/DataTablePagination';
@@ -24,6 +25,10 @@ import { useMounted } from '@/hooks/use-mounted';
 
 import CustomerMetricsCards, { CustomerMetrics } from './Components/CustomerMetricsCards';
 import CustomerDrawer, { Customer, BankAccount } from './Components/CustomerDrawer';
+import CustomerEditDrawer from './Components/CustomerEditDrawer';
+import { DatePickerWithRange } from '@/Components/DatePickerWithRange';
+import { DateRange } from 'react-day-picker';
+import { format } from 'date-fns';
 
 interface PackageOption {
     id: number;
@@ -42,6 +47,9 @@ interface CustomerListProps extends PageProps {
         doc: string;
         paket_id?: string | number;
         schedule?: string;
+        date_type?: string;
+        start_date?: string;
+        end_date?: string;
         per_page: number;
     };
 }
@@ -53,30 +61,55 @@ export default function CustomerList({ customers, banks = [], pakets = [], metri
     const [docFilter, setDocFilter] = useState(filters?.doc || 'ALL');
     const [paketFilter, setPaketFilter] = useState(filters?.paket_id ? String(filters.paket_id) : 'ALL');
     const [scheduleFilter, setScheduleFilter] = useState(filters?.schedule || 'ALL');
+    const [dateType, setDateType] = useState(filters?.date_type || 'created_at');
+    const [startDate, setStartDate] = useState(filters?.start_date || '');
+    const [endDate, setEndDate] = useState(filters?.end_date || '');
+    const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
+        if (filters?.start_date) {
+            return {
+                from: new Date(filters.start_date),
+                to: filters.end_date ? new Date(filters.end_date) : undefined,
+            };
+        }
+        return undefined;
+    });
 
-    // Drawer state
+    // Drawer states (Separated View Drawer and Edit Drawer)
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-    const [drawerInitialTab, setDrawerInitialTab] = useState<'biodata' | 'financial'>('biodata');
+    const [drawerInitialTab, setDrawerInitialTab] = useState<'view' | 'financial' | 'documents' | 'riwayat'>('view');
+    const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
 
     const debouncedSearchQuery = useDebounce(searchQuery, 350);
     const isInitialMount = useRef(true);
 
+    const handleDateRangeChange = (range: DateRange | undefined) => {
+        setDateRange(range);
+        const startStr = range?.from ? format(range.from, 'yyyy-MM-dd') : '';
+        const endStr = range?.to ? format(range.to, 'yyyy-MM-dd') : (range?.from ? format(range.from, 'yyyy-MM-dd') : '');
+        setStartDate(startStr);
+        setEndDate(endStr);
+    };
+
     // Deep-link auto-open from URL (?customer_id=123&tab=financial)
     useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const customerIdParam = params.get('customer_id');
-        const tabParam = params.get('tab') as 'biodata' | 'financial' | null;
+        const urlParams = new URLSearchParams(window.location.search);
+        const autoCustomerId = urlParams.get('customer_id');
+        const autoTab = urlParams.get('tab') as any;
 
-        if (customerIdParam && customers.data) {
-            const found = customers.data.find((c) => c.id === Number(customerIdParam));
+        if (autoCustomerId && customers.data) {
+            const found = customers.data.find((c) => c.id.toString() === autoCustomerId);
             if (found) {
-                setSelectedCustomer(found);
-                if (tabParam === 'financial' || tabParam === 'biodata') {
-                    setDrawerInitialTab(tabParam);
+                if (autoTab === 'edit' || autoTab === 'biodata') {
+                    setEditingCustomer(found);
+                } else {
+                    setSelectedCustomer(found);
+                    if (autoTab) {
+                        setDrawerInitialTab(autoTab);
+                    }
                 }
             }
         }
-    }, [customers.data]);
+    }, []);
 
     useEffect(() => {
         if (isInitialMount.current) {
@@ -87,11 +120,14 @@ export default function CustomerList({ customers, banks = [], pakets = [], metri
         router.get(
             route('crm.customers.index'),
             {
-                search: debouncedSearchQuery,
-                status: statusFilter,
-                doc: docFilter,
+                search: debouncedSearchQuery || undefined,
+                status: statusFilter !== 'ALL' ? statusFilter : undefined,
+                doc: docFilter !== 'ALL' ? docFilter : undefined,
                 paket_id: paketFilter !== 'ALL' ? paketFilter : undefined,
                 schedule: scheduleFilter !== 'ALL' ? scheduleFilter : undefined,
+                date_type: dateType,
+                start_date: startDate || undefined,
+                end_date: endDate || undefined,
                 per_page: customers.per_page,
             },
             {
@@ -100,7 +136,7 @@ export default function CustomerList({ customers, banks = [], pakets = [], metri
                 replace: true,
             }
         );
-    }, [debouncedSearchQuery, statusFilter, docFilter, paketFilter, scheduleFilter]);
+    }, [debouncedSearchQuery, statusFilter, docFilter, paketFilter, scheduleFilter, dateType, startDate, endDate]);
 
     const handleResetFilters = () => {
         setSearchQuery('');
@@ -108,11 +144,15 @@ export default function CustomerList({ customers, banks = [], pakets = [], metri
         setDocFilter('ALL');
         setPaketFilter('ALL');
         setScheduleFilter('ALL');
+        setDateType('created_at');
+        setStartDate('');
+        setEndDate('');
+        setDateRange(undefined);
     };
 
-    const hasActiveFilters = searchQuery !== '' || statusFilter !== 'ALL' || docFilter !== 'ALL' || paketFilter !== 'ALL' || scheduleFilter !== 'ALL';
+    const hasActiveFilters = searchQuery !== '' || statusFilter !== 'ALL' || docFilter !== 'ALL' || paketFilter !== 'ALL' || scheduleFilter !== 'ALL' || startDate !== '' || endDate !== '';
 
-    const handleOpenDrawer = (c: Customer, tab: 'biodata' | 'financial') => {
+    const handleOpenDrawer = (c: Customer, tab: 'view' | 'financial' | 'documents' | 'riwayat' = 'view') => {
         setSelectedCustomer(c);
         setDrawerInitialTab(tab);
         const url = new URL(window.location.href);
@@ -121,8 +161,25 @@ export default function CustomerList({ customers, banks = [], pakets = [], metri
         window.history.replaceState({}, '', url.toString());
     };
 
+    const handleOpenEdit = (c: Customer) => {
+        setSelectedCustomer(null);
+        setEditingCustomer(c);
+        const url = new URL(window.location.href);
+        url.searchParams.set('customer_id', c.id.toString());
+        url.searchParams.set('tab', 'edit');
+        window.history.replaceState({}, '', url.toString());
+    };
+
     const handleCloseDrawer = () => {
         setSelectedCustomer(null);
+        const url = new URL(window.location.href);
+        url.searchParams.delete('customer_id');
+        url.searchParams.delete('tab');
+        window.history.replaceState({}, '', url.toString());
+    };
+
+    const handleCloseEditDrawer = () => {
+        setEditingCustomer(null);
         const url = new URL(window.location.href);
         url.searchParams.delete('customer_id');
         url.searchParams.delete('tab');
@@ -192,20 +249,23 @@ export default function CustomerList({ customers, banks = [], pakets = [], metri
 
                 {/* Row 2: Filter Categories (Pelunasan, Paspor, Paket, Jadwal) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-border/60 text-xs">
-                    {/* Filter 1: Status Pelunasan */}
+                    {/* Filter 1: Status Pelunasan & Progress */}
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                             <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
-                            <span>Status Pelunasan</span>
+                            <span>Progres Pembayaran</span>
                         </label>
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
                             className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
                         >
-                            <option value="ALL">Semua Pelunasan</option>
+                            <option value="ALL">Semua Progres</option>
                             <option value="LUNAS">Sudah Lunas (100%)</option>
-                            <option value="BELUM_LUNAS">Belum Lunas / Cicilan</option>
+                            <option value="CICILAN">Cicilan Berjalan</option>
+                            <option value="DP">Sudah DP (Belum Cicil)</option>
+                            <option value="UNPAID">Belum Bayar (0%)</option>
+                            <option value="BELUM_LUNAS">Belum Lunas (Semua)</option>
                             <option value="DP_PENDING">DP Menunggu Verifikasi</option>
                         </select>
                     </div>
@@ -259,9 +319,38 @@ export default function CustomerList({ customers, banks = [], pakets = [], metri
                             className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
                         >
                             <option value="ALL">Semua Jadwal</option>
-                            <option value="SCHEDULED">Sudah Ada Jadwal Terbang</option>
-                            <option value="UNSCHEDULED">Belum Terjadwal (Antrean)</option>
+                            <option value="SCHEDULED">Sudah Terjadwal</option>
+                            <option value="UNSCHEDULED">Belum Terjadwal</option>
                         </select>
+                    </div>
+                </div>
+
+                {/* Row 3: Date Range Filter (Tanggal Pendaftaran vs Keberangkatan) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-border/60 text-xs items-end">
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <Calendar className="w-3.5 h-3.5 text-primary" />
+                            <span>Kategori Tanggal</span>
+                        </label>
+                        <select
+                            value={dateType}
+                            onChange={(e) => setDateType(e.target.value)}
+                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
+                        >
+                            <option value="created_at">Tanggal Pendaftaran (Registrasi)</option>
+                            <option value="keberangkatan">Tanggal Keberangkatan</option>
+                        </select>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                            Rentang Tanggal
+                        </label>
+                        <DatePickerWithRange
+                            dateRange={dateRange}
+                            onChange={handleDateRangeChange}
+                            placeholder="Pilih rentang tanggal (dari - sampai)..."
+                        />
                     </div>
                 </div>
             </div>
@@ -412,20 +501,28 @@ export default function CustomerList({ customers, banks = [], pakets = [], metri
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex items-center justify-center gap-1.5">
                                                 <button
-                                                    onClick={() => handleOpenDrawer(c, 'biodata')}
-                                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-xs font-semibold transition cursor-pointer"
+                                                    onClick={() => handleOpenDrawer(c, 'view')}
+                                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white dark:text-sky-400 dark:hover:text-white border border-sky-500/20 text-[10px] font-semibold transition cursor-pointer"
+                                                    title="Lihat Data Lengkap & Berkas"
+                                                >
+                                                    <Eye className="w-3.5 h-3.5" />
+                                                    <span>Lihat</span>
+                                                </button>
+                                                <button
+                                                    onClick={() => handleOpenEdit(c)}
+                                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-[10px] font-semibold transition cursor-pointer"
                                                     title="Edit Biodata & Keterangan Lengkap"
                                                 >
                                                     <Edit3 className="w-3.5 h-3.5" />
-                                                    <span>Edit Data</span>
+                                                    <span>Edit</span>
                                                 </button>
                                                 <button
                                                     onClick={() => handleOpenDrawer(c, 'financial')}
-                                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground text-xs font-semibold transition cursor-pointer"
-                                                    title="Lihat Rincian Transaksi & Pelunasan"
+                                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-600 text-emerald-600 hover:text-white dark:text-emerald-400 dark:hover:text-white border border-emerald-500/20 text-[10px] font-semibold transition cursor-pointer"
+                                                    title="Lihat Rincian Transaksi & Catat Pelunasan"
                                                 >
-                                                    <Eye className="w-3.5 h-3.5" />
-                                                    <span>Rincian &amp; Bayar</span>
+                                                    <Receipt className="w-3.5 h-3.5" />
+                                                    <span>Bayar</span>
                                                 </button>
                                             </div>
                                         </td>
@@ -457,12 +554,20 @@ export default function CustomerList({ customers, banks = [], pakets = [], metri
                 </div>
             </div>
 
-            {/* Clean Modular Drawer Component */}
+            {/* View Detail Modular Drawer Component */}
             <CustomerDrawer
                 customer={selectedCustomer}
                 initialTab={drawerInitialTab}
                 banks={banks}
                 onClose={handleCloseDrawer}
+                onEdit={(cust) => handleOpenEdit(cust)}
+            />
+
+            {/* Dedicated Edit Customer Drawer Component */}
+            <CustomerEditDrawer
+                customer={editingCustomer}
+                isOpen={!!editingCustomer}
+                onClose={handleCloseEditDrawer}
             />
         </PageLayout>
     );

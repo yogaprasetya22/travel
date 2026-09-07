@@ -38,7 +38,18 @@ class Jamaah extends Model
         'agen_id',
         'crm_stage_id',
         'nama_lengkap',
+        'jenis_kelamin',
+        'tempat_lahir',
+        'tanggal_lahir',
         'nik',
+        'alamat_ktp',
+        'alamat_domisili',
+        'golongan_darah',
+        'status_pernikahan',
+        'riwayat_penyakit',
+        'kontak_darurat_nama',
+        'kontak_darurat_hp',
+        'kontak_darurat_hubungan',
         'nomor_paspor',
         'no_hp',
         'email',
@@ -47,6 +58,12 @@ class Jamaah extends Model
         'status_logistik',
         'tanggal_serah_terima_logistik',
         'catatan_admin',
+    ];
+
+    protected $casts = [
+        'tanggal_lahir' => 'date',
+        'tanggal_keberangkatan' => 'date',
+        'tanggal_serah_terima_logistik' => 'datetime',
     ];
 
     public function tenant(): BelongsTo
@@ -74,6 +91,16 @@ class Jamaah extends Model
         return $this->hasMany(Pembayaran::class);
     }
 
+    public function documents(): HasMany
+    {
+        return $this->hasMany(JamaahDocument::class);
+    }
+
+    public function itemDistributions(): HasMany
+    {
+        return $this->hasMany(ItemDistribution::class);
+    }
+
     public function komisiAgen(): HasMany
     {
         return $this->hasMany(KomisiAgen::class);
@@ -87,5 +114,43 @@ class Jamaah extends Model
     public function stageLogs(): HasMany
     {
         return $this->hasMany(CrmStageLog::class)->orderBy('created_at', 'desc');
+    }
+
+    public function scopeFilterDateRange($query, ?string $field, ?string $startDate, ?string $endDate)
+    {
+        if (! $field || (! $startDate && ! $endDate)) {
+            return $query;
+        }
+
+        $column = match ($field) {
+            'keberangkatan' => 'tanggal_keberangkatan',
+            default => 'created_at',
+        };
+
+        if ($startDate && $endDate) {
+            return $query->whereBetween($column, [$startDate.' 00:00:00', $endDate.' 23:59:59']);
+        } elseif ($startDate) {
+            return $query->where($column, '>=', $startDate.' 00:00:00');
+        } elseif ($endDate) {
+            return $query->where($column, '<=', $endDate.' 23:59:59');
+        }
+
+        return $query;
+    }
+
+    public function scopeFilterPaymentProgress($query, ?string $progress)
+    {
+        if (! $progress || $progress === 'all') {
+            return $query;
+        }
+
+        return match ($progress) {
+            'unpaid' => $query->whereDoesntHave('pembayaran', fn ($q) => $q->where('status_verifikasi', 'Verified')),
+            'dp' => $query->whereHas('pembayaran', fn ($q) => $q->where('status_verifikasi', 'Verified')->where('tipe_pembayaran', 'DP'))
+                ->whereDoesntHave('pembayaran', fn ($q) => $q->where('status_verifikasi', 'Verified')->whereIn('tipe_pembayaran', ['Cicilan', 'Lunas'])),
+            'installment' => $query->whereHas('pembayaran', fn ($q) => $q->where('status_verifikasi', 'Verified')->where('tipe_pembayaran', 'Cicilan')),
+            'paid' => $query->whereHas('pembayaran', fn ($q) => $q->where('status_verifikasi', 'Verified')->where('tipe_pembayaran', 'Lunas')),
+            default => $query,
+        };
     }
 }

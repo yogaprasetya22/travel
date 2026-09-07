@@ -494,7 +494,7 @@ export function EditTenantSheet({
                             <p className="text-[11px] text-muted-foreground mt-0.5">Pilih skema warna tema tampilan publik travel.</p>
                         </div>
 
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto no-scrollbar p-2 border border-border rounded-xl bg-muted/20">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto low-scrollbar p-2 border border-border rounded-xl bg-muted/20">
                             {themeList.map((t) => {
                                 const bgStyle = t.variables['--background'] ? `hsl(${t.variables['--background']})` : (t.type === 'dark' ? '#0f172a' : '#ffffff');
                                 const fgStyle = t.variables['--foreground'] ? `hsl(${t.variables['--foreground']})` : (t.type === 'dark' ? '#ffffff' : '#0f172a');
