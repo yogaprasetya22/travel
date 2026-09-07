@@ -150,6 +150,8 @@ export default function AgentLandingTemplate({
         return 'bg-card/90 hover:bg-card text-foreground border border-border/80 hover:border-primary/40 font-medium shadow-2xs';
     };
 
+    const [copiedShare, setCopiedShare] = React.useState(false);
+
     const socials: SocialLinks = agent.social_links || {};
 
     const displayTitle =
@@ -170,7 +172,8 @@ export default function AgentLandingTemplate({
                 .catch(() => {});
         } else {
             await copyToClipboard(window.location.href);
-            alert('Tautan halaman berhasil disalin.');
+            setCopiedShare(true);
+            setTimeout(() => setCopiedShare(false), 2200);
         }
     };
 
@@ -197,14 +200,25 @@ export default function AgentLandingTemplate({
                     </div>
                 </div>
 
-                <button
-                    type="button"
-                    onClick={handleShare}
-                    className={`${isPreview ? 'p-1' : 'p-1.5 sm:p-2'} rounded-full bg-card hover:bg-muted border border-border/80 shadow-xs text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer`}
-                    title="Bagikan Tautan"
-                >
-                    <Share2 className={isPreview ? 'w-3 h-3' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'} />
-                </button>
+                <div className="relative">
+                    <button
+                        type="button"
+                        onClick={handleShare}
+                        className={`${isPreview ? 'p-1' : 'p-1.5 sm:p-2'} rounded-full ${copiedShare ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/40 ring-2 ring-emerald-500/20' : 'bg-card hover:bg-muted text-muted-foreground hover:text-foreground border-border/80'} border shadow-xs transition-all shrink-0 cursor-pointer flex items-center gap-1`}
+                        title="Bagikan Tautan"
+                    >
+                        {copiedShare ? (
+                            <CheckCircle2 className={isPreview ? 'w-3 h-3 text-emerald-600 dark:text-emerald-400' : 'w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 dark:text-emerald-400'} />
+                        ) : (
+                            <Share2 className={isPreview ? 'w-3 h-3' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'} />
+                        )}
+                    </button>
+                    {copiedShare && (
+                        <span className="absolute right-0 top-full mt-1.5 whitespace-nowrap bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-[10px] font-medium px-2 py-0.5 rounded shadow-lg animate-in fade-in slide-in-from-top-1 duration-200 z-50">
+                            Tautan disalin!
+                        </span>
+                    )}
+                </div>
             </div>
 
             {/* Agent Profile Details */}

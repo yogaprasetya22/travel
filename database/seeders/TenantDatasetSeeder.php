@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Hash;
 class TenantDatasetSeeder extends Seeder
 {
     /**
-     * Seed 2 tenants with complete, realistic employee, agent, banking, and 10,000+ relational CRM records.
+     * Seed 2 tenants with complete, realistic employee, agent, banking, and relational CRM records.
      */
     public function run(): void
     {
@@ -27,12 +27,13 @@ class TenantDatasetSeeder extends Seeder
             [
                 'name' => 'HajjFlow Travel Nusantara',
                 'subdomain' => 'hajjflow',
+                'no_telepon' => '02178901234',
                 'owner_name' => 'H. Abdullah Hakim, Lc',
                 'owner_email' => 'test@example.com',
                 'owner_nik' => '3201011508820001',
                 'owner_phone' => '081289901122',
                 'owner_city' => 'Jakarta Selatan',
-                'owner_address' => 'Jl. Kemang Raya No. 45, RT 02/RW 05, Bangka, Mampang Prapatan',
+                'owner_address' => 'Jl. Kemang Raya No. 45 RT 02/RW 05, Kel. Bangka, Kec. Mampang Prapatan, Kota Jakarta Selatan, DKI Jakarta 12730',
                 'owner_bank' => 'Bank Syariah Indonesia (BSI)',
                 'owner_rek' => '7123849102',
                 'bank' => 'Bank Syariah Indonesia (BSI)',
@@ -42,12 +43,13 @@ class TenantDatasetSeeder extends Seeder
             [
                 'name' => 'Barokah Madinah Wisata',
                 'subdomain' => 'barokah',
+                'no_telepon' => '02287654321',
                 'owner_name' => 'Hj. Siti Rahmawati, S.E.',
                 'owner_email' => 'owner@barokah.com',
                 'owner_nik' => '3273045209860003',
                 'owner_phone' => '081398877665',
                 'owner_city' => 'Bandung',
-                'owner_address' => 'Jl. Ir. H. Juanda No. 128, Dago, Coblong',
+                'owner_address' => 'Jl. Ir. H. Juanda No. 128 RT 03/RW 06, Kel. Lebak Siliwangi, Kec. Coblong, Kota Bandung, Jawa Barat 40132',
                 'owner_bank' => 'Bank Mandiri',
                 'owner_rek' => '1420098765432',
                 'bank' => 'Bank Mandiri',
@@ -56,16 +58,120 @@ class TenantDatasetSeeder extends Seeder
             ],
         ];
 
-        $cities = ['Jakarta Selatan', 'Jakarta Timur', 'Bandung', 'Surabaya', 'Semarang', 'Yogyakarta', 'Medan', 'Makassar', 'Bekasi', 'Tangerang Selatan'];
+        $detailedAddresses = [
+            [
+                'alamat_ktp' => 'Jl. Margonda Raya No. 45 RT 03/RW 07, Kel. Kemiri Muka, Kec. Beji, Kota Depok, Jawa Barat 16424',
+                'alamat_domisili' => 'Apartemen Margonda Residence Tower 2 No. 14B, Jl. Margonda Raya, Beji, Kota Depok 16424',
+                'kota' => 'Kota Depok',
+            ],
+            [
+                'alamat_ktp' => 'Jl. Tebet Barat Dalam Raya No. 18 RT 05/RW 02, Kel. Tebet Barat, Kec. Tebet, Kota Jakarta Selatan, DKI Jakarta 12810',
+                'alamat_domisili' => 'Jl. Tebet Barat Dalam Raya No. 18 RT 05/RW 02, Kel. Tebet Barat, Kec. Tebet, Kota Jakarta Selatan, DKI Jakarta 12810',
+                'kota' => 'Kota Jakarta Selatan',
+            ],
+            [
+                'alamat_ktp' => 'Jl. Riau No. 102 RT 01/RW 04, Kel. Cihapit, Kec. Bandung Wetan, Kota Bandung, Jawa Barat 40114',
+                'alamat_domisili' => 'Komplek Perumahan Dago Asri Blok C-12, Dago, Kec. Coblong, Kota Bandung 40135',
+                'kota' => 'Kota Bandung',
+            ],
+            [
+                'alamat_ktp' => 'Jl. Raya Darmo No. 88 RT 02/RW 06, Kel. Keputran, Kec. Tegalsari, Kota Surabaya, Jawa Timur 60265',
+                'alamat_domisili' => 'Jl. Raya Darmo No. 88 RT 02/RW 06, Kel. Keputran, Kec. Tegalsari, Kota Surabaya, Jawa Timur 60265',
+                'kota' => 'Kota Surabaya',
+            ],
+            [
+                'alamat_ktp' => 'Jl. Kaliurang KM 5.5 No. 24 RT 04/RW 09, Kel. Caturtunggal, Kec. Depok, Kab. Sleman, D.I. Yogyakarta 55281',
+                'alamat_domisili' => 'Jl. Kaliurang KM 5.5 No. 24 RT 04/RW 09, Kel. Caturtunggal, Kec. Depok, Kab. Sleman, D.I. Yogyakarta 55281',
+                'kota' => 'Kabupaten Sleman',
+            ],
+            [
+                'alamat_ktp' => 'Jl. Pajajaran No. 72 RT 03/RW 08, Kel. Baranangsiang, Kec. Bogor Timur, Kota Bogor, Jawa Barat 16143',
+                'alamat_domisili' => 'Villa Duta Blok A5 No. 9, Baranangsiang, Kec. Bogor Timur, Kota Bogor 16143',
+                'kota' => 'Kota Bogor',
+            ],
+            [
+                'alamat_ktp' => 'Jl. Pemuda No. 142 RT 02/RW 03, Kel. Sekayu, Kec. Semarang Tengah, Kota Semarang, Jawa Tengah 50132',
+                'alamat_domisili' => 'Jl. Pemuda No. 142 RT 02/RW 03, Kel. Sekayu, Kec. Semarang Tengah, Kota Semarang, Jawa Tengah 50132',
+                'kota' => 'Kota Semarang',
+            ],
+            [
+                'alamat_ktp' => 'Jl. Boulevard Barat Raya Blok LC7 No. 12 RT 06/RW 15, Kel. Kelapa Gading Barat, Kec. Kelapa Gading, Kota Jakarta Utara, DKI Jakarta 14240',
+                'alamat_domisili' => 'Jl. Boulevard Barat Raya Blok LC7 No. 12 RT 06/RW 15, Kelapa Gading Barat, Kota Jakarta Utara 14240',
+                'kota' => 'Kota Jakarta Utara',
+            ],
+            [
+                'alamat_ktp' => 'Jl. Jenderal Sudirman No. 250 RT 01/RW 05, Kel. Damai, Kec. Balikpapan Kota, Kota Balikpapan, Kalimantan Timur 76114',
+                'alamat_domisili' => 'Perumahan Balikpapan Baru Blok AB-3 No. 7, Damai, Kota Balikpapan 76114',
+                'kota' => 'Kota Balikpapan',
+            ],
+            [
+                'alamat_ktp' => 'Jl. Pettarani No. 89 RT 04/RW 01, Kel. Banta-Bantaeng, Kec. Rappocini, Kota Makassar, Sulawesi Selatan 90222',
+                'alamat_domisili' => 'Jl. Pettarani No. 89 RT 04/RW 01, Kel. Banta-Bantaeng, Kec. Rappocini, Kota Makassar 90222',
+                'kota' => 'Kota Makassar',
+            ],
+            [
+                'alamat_ktp' => 'Jl. Gatot Subroto No. 64 RT 07/RW 03, Kel. Sei Putih Tengah, Kec. Medan Petisah, Kota Medan, Sumatera Utara 20118',
+                'alamat_domisili' => 'Jl. Gatot Subroto No. 64 RT 07/RW 03, Kel. Sei Putih Tengah, Medan Petisah, Kota Medan 20118',
+                'kota' => 'Kota Medan',
+            ],
+            [
+                'alamat_ktp' => 'Jl. KH. Noer Ali No. 17 RT 05/RW 06, Kel. Jakasampurna, Kec. Bekasi Barat, Kota Bekasi, Jawa Barat 17145',
+                'alamat_domisili' => 'Grand Galaxy City Cluster Victoria Garden Blok VC 2 No. 19, Jaka Setia, Bekasi Selatan 17147',
+                'kota' => 'Kota Bekasi',
+            ],
+            [
+                'alamat_ktp' => 'Jl. BSD Raya Utama Blok FL No. 8 RT 01/RW 09, Kel. Lengkong Kulon, Kec. Pagedangan, Kab. Tangerang, Banten 15331',
+                'alamat_domisili' => 'Cluster Greenwich Park De Maja No. 33, BSD City, Tangerang 15331',
+                'kota' => 'Kabupaten Tangerang',
+            ],
+            [
+                'alamat_ktp' => 'Jl. Slamet Riyadi No. 312 RT 03/RW 05, Kel. Sriwedari, Kec. Laweyan, Kota Surakarta, Jawa Tengah 57141',
+                'alamat_domisili' => 'Jl. Slamet Riyadi No. 312 RT 03/RW 05, Kel. Sriwedari, Kec. Laweyan, Kota Surakarta 57141',
+                'kota' => 'Kota Surakarta',
+            ],
+            [
+                'alamat_ktp' => 'Jl. Basuki Rahmat No. 45 RT 04/RW 02, Kel. Kauman, Kec. Klojen, Kota Malang, Jawa Timur 65119',
+                'alamat_domisili' => 'Jl. Basuki Rahmat No. 45 RT 04/RW 02, Kel. Kauman, Kec. Klojen, Kota Malang 65119',
+                'kota' => 'Kota Malang',
+            ],
+            [
+                'alamat_ktp' => 'Jl. Khatib Sulaiman No. 77 RT 02/RW 04, Kel. Lolong Belanti, Kec. Padang Utara, Kota Padang, Sumatera Barat 25136',
+                'alamat_domisili' => 'Jl. Khatib Sulaiman No. 77 RT 02/RW 04, Kel. Lolong Belanti, Kec. Padang Utara, Kota Padang 25136',
+                'kota' => 'Kota Padang',
+            ],
+            [
+                'alamat_ktp' => 'Jl. Jenderal Sudirman No. 108 RT 06/RW 02, Kel. 20 Ilir D. IV, Kec. Ilir Timur I, Kota Palembang, Sumatera Selatan 30121',
+                'alamat_domisili' => 'Jl. Jenderal Sudirman No. 108 RT 06/RW 02, 20 Ilir D. IV, Ilir Timur I, Kota Palembang 30121',
+                'kota' => 'Kota Palembang',
+            ],
+            [
+                'alamat_ktp' => 'Jl. Cipto Mangunkusumo No. 58 RT 03/RW 05, Kel. Pekiringan, Kec. Kesambi, Kota Cirebon, Jawa Barat 45131',
+                'alamat_domisili' => 'Jl. Cipto Mangunkusumo No. 58 RT 03/RW 05, Kel. Pekiringan, Kec. Kesambi, Kota Cirebon 45131',
+                'kota' => 'Kota Cirebon',
+            ],
+        ];
+
         $banks = ['BCA', 'Bank Mandiri', 'BSI (Bank Syariah Indonesia)', 'BRI', 'BNI'];
+        $bloodTypes = ['A', 'B', 'AB', 'O'];
+        $maritalStatuses = ['Menikah', 'Belum Menikah', 'Janda/Duda'];
+        $diseases = ['Tidak Ada', 'Tidak Ada', 'Hipertensi Ringan', 'Asma Terkontrol', 'Diabetes Melitus', 'Kolesterol', 'Tidak Ada'];
+        $relations = ['Suami', 'Istri', 'Anak Kandung', 'Orang Tua', 'Kakak Kandung', 'Adik Kandung'];
+        $couriers = ['JNE Express', 'SiCepat', 'J&T Express', 'POS Indonesia', 'TIKI'];
 
         foreach ($tenantsData as $tIndex => $tData) {
             $this->command->info('Seeding Tenant '.($tIndex + 1).": {$tData['name']}...");
 
+            // Cleanup existing tenant data with same subdomain if exists to allow clean reseeding
+            $existingTenant = Tenant::where('domain_atau_subdomain', $tData['subdomain'])->first();
+            if ($existingTenant) {
+                User::where('tenant_id', $existingTenant->id)->delete();
+                $existingTenant->delete();
+            }
+
             $tenant = Tenant::create([
                 'nama_travel' => $tData['name'],
                 'domain_atau_subdomain' => $tData['subdomain'],
-                'no_telepon' => $tData['no_telepon'] ?? '6281234567890',
+                'no_telepon' => $tData['no_telepon'],
                 'logo' => null,
             ]);
 
@@ -235,21 +341,26 @@ class TenantDatasetSeeder extends Seeder
             ]);
 
             // Seed Supervisors
+            $spvNames = [
+                ['H. Rahmat Hidayat, S.Ag', 'Ustadz Fauzan Hakim, Lc'],
+                ['Hj. Dewi Rahmawati, S.E.', 'H. Syamsul Arifin, M.Pd'],
+            ];
             $supervisors = [];
             for ($s = 1; $s <= 2; $s++) {
-                $spvName = "Ustadz H. Rahmat Hidayat {$s}";
+                $spvName = $spvNames[$tIndex][$s - 1];
+                $addrObj = $detailedAddresses[($s + 3 + $tIndex * 2) % count($detailedAddresses)];
                 $supervisors[] = User::create([
                     'tenant_id' => $tenant->id,
                     'hierarchy_level_id' => $spvLevel->id,
-                    'name' => "{$spvName} (".($tIndex === 0 ? 'Pusat' : 'Cabang').')',
+                    'name' => $spvName,
                     'email' => "spv{$s}.t".($tIndex + 1).'@travel.com',
                     'password' => $defaultPassword,
                     'role' => 'admin_travel',
-                    'jabatan' => 'Supervisor',
+                    'jabatan' => 'Supervisor Operasional & Logistik',
                     'nik' => '32'.str_pad((string) (71000000000000 + ($tIndex * 100) + $s), 14, '0', STR_PAD_LEFT),
                     'no_hp' => '0812'.rand(10000000, 99999999),
-                    'kota' => $cities[$s % count($cities)],
-                    'alamat' => "Komplek Perkantoran Graha Travel Blok {$s}, Lt. 2",
+                    'kota' => $addrObj['kota'],
+                    'alamat' => $addrObj['alamat_ktp'],
                     'status_karyawan' => 'aktif',
                     'nama_bank' => $banks[$s % count($banks)],
                     'nomor_rekening' => '5300'.rand(100000, 999999),
@@ -265,6 +376,7 @@ class TenantDatasetSeeder extends Seeder
                 for ($tl = 1; $tl <= 2; $tl++) {
                     $tlIdx = ($spvIdx * 2 + $tl);
                     $tlName = "Leader Pembina {$tlIdx} - ".($tIndex === 0 ? 'Jabodetabek' : 'Jawa Barat');
+                    $addrObj = $detailedAddresses[($tlIdx + 6) % count($detailedAddresses)];
                     $teamLeaders[] = User::create([
                         'tenant_id' => $tenant->id,
                         'hierarchy_level_id' => $leaderLevel->id,
@@ -275,8 +387,8 @@ class TenantDatasetSeeder extends Seeder
                         'jabatan' => 'Team Leader',
                         'nik' => '32'.str_pad((string) (72000000000000 + ($tIndex * 100) + $tlIdx), 14, '0', STR_PAD_LEFT),
                         'no_hp' => '0813'.rand(10000000, 99999999),
-                        'kota' => $cities[($tlIdx + 2) % count($cities)],
-                        'alamat' => "Jl. Boulevard Raya No. {$tlIdx}, Sentra Bisnis",
+                        'kota' => $addrObj['kota'],
+                        'alamat' => $addrObj['alamat_ktp'],
                         'status_karyawan' => 'aktif',
                         'nama_bank' => $banks[$tlIdx % count($banks)],
                         'nomor_rekening' => '7200'.rand(100000, 999999),
@@ -288,24 +400,23 @@ class TenantDatasetSeeder extends Seeder
             }
 
             // Seed Agents
-            $agentNames = [
-                'Budi Santoso, S.Kom',
-                'Aisyah Putri Azzahra',
-                'H. Muhammad Fauzan',
-                'Dewi Lestari, S.Pd',
-                'dr. Hendra Kusuma',
-                'Nurul Fadilah',
-                'Agus Setiawan',
-                'Ustadzah Maryam Fitriani',
-                'Ridwan Kamiludin',
-                'Fathimah Zahra',
-                'Bambang Tri Nugroho',
-                'Tri Wahyuni, M.Si',
-                'Eko Prasetyo Utomo',
-                'Siti Khodijah',
-                'Wahyu Al-Fatih',
-                'Laila Ramadhani',
+            $agentNamesByTenant = [
+                // Tenant 0: HajjFlow
+                [
+                    'Budi Santoso, S.Kom', 'Aisyah Putri Azzahra', 'H. Muhammad Fauzan', 'Dewi Lestari, S.Pd',
+                    'dr. Hendra Kusuma', 'Nurul Fadilah', 'Agus Setiawan', 'Ustadzah Maryam Fitriani',
+                    'Ridwan Kamiludin', 'Fathimah Zahra', 'Bambang Tri Nugroho', 'Tri Wahyuni, M.Si',
+                    'Eko Prasetyo Utomo', 'Siti Khodijah', 'Wahyu Al-Fatih', 'Laila Ramadhani',
+                ],
+                // Tenant 1: Barokah — entirely different names
+                [
+                    'Hasan Basri, S.Pd.I', 'Ummu Kultsum Azzahra', 'Drs. Irfan Maulana', 'Rini Setyowati, M.Kom',
+                    'H. Zulkifli Ramadhan', 'Nisa Fauziah', 'Arif Budiman', 'Ustadzah Halimah Tusa\'diyah',
+                    'Andri Firmansyah', 'Marisa Nur Hidayah', 'Teguh Wibowo, S.E.', 'Yeni Rahayu, S.H.',
+                    'Doni Kurniawan', 'Khadijah Al-Hafidz', 'Harun Ar-Rasyid', 'Salma Fitriyani',
+                ],
             ];
+            $agentNames = $agentNamesByTenant[$tIndex] ?? $agentNamesByTenant[0];
 
             $agents = [];
             foreach ($teamLeaders as $tlIdx => $tl) {
@@ -318,6 +429,7 @@ class TenantDatasetSeeder extends Seeder
 
                     $agentPhoneRaw = '08'.($isPrimaryDemo ? '88969991215' : (rand(11, 19).rand(1000000, 9999999)));
                     $agentPhoneWa = '62'.substr($agentPhoneRaw, 1);
+                    $addrObj = $detailedAddresses[($agentNum + 2) % count($detailedAddresses)];
 
                     $agents[] = User::create([
                         'tenant_id' => $tenant->id,
@@ -329,8 +441,8 @@ class TenantDatasetSeeder extends Seeder
                         'jabatan' => 'Konsultan Bimbingan Umroh',
                         'nik' => '32'.str_pad((string) (73000000000000 + ($tIndex * 100) + $agentNum), 14, '0', STR_PAD_LEFT),
                         'no_hp' => $agentPhoneRaw,
-                        'kota' => $cities[($agentNum * 3) % count($cities)],
-                        'alamat' => "Jl. Dahlia Indah No. {$agentNum}, RT 04/RW 02",
+                        'kota' => $addrObj['kota'],
+                        'alamat' => $addrObj['alamat_ktp'],
                         'status_karyawan' => 'aktif',
                         'nama_bank' => $banks[$agentNum % count($banks)],
                         'nomor_rekening' => ($agentNum % 2 === 0 ? '5385' : '7188').rand(100000, 999999),
@@ -372,13 +484,12 @@ class TenantDatasetSeeder extends Seeder
             }
             $agentIds = array_map(fn ($a) => $a->id, $agents);
 
-            // 6. Seed 10 Nasabah per Agen: 4 New Leads, 3 Follow Up, 3 Negosiasi (no Closing)
-            $firstNames = ['Ahmad', 'Bambang', 'Chandra', 'Dewi', 'Eko', 'Fitri', 'Gita', 'Hadi', 'Indra', 'Joko', 'Kartika', 'Lestari', 'Muhammad', 'Nur', 'Oki', 'Putri', 'Rahmat', 'Siti', 'Tri', 'Umar', 'Wahyu', 'Yuliana', 'Zainal', 'Farhan', 'Anisa', 'Rizky', 'Ridwan', 'Aulia', 'Faisal', 'Nabila'];
+            // 6. Seed 10 Prospek Nasabah per Agen: 4 New Leads, 3 Follow Up, 3 Negosiasi (no Closing)
+            $maleNames = ['Ahmad', 'Bambang', 'Chandra', 'Eko', 'Hadi', 'Indra', 'Joko', 'Muhammad', 'Rahmat', 'Umar', 'Wahyu', 'Zainal', 'Farhan', 'Rizky', 'Ridwan', 'Faisal', 'Taufik', 'Agus', 'Imam', 'Irfan'];
+            $femaleNames = ['Dewi', 'Fitri', 'Gita', 'Kartika', 'Lestari', 'Nur', 'Putri', 'Siti', 'Tri', 'Yuliana', 'Anisa', 'Aulia', 'Nabila', 'Khodijah', 'Zahra', 'Indah', 'Rahmawati', 'Rina', 'Wulan', 'Dian'];
             $lastNames = ['Pratama', 'Hidayat', 'Saputra', 'Wijaya', 'Kusuma', 'Santoso', 'Gunawan', 'Permana', 'Nugroho', 'Wibowo', 'Siregar', 'Lubis', 'Harahap', 'Nasution', 'Batubara', 'Tanjung', 'Pasaribu', 'Hutagalung', 'Al-Habsyi', 'Assegaf'];
-            $fnCount = count($firstNames);
-            $lnCount = count($lastNames);
+            $birthPlaces = ['Jakarta', 'Bandung', 'Surabaya', 'Medan', 'Semarang', 'Makassar', 'Yogyakarta', 'Solo', 'Bogor', 'Malang', 'Palembang', 'Padang', 'Cirebon', 'Banjarmasin', 'Balikpapan'];
 
-            // 4 New Leads, 3 Follow Up, 3 Negosiasi per agen
             $stageSlots = [
                 $stage1->id, $stage1->id, $stage1->id, $stage1->id, // 4× New Leads
                 $stage2->id, $stage2->id, $stage2->id,               // 3× Follow Up
@@ -392,8 +503,11 @@ class TenantDatasetSeeder extends Seeder
                 $jamaahRows = [];
                 foreach ($stageSlots as $slotStageId) {
                     $globalIdx++;
-                    $fn = $firstNames[$globalIdx % $fnCount];
-                    $ln = $lastNames[($globalIdx * 3) % $lnCount];
+                    $isMale = ($globalIdx % 2 === 1);
+                    // Use prime step (7) to avoid periodic collisions in deterministic modulo pattern
+                    $fn = $isMale ? $maleNames[$globalIdx % count($maleNames)] : $femaleNames[$globalIdx % count($femaleNames)];
+                    $ln = $lastNames[($globalIdx * 7 + $tIndex * 11) % count($lastNames)];
+                    $gender = $isMale ? 'Laki-laki' : 'Perempuan';
 
                     $pkgRand = rand(1, 100);
                     if ($pkgRand <= 45) {
@@ -411,19 +525,35 @@ class TenantDatasetSeeder extends Seeder
 
                     $nik = '32'.str_pad((string) ($tenant->id * 10000000000000 + $globalIdx), 14, '0', STR_PAD_LEFT);
                     $phone = '08'.str_pad((string) (1300000000 + ($tIndex * 100000) + $globalIdx), 10, '0', STR_PAD_LEFT);
+                    $addr = $detailedAddresses[$globalIdx % count($detailedAddresses)];
+
+                    $ageYears = rand(22, 65);
+                    $birthDate = now()->subYears($ageYears)->subMonths(rand(1, 11))->subDays(rand(1, 28))->format('Y-m-d');
+                    $emergencyName = ($isMale ? 'Hj. '.$femaleNames[($globalIdx + 2) % count($femaleNames)] : 'H. '.$maleNames[($globalIdx + 2) % count($maleNames)]).' '.$ln;
 
                     $jamaahRows[] = [
                         'tenant_id' => $tenant->id,
                         'agen_id' => $agentObj->id,
                         'crm_stage_id' => $slotStageId,
-                        'nama_lengkap' => "{$fn} {$ln} {$globalIdx}",
+                        'nama_lengkap' => "{$fn} {$ln}",
+                        'jenis_kelamin' => $gender,
+                        'tempat_lahir' => $birthPlaces[$globalIdx % count($birthPlaces)],
+                        'tanggal_lahir' => $birthDate,
                         'nik' => $nik,
+                        'alamat_ktp' => $addr['alamat_ktp'],
+                        'alamat_domisili' => $addr['alamat_domisili'],
+                        'golongan_darah' => $bloodTypes[$globalIdx % count($bloodTypes)],
+                        'status_pernikahan' => $maritalStatuses[$globalIdx % count($maritalStatuses)],
+                        'riwayat_penyakit' => $diseases[$globalIdx % count($diseases)],
+                        'kontak_darurat_nama' => $emergencyName,
+                        'kontak_darurat_hp' => '08'.str_pad((string) (1800000000 + $globalIdx), 10, '0', STR_PAD_LEFT),
+                        'kontak_darurat_hubungan' => $relations[$globalIdx % count($relations)],
                         'nomor_paspor' => null,
                         'no_hp' => $phone,
                         'email' => "nasabah{$globalIdx}.t{$tenant->id}@mailtest.id",
                         'paket_id' => $selectedPkg['id'],
                         'tanggal_keberangkatan' => null,
-                        'catatan_admin' => "Prospek #{$globalIdx} via agen {$agentObj->name}",
+                        'catatan_admin' => "Calon jamaah via agen {$agentObj->name}. Tertarik paket berkah.",
                         'status_logistik' => 'Pending',
                         'tanggal_serah_terima_logistik' => null,
                         'created_at' => $createdAt,
@@ -434,11 +564,11 @@ class TenantDatasetSeeder extends Seeder
                 DB::table('jamaah')->insert($jamaahRows);
             }
 
-            // 6a-2. Seed a few Pending DP pembayaran for non-closing leads so Finance/Verifikasi has data
+            // 6a-2. Seed Pending DP pembayaran for some leads
             $sampleLeads = DB::table('jamaah')
                 ->where('tenant_id', $tenant->id)
                 ->whereIn('crm_stage_id', [$stage2->id, $stage3->id])
-                ->limit(3)
+                ->limit(4)
                 ->get();
 
             $pendingPayments = [];
@@ -460,16 +590,20 @@ class TenantDatasetSeeder extends Seeder
                 DB::table('pembayaran')->insert($pendingPayments);
             }
 
-            // 6b. Seed 5 Closing jamaah per agen (with Verified payment + komisi) so /crm/customers has data
+            // 6b. Seed 5 Closing jamaah per agen (Lunas + Distribusi Logistik Realistis + Dokumen)
             $this->command->info('Generating 5 closing jamaah × '.count($agents).' agents for Tenant '.($tIndex + 1).'...');
 
-            $closingIdx = 90000; // offset to avoid NIK collision
+            $closingIdx = 90000;
+            $itemsList = [$invKoper->id, $invKain->id, $invBuku->id, $invBatik->id];
+
             foreach ($agents as $agentObj) {
                 $closingRows = [];
                 for ($c = 1; $c <= 5; $c++) {
                     $closingIdx++;
-                    $fn = $firstNames[$closingIdx % $fnCount];
-                    $ln = $lastNames[($closingIdx * 7) % $lnCount];
+                    $isMale = ($closingIdx % 2 === 1);
+                    $fn = $isMale ? $maleNames[$closingIdx % count($maleNames)] : $femaleNames[$closingIdx % count($femaleNames)];
+                    $ln = $lastNames[($closingIdx * 13 + $tIndex * 7) % count($lastNames)];
+                    $gender = $isMale ? 'Laki-laki' : 'Perempuan';
 
                     $pkgRand = rand(1, 100);
                     $selectedPkg = $pkgRand <= 45 ? $packagesList[0] : ($pkgRand <= 75 ? $packagesList[1] : ($pkgRand <= 93 ? $packagesList[2] : $packagesList[3]));
@@ -477,20 +611,60 @@ class TenantDatasetSeeder extends Seeder
                     $daysAgo = rand(15, 90);
                     $createdAt = now()->subDays($daysAgo)->subHours(rand(1, 12));
 
+                    $addr = $detailedAddresses[$closingIdx % count($detailedAddresses)];
+                    $ageYears = rand(25, 68);
+                    $birthDate = now()->subYears($ageYears)->subMonths(rand(1, 11))->subDays(rand(1, 28))->format('Y-m-d');
+                    $emergencyName = ($isMale ? 'Hj. '.$femaleNames[($closingIdx + 3) % count($femaleNames)] : 'H. '.$maleNames[($closingIdx + 3) % count($maleNames)]).' '.$ln;
+
+                    // Logistics status variation
+                    $logStatusSeed = $closingIdx % 3;
+                    $statusLogistik = 'Pending';
+                    $tanggalKirim = null;
+                    $tanggalSerah = null;
+                    $ekspedisi = null;
+                    $resi = null;
+
+                    if ($logStatusSeed === 1) {
+                        $statusLogistik = 'Shipped';
+                        $ekspedisi = $couriers[$closingIdx % count($couriers)];
+                        $resi = strtoupper(substr($ekspedisi, 0, 3)).str_pad((string) rand(1000000000, 9999999999), 10, '0');
+                        $tanggalKirim = now()->subDays(rand(2, 6));
+                    } elseif ($logStatusSeed === 2) {
+                        $statusLogistik = 'Handed_Over';
+                        $ekspedisi = $couriers[$closingIdx % count($couriers)];
+                        $resi = strtoupper(substr($ekspedisi, 0, 3)).str_pad((string) rand(1000000000, 9999999999), 10, '0');
+                        $tanggalKirim = now()->subDays(rand(7, 15));
+                        $tanggalSerah = now()->subDays(rand(1, 5));
+                    }
+
                     $closingRows[] = [
                         'tenant_id' => $tenant->id,
                         'agen_id' => $agentObj->id,
                         'crm_stage_id' => $stage4->id,
-                        'nama_lengkap' => "{$fn} {$ln} C{$closingIdx}",
+                        'nama_lengkap' => "{$fn} {$ln}",
+                        'jenis_kelamin' => $gender,
+                        'tempat_lahir' => $birthPlaces[$closingIdx % count($birthPlaces)],
+                        'tanggal_lahir' => $birthDate,
                         'nik' => '32'.str_pad((string) ($tenant->id * 10000000000000 + $closingIdx), 14, '0', STR_PAD_LEFT),
-                        'nomor_paspor' => 'A'.str_pad((string) ($closingIdx), 8, '0', STR_PAD_LEFT),
+                        'alamat_ktp' => $addr['alamat_ktp'],
+                        'alamat_domisili' => $addr['alamat_domisili'],
+                        'golongan_darah' => $bloodTypes[$closingIdx % count($bloodTypes)],
+                        'status_pernikahan' => $maritalStatuses[$closingIdx % count($maritalStatuses)],
+                        'riwayat_penyakit' => $diseases[$closingIdx % count($diseases)],
+                        'kontak_darurat_nama' => $emergencyName,
+                        'kontak_darurat_hp' => '08'.str_pad((string) (1900000000 + $closingIdx), 10, '0', STR_PAD_LEFT),
+                        'kontak_darurat_hubungan' => $relations[$closingIdx % count($relations)],
+                        'nomor_paspor' => chr(65 + ($closingIdx % 6)).str_pad((string) ($closingIdx), 7, '0', STR_PAD_LEFT),
                         'no_hp' => '08'.str_pad((string) (1500000000 + $closingIdx), 10, '0', STR_PAD_LEFT),
-                        'email' => "closing{$closingIdx}.t{$tenant->id}@mailtest.id",
+                        'email' => "jamaah{$closingIdx}.t{$tenant->id}@mailtest.id",
                         'paket_id' => $selectedPkg['id'],
                         'tanggal_keberangkatan' => date('Y-m-d', strtotime('+'.rand(30, 150).' days')),
-                        'catatan_admin' => "Jamaah lunas #{$closingIdx} binaan {$agentObj->name}",
-                        'status_logistik' => 'Pending',
-                        'tanggal_serah_terima_logistik' => null,
+                        'catatan_admin' => "Jamaah lunas terdaftar via agen {$agentObj->name}. Perlengkapan siap diproses.",
+                        'status_logistik' => $statusLogistik,
+                        'no_resi_logistik' => $resi,
+                        'ekspedisi_logistik' => $ekspedisi,
+                        'tanggal_kirim_logistik' => $tanggalKirim,
+                        'tanggal_serah_terima_logistik' => $tanggalSerah,
                         'created_at' => $createdAt,
                         'updated_at' => $createdAt,
                     ];
@@ -498,24 +672,27 @@ class TenantDatasetSeeder extends Seeder
 
                 DB::table('jamaah')->insert($closingRows);
 
-                // Insert Verified pembayaran + komisi for each closing jamaah
-                $insertedIds = DB::table('jamaah')
+                // Insert Pembayaran, Komisi, Item Distributions, dan Jamaah Documents
+                $insertedJamaahs = DB::table('jamaah')
                     ->where('tenant_id', $tenant->id)
                     ->where('crm_stage_id', $stage4->id)
                     ->where('agen_id', $agentObj->id)
                     ->orderBy('id', 'desc')
                     ->limit(5)
-                    ->pluck('id', 'paket_id');
+                    ->get();
 
                 $pembayaranRows = [];
                 $komisiRows = [];
-                foreach ($insertedIds as $paketId => $jamaahId) {
-                    $pkgInfo = collect($packagesList)->firstWhere('id', $paketId) ?? $packagesList[0];
+                $itemDistRows = [];
+                $docRows = [];
+
+                foreach ($insertedJamaahs as $jIdx => $jamaah) {
+                    $pkgInfo = collect($packagesList)->firstWhere('id', $jamaah->paket_id) ?? $packagesList[0];
                     $txDate = now()->subDays(rand(5, 30));
 
                     $pembayaranRows[] = [
                         'tenant_id' => $tenant->id,
-                        'jamaah_id' => $jamaahId,
+                        'jamaah_id' => $jamaah->id,
                         'rekening_tenant_id' => $rekening->id,
                         'tipe_pembayaran' => 'Lunas',
                         'nominal' => $pkgInfo['harga'],
@@ -529,12 +706,76 @@ class TenantDatasetSeeder extends Seeder
                     $komisiRows[] = [
                         'tenant_id' => $tenant->id,
                         'agen_id' => $agentObj->id,
-                        'jamaah_id' => $jamaahId,
+                        'jamaah_id' => $jamaah->id,
                         'nominal_komisi' => $pkgInfo['komisi'],
                         'status_pencairan' => rand(0, 1) ? 'Paid' : 'Ready_to_Pay',
                         'created_at' => $txDate,
                         'updated_at' => $txDate,
                     ];
+
+                    // Item Distributions for checklist
+                    foreach ($itemsList as $invId) {
+                        $itemDistRows[] = [
+                            'tenant_id' => $tenant->id,
+                            'jamaah_id' => $jamaah->id,
+                            'inventaris_id' => $invId,
+                            'qty' => 1,
+                            'status' => $jamaah->status_logistik,
+                            'shipped_at' => $jamaah->tanggal_kirim_logistik,
+                            'delivered_at' => $jamaah->tanggal_serah_terima_logistik,
+                            'receiver_name' => $jamaah->status_logistik === 'Handed_Over' ? $jamaah->nama_lengkap : null,
+                            'handed_over_by' => $jamaah->status_logistik === 'Handed_Over' ? $owner->id : null,
+                            'notes' => 'Paket perlengkapan resmi travel umroh',
+                            'created_at' => $jamaah->created_at,
+                            'updated_at' => $jamaah->updated_at,
+                        ];
+                    }
+
+                    // Jamaah Documents (KTP, Paspor, Kartu Keluarga, Vaksin)
+                    $docRows[] = [
+                        'tenant_id' => $tenant->id,
+                        'jamaah_id' => $jamaah->id,
+                        'type' => 'ktp',
+                        'title' => 'E-KTP '.$jamaah->nama_lengkap,
+                        'file_path' => 'https://images.unsplash.com/photo-1633409381658-a0c36b446818?w=800&auto=format&fit=crop&q=80',
+                        'file_name' => 'ktp_'.strtolower(str_replace(' ', '_', $jamaah->nama_lengkap)).'.jpg',
+                        'mime_type' => 'image/jpeg',
+                        'file_size' => 1024 * rand(250, 800),
+                        'notes' => 'E-KTP valid terverifikasi Dukcapil',
+                        'uploaded_by' => $agentObj->id,
+                        'created_at' => $jamaah->created_at,
+                        'updated_at' => $jamaah->created_at,
+                    ];
+                    $docRows[] = [
+                        'tenant_id' => $tenant->id,
+                        'jamaah_id' => $jamaah->id,
+                        'type' => 'kartu_keluarga',
+                        'title' => 'KK '.$jamaah->nama_lengkap,
+                        'file_path' => 'https://images.unsplash.com/photo-1633409381658-a0c36b446818?w=800&auto=format&fit=crop&q=80',
+                        'file_name' => 'kk_'.strtolower(str_replace(' ', '_', $jamaah->nama_lengkap)).'.jpg',
+                        'mime_type' => 'image/jpeg',
+                        'file_size' => 1024 * rand(300, 950),
+                        'notes' => 'Kartu Keluarga asli',
+                        'uploaded_by' => $agentObj->id,
+                        'created_at' => $jamaah->created_at,
+                        'updated_at' => $jamaah->created_at,
+                    ];
+                    if ($jamaah->nomor_paspor) {
+                        $docRows[] = [
+                            'tenant_id' => $tenant->id,
+                            'jamaah_id' => $jamaah->id,
+                            'type' => 'paspor',
+                            'title' => 'Paspor RI - '.$jamaah->nomor_paspor,
+                            'file_path' => 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=800&auto=format&fit=crop&q=80',
+                            'file_name' => 'paspor_'.$jamaah->nomor_paspor.'.jpg',
+                            'mime_type' => 'image/jpeg',
+                            'file_size' => 1024 * rand(400, 1200),
+                            'notes' => 'Masa berlaku paspor > 8 bulan',
+                            'uploaded_by' => $agentObj->id,
+                            'created_at' => $jamaah->created_at,
+                            'updated_at' => $jamaah->created_at,
+                        ];
+                    }
                 }
 
                 if (! empty($pembayaranRows)) {
@@ -542,6 +783,12 @@ class TenantDatasetSeeder extends Seeder
                 }
                 if (! empty($komisiRows)) {
                     DB::table('komisi_agen')->insert($komisiRows);
+                }
+                if (! empty($itemDistRows)) {
+                    DB::table('item_distributions')->insert($itemDistRows);
+                }
+                if (! empty($docRows)) {
+                    DB::table('jamaah_documents')->insert($docRows);
                 }
             }
 

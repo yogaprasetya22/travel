@@ -132,4 +132,114 @@ class LogisticsItemHandoverTest extends TestCase
         $this->assertEquals('Pending', $distribution->status);
         $this->assertNull($distribution->delivered_at);
     }
+
+    public function test_ship_selected_items_changes_status_to_shipped_and_decrements_stock(): void
+    {
+        $initialStock = $this->itemKoper->stok_tersedia;
+
+        $response = $this->actingAs($this->owner)->post(route('crm.logistics.ship-items', $this->jamaah->id), [
+            'item_ids' => [$this->itemKoper->id],
+            'ekspedisi' => 'JNE Express',
+            'no_resi' => 'JNE-123456789',
+            'notes' => 'Kirim koper via paket reguler',
+        ]);
+
+        $response->assertRedirect();
+        $this->jamaah->refresh();
+        $this->itemKoper->refresh();
+
+        $this->assertEquals('Shipped', $this->jamaah->status_logistik);
+        $this->assertEquals('JNE Express', $this->jamaah->ekspedisi_logistik);
+        $this->assertEquals('JNE-123456789', $this->jamaah->no_resi_logistik);
+        $this->assertEquals($initialStock - 1, $this->itemKoper->stok_tersedia);
+
+        $this->assertDatabaseHas('item_distributions', [
+            'tenant_id' => $this->tenant->id,
+            'jamaah_id' => $this->jamaah->id,
+            'inventaris_id' => $this->itemKoper->id,
+            'status' => 'Shipped',
+        ]);
+
+        $this->assertDatabaseHas('inventaris_transaksi', [
+            'tenant_id' => $this->tenant->id,
+            'inventaris_id' => $this->itemKoper->id,
+            'jamaah_id' => $this->jamaah->id,
+            'tipe' => 'OUT',
+        ]);
+    }
+
+    public function test_confirm_delivery_changes_status_to_handed_over(): void
+    {
+        // First ship
+        $this->actingAs($this->owner)->post(route('crm.logistics.ship-items', $this->jamaah->id), [
+            'item_ids' => [$this->itemKoper->id, $this->itemBatik->id],
+            'ekspedisi' => 'SiCepat Ekspres',
+            'no_resi' => 'SCP-998877',
+        ]);
+
+        // Then confirm delivery
+        $response = $this->actingAs($this->owner)->post(route('crm.logistics.confirm-delivery', $this->jamaah->id), [
+            'receiver_name' => 'Istri H. Sulaiman',
+            'notes' => 'Paket diterima dalam kondisi baik',
+        ]);
+
+        $response->assertRedirect();
+        $this->jamaah->refresh();
+
+        $this->assertEquals('Handed_Over', $this->jamaah->status_logistik);
+        $this->assertNotNull($this->jamaah->tanggal_serah_terima_logistik);
+
+        $this->assertDatabaseHas('item_distributions', [
+            'tenant_id' => $this->tenant->id,
+            'jamaah_id' => $this->jamaah->id,
+            'inventaris_id' => $this->itemKoper->id,
+            'status' => 'Delivered',
+            'receiver_name' => 'Istri H. Sulaiman',
+        ]);
+    }
+
+    public function test_confirm_delivery_only_affects_shipped_items_leaving_pending_items_intact(): void
+    {
+        // 1 item is Shipped, 1 item is Pending
+        ItemDistribution::create([
+            'tenant_id' => $this->tenant->id,
+            'jamaah_id' => $this->jamaah->id,
+            'inventaris_id' => $this->itemBatik->id,
+            'status' => 'Pending',
+            'qty' => 1,
+        ]);
+
+        $this->actingAs($this->owner)->post(route('crm.logistics.ship-items', $this->jamaah->id), [
+            'item_ids' => [$this->itemKoper->id],
+            'ekspedisi' => 'JNE',
+            'no_resi' => 'JNE-PARTIAL-123',
+        ]);
+
+        // Confirm delivery
+        $response = $this->actingAs($this->owner)->post(route('crm.logistics.confirm-delivery', $this->jamaah->id), [
+            'receiver_name' => 'H. Sulaiman',
+        ]);
+
+        $response->assertRedirect();
+        $this->jamaah->refresh();
+
+        // itemKoper should be Delivered
+        $this->assertDatabaseHas('item_distributions', [
+            'tenant_id' => $this->tenant->id,
+            'jamaah_id' => $this->jamaah->id,
+            'inventaris_id' => $this->itemKoper->id,
+            'status' => 'Delivered',
+        ]);
+
+        // itemBatik should STILL be Pending
+        $this->assertDatabaseHas('item_distributions', [
+            'tenant_id' => $this->tenant->id,
+            'jamaah_id' => $this->jamaah->id,
+            'inventaris_id' => $this->itemBatik->id,
+            'status' => 'Pending',
+        ]);
+
+        // Jamaah status should be Ready_to_Pickup since there are still pending items
+        $this->assertEquals('Ready_to_Pickup', $this->jamaah->status_logistik);
+    }
 }

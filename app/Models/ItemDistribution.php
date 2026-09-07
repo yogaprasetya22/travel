@@ -19,6 +19,7 @@ class ItemDistribution extends Model
         'inventaris_id',
         'qty',
         'status',
+        'shipped_at',
         'delivered_at',
         'receiver_name',
         'handed_over_by',
@@ -27,6 +28,7 @@ class ItemDistribution extends Model
 
     protected $casts = [
         'qty' => 'integer',
+        'shipped_at' => 'datetime',
         'delivered_at' => 'datetime',
     ];
 

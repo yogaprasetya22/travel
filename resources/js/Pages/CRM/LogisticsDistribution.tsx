@@ -26,6 +26,7 @@ import {
     Filter,
     LayoutList,
     LayoutGrid,
+    Printer,
 } from 'lucide-react';
 import DataTablePagination, { PaginatedData } from '@/Components/DataTablePagination';
 import PerPageSelector from '@/Components/PerPageSelector';
@@ -41,13 +42,15 @@ import {
     SheetDescription,
     SheetFooter,
 } from '@/Components/ui/sheet';
+import ShippingPackageLabelModal, { PackageItemRow } from './Components/ShippingPackageLabelModal';
 
 interface ItemDistributionRecord {
     id: number;
     inventaris_id: number;
     qty: number;
-    status: 'Pending' | 'Delivered';
+    status: 'Pending' | 'Shipped' | 'Delivered' | 'Handed_Over';
     delivered_at: string | null;
+    shipped_at?: string | null;
     receiver_name: string | null;
     notes: string | null;
     inventaris: {
@@ -65,10 +68,15 @@ interface LogisticsCustomer {
     no_hp: string;
     email?: string | null;
     nomor_paspor?: string | null;
+    alamat_ktp?: string | null;
+    alamat_domisili?: string | null;
     kota_asal?: string | null;
     created_at?: string;
     tanggal_keberangkatan?: string | null;
-    status_logistik: 'Pending' | 'Ready_to_Pickup' | 'Handed_Over';
+    status_logistik: 'Pending' | 'Ready_to_Pickup' | 'Shipped' | 'Handed_Over';
+    ekspedisi_logistik?: string | null;
+    no_resi_logistik?: string | null;
+    tanggal_kirim_logistik?: string | null;
     tanggal_serah_terima_logistik: string | null;
     paket: {
         id: number;
@@ -152,7 +160,7 @@ export default function LogisticsDistribution({
 }: LogisticsProps) {
     const { auth } = usePage<PageProps>().props;
 
-    const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
+    const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards');
     const [searchQuery, setSearchQuery] = useState(filters.search || '');
     const debouncedSearchQuery = useDebounce(searchQuery, 300);
     const [filterStatus, setFilterStatus] = useState<string>(filters.status || 'ALL');
@@ -172,8 +180,10 @@ export default function LogisticsDistribution({
     });
 
     const [selectedCustomer, setSelectedCustomer] = useState<LogisticsCustomer | null>(null);
+    const [shippingLabelCustomer, setShippingLabelCustomer] = useState<LogisticsCustomer | null>(null);
     const [receiverName, setReceiverName] = useState('');
     const [handoverNotes, setHandoverNotes] = useState('');
+    const [confirmingDeliveryId, setConfirmingDeliveryId] = useState<number | null>(null);
 
     // Sync selectedCustomer whenever logisticsList prop refreshes
     React.useEffect(() => {
@@ -284,7 +294,6 @@ export default function LogisticsDistribution({
     const activeFiltersCount = countActiveFilters();
 
     const handleAllHandover = (jamaahId: number) => {
-        if (!confirm('Serahkan seluruh paket perlengkapan kepada jamaah ini?')) return;
 
         const nowStr = new Date().toISOString();
         if (selectedCustomer && selectedCustomer.id === jamaahId) {
@@ -393,8 +402,44 @@ export default function LogisticsDistribution({
         );
     };
 
+    const handleConfirmDelivery = (jamaahId: number) => {
+        const nowStr = new Date().toISOString();
+        if (selectedCustomer && selectedCustomer.id === jamaahId) {
+            // Only mark Shipped items as Delivered (Pending items stay Pending)
+            const updatedDists = (selectedCustomer.item_distributions || []).map((d) =>
+                d.status === 'Shipped'
+                    ? { ...d, status: 'Delivered' as const, delivered_at: nowStr, receiver_name: receiverName || selectedCustomer.nama_lengkap }
+                    : d
+            );
+
+            const hasPending = updatedDists.some((d) => d.status === 'Pending');
+            const hasShipped = updatedDists.some((d) => d.status === 'Shipped');
+            const allDone = !hasPending && !hasShipped && updatedDists.length > 0;
+
+            setSelectedCustomer({
+                ...selectedCustomer,
+                item_distributions: updatedDists,
+                status_logistik: allDone ? 'Handed_Over' : (hasShipped ? 'Shipped' : 'Ready_to_Pickup'),
+                tanggal_serah_terima_logistik: allDone ? nowStr : selectedCustomer.tanggal_serah_terima_logistik,
+            });
+        }
+
+        router.post(
+            route('crm.logistics.confirm-delivery', jamaahId),
+            {
+                receiver_name: receiverName || selectedCustomer?.nama_lengkap,
+                notes: handoverNotes || 'Paket telah diterima dengan baik oleh jamaah.',
+            },
+            {
+                preserveScroll: true,
+                preserveState: true,
+            }
+        );
+    };
+
     const items = logisticsList.data || [];
     const totalHandedOver = items.filter((i) => i.status_logistik === 'Handed_Over').length;
+    const totalShipped = items.filter((i) => i.status_logistik === 'Shipped').length;
     const totalReady = items.filter((i) => i.status_logistik === 'Ready_to_Pickup' || i.status_logistik === 'Pending').length;
 
     return (
@@ -414,13 +459,13 @@ export default function LogisticsDistribution({
                         </h1>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1 ml-4">
-                        Checklist serah terima koper, tas paspor, mukena/ihram per jamaah dengan filter jadwal terbang &amp; status pelunasan.
+                        Checklist serah terima koper, cetak resi pengiriman ekspedisi, status paket (Siap, Mengirim, Diterima) &amp; filter operasional jamaah.
                     </p>
                 </div>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="p-4 bg-card rounded-2xl border border-border shadow-xs flex items-center gap-3">
                     <div className="p-3 bg-primary/10 text-primary rounded-xl">
                         <Package className="w-5 h-5" />
@@ -435,8 +480,17 @@ export default function LogisticsDistribution({
                         <Clock className="w-5 h-5" />
                     </div>
                     <div>
-                        <div className="text-xs text-muted-foreground">Menunggu Serah Terima</div>
+                        <div className="text-xs text-muted-foreground">Menunggu / Siap Diambil</div>
                         <div className="text-xl font-bold text-amber-600">{totalReady} Jamaah</div>
+                    </div>
+                </div>
+                <div className="p-4 bg-card rounded-2xl border border-border shadow-xs flex items-center gap-3">
+                    <div className="p-3 bg-blue-500/10 text-blue-600 rounded-xl">
+                        <Truck className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <div className="text-xs text-muted-foreground">Sedang Mengirim</div>
+                        <div className="text-xl font-bold text-blue-600">{totalShipped} Jamaah</div>
                     </div>
                 </div>
                 <div className="p-4 bg-card rounded-2xl border border-border shadow-xs flex items-center gap-3">
@@ -444,7 +498,7 @@ export default function LogisticsDistribution({
                         <CheckCircle2 className="w-5 h-5" />
                     </div>
                     <div>
-                        <div className="text-xs text-muted-foreground">Telah Diserahterimakan</div>
+                        <div className="text-xs text-muted-foreground">Telah Diterima (Selesai)</div>
                         <div className="text-xl font-bold text-emerald-600">{totalHandedOver} Jamaah</div>
                     </div>
                 </div>
@@ -467,11 +521,12 @@ export default function LogisticsDistribution({
 
                     <div className="flex items-center gap-2 flex-wrap justify-between sm:justify-end">
                         {/* Status Penyerahan Tabs */}
-                        <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-xl border border-border">
+                        <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-xl border border-border flex-wrap">
                             {[
                                 { id: 'ALL', label: 'Semua Status' },
-                                { id: 'Ready_to_Pickup', label: 'Siap / Belum Selesai' },
-                                { id: 'Handed_Over', label: 'Telah Diserahkan' },
+                                { id: 'Ready_to_Pickup', label: 'Siap / Menunggu' },
+                                { id: 'Shipped', label: 'Sedang Dikirim' },
+                                { id: 'Handed_Over', label: 'Telah Diterima' },
                             ].map((st) => (
                                 <button
                                     key={st.id}
@@ -635,7 +690,7 @@ export default function LogisticsDistribution({
                                     <th className="px-6 py-4">Data Jamaah &amp; Kontak</th>
                                     <th className="px-6 py-4">Paket &amp; Jadwal Terbang</th>
                                     <th className="px-6 py-4">Agen Pembimbing</th>
-                                    <th className="px-6 py-4">Status &amp; Tanda Terima</th>
+                                    <th className="px-6 py-4">Status &amp; Pengiriman</th>
                                     <th className="px-6 py-4">Progres Checklist Barang</th>
                                     <th className="px-6 py-4 text-center">Aksi Serah Terima</th>
                                 </tr>
@@ -660,12 +715,12 @@ export default function LogisticsDistribution({
                                                 ? customer.paket.inventaris
                                                 : inventarisList;
 
-                                        const deliveredCount =
-                                            customer.item_distributions?.filter((d) => d.status === 'Delivered').length || 0;
+                                        const isFullyDelivered = customer.status_logistik === 'Handed_Over';
+                                        const isShipped = customer.status_logistik === 'Shipped';
                                         const totalItemsCount = allPackageItems.length;
-                                        const isFullyDelivered =
-                                            customer.status_logistik === 'Handed_Over' ||
-                                            (totalItemsCount > 0 && deliveredCount === totalItemsCount);
+                                        const deliveredCount = isFullyDelivered
+                                            ? totalItemsCount
+                                            : customer.item_distributions?.filter((d) => d.status === 'Shipped' || d.status === 'Delivered' || d.status === 'Handed_Over').length || 0;
 
                                         return (
                                             <tr key={customer.id} className="hover:bg-muted/40 transition-colors">
@@ -718,13 +773,18 @@ export default function LogisticsDistribution({
                                                     </div>
                                                 </td>
 
-                                                {/* Status & Tanda Terima */}
+                                                {/* Status & Pengiriman */}
                                                 <td className="px-6 py-4">
                                                     <div className="flex flex-col gap-1 items-start">
                                                         {isFullyDelivered ? (
                                                             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                                                                 <Check className="w-3.5 h-3.5" />
-                                                                Telah Diserahkan
+                                                                Telah Diterima
+                                                            </span>
+                                                        ) : isShipped ? (
+                                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                                                                <Truck className="w-3.5 h-3.5" />
+                                                                Sedang Dikirim
                                                             </span>
                                                         ) : (
                                                             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20">
@@ -732,9 +792,14 @@ export default function LogisticsDistribution({
                                                                 Siap Diambil
                                                             </span>
                                                         )}
+                                                        {customer.no_resi_logistik && (
+                                                            <span className="text-[10px] font-mono text-muted-foreground">
+                                                                Resi: {customer.no_resi_logistik} ({customer.ekspedisi_logistik || 'Ekspedisi'})
+                                                            </span>
+                                                        )}
                                                         {customer.tanggal_serah_terima_logistik && (
                                                             <span className="text-[10px] text-muted-foreground">
-                                                                Diserahkan:{' '}
+                                                                Diterima:{' '}
                                                                 {new Date(customer.tanggal_serah_terima_logistik).toLocaleDateString('id-ID')}
                                                             </span>
                                                         )}
@@ -755,6 +820,8 @@ export default function LogisticsDistribution({
                                                                 className={`h-full rounded-full transition-all duration-300 ${
                                                                     isFullyDelivered
                                                                         ? 'bg-emerald-500'
+                                                                        : isShipped
+                                                                        ? 'bg-blue-500'
                                                                         : deliveredCount > 0
                                                                         ? 'bg-amber-500'
                                                                         : 'bg-muted-foreground/30'
@@ -773,13 +840,36 @@ export default function LogisticsDistribution({
 
                                                 {/* Aksi Serah Terima */}
                                                 <td className="px-6 py-4 text-center">
-                                                    <button
-                                                        onClick={() => setSelectedCustomer(customer)}
-                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground transition shadow-2xs cursor-pointer"
-                                                    >
-                                                        <CheckSquare className="w-3.5 h-3.5 text-primary" />
-                                                        <span>Checklist Item</span>
-                                                    </button>
+                                                    <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setShippingLabelCustomer(customer)}
+                                                            className="p-1.5 border border-border bg-card hover:bg-muted text-foreground rounded-lg transition cursor-pointer"
+                                                            title="Cetak Label Pengiriman / Packing Koper"
+                                                        >
+                                                            <Printer className="w-3.5 h-3.5 text-primary" />
+                                                        </button>
+
+                                                        {isShipped && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleConfirmDelivery(customer.id)}
+                                                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition shadow-2xs cursor-pointer"
+                                                                title="Konfirmasi Paket Diterima (POD)"
+                                                            >
+                                                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                                                <span>Diterima</span>
+                                                            </button>
+                                                        )}
+
+                                                        <button
+                                                            onClick={() => setSelectedCustomer(customer)}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground transition shadow-2xs cursor-pointer"
+                                                        >
+                                                            <CheckSquare className="w-3.5 h-3.5 text-primary" />
+                                                            <span>Checklist Item</span>
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );
@@ -807,12 +897,12 @@ export default function LogisticsDistribution({
                                     ? customer.paket.inventaris
                                     : inventarisList;
 
-                            const deliveredCount =
-                                customer.item_distributions?.filter((d) => d.status === 'Delivered').length || 0;
+                            const isFullyDelivered = customer.status_logistik === 'Handed_Over';
+                            const isShipped = customer.status_logistik === 'Shipped';
                             const totalItemsCount = allPackageItems.length;
-                            const isFullyDelivered =
-                                customer.status_logistik === 'Handed_Over' ||
-                                (totalItemsCount > 0 && deliveredCount === totalItemsCount);
+                            const deliveredCount = isFullyDelivered
+                                ? totalItemsCount
+                                : customer.item_distributions?.filter((d) => d.status === 'Shipped' || d.status === 'Delivered' || d.status === 'Handed_Over').length || 0;
 
                             return (
                                 <div
@@ -842,15 +932,21 @@ export default function LogisticsDistribution({
                                             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold shrink-0 border ${
                                                 isFullyDelivered
                                                     ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
+                                                    : isShipped
+                                                    ? 'bg-blue-500/10 text-blue-600 border-blue-500/30'
                                                     : 'bg-amber-500/10 text-amber-600 border-amber-500/30'
                                             }`}
                                         >
                                             <span
                                                 className={`w-1.5 h-1.5 rounded-full ${
-                                                    isFullyDelivered ? 'bg-emerald-500' : 'bg-amber-500'
+                                                    isFullyDelivered
+                                                        ? 'bg-emerald-500'
+                                                        : isShipped
+                                                        ? 'bg-blue-500'
+                                                        : 'bg-amber-500'
                                                 }`}
                                             />
-                                            {isFullyDelivered ? 'Selesai' : 'Siap Diambil'}
+                                            {isFullyDelivered ? 'Telah Diterima' : isShipped ? 'Sedang Dikirim' : 'Siap Diambil'}
                                         </span>
                                     </div>
 
@@ -881,6 +977,17 @@ export default function LogisticsDistribution({
                                                 {customer.agen ? customer.agen.name : 'Kantor Pusat / Mandiri'}
                                             </span>
                                         </div>
+                                        {customer.no_resi_logistik && (
+                                            <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/40 text-[11px]">
+                                                <span className="text-muted-foreground flex items-center gap-1">
+                                                    <Truck className="w-3 h-3 text-primary" />
+                                                    {customer.ekspedisi_logistik || 'Ekspedisi'}:
+                                                </span>
+                                                <span className="font-mono font-bold text-foreground">
+                                                    {customer.no_resi_logistik}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Progress Bar & Mini Checklist Summary */}
@@ -898,6 +1005,8 @@ export default function LogisticsDistribution({
                                                 className={`h-full rounded-full transition-all duration-300 ${
                                                     isFullyDelivered
                                                         ? 'bg-emerald-500'
+                                                        : isShipped
+                                                        ? 'bg-blue-500'
                                                         : deliveredCount > 0
                                                         ? 'bg-amber-500'
                                                         : 'bg-muted-foreground/30'
@@ -915,19 +1024,23 @@ export default function LogisticsDistribution({
                                         {/* Mini Chips */}
                                         <div className="flex flex-wrap gap-1 pt-1">
                                             {allPackageItems.slice(0, 3).map((item) => {
-                                                const isDel = customer.item_distributions?.some(
-                                                    (d) => d.inventaris_id === item.id && d.status === 'Delivered'
+                                                const dist = customer.item_distributions?.find(
+                                                    (d) => d.inventaris_id === item.id
                                                 );
+                                                const isDel = dist?.status === 'Delivered' || dist?.status === 'Handed_Over' || isFullyDelivered;
+                                                const isShip = !isDel && dist?.status === 'Shipped';
                                                 return (
                                                     <span
                                                         key={item.id}
-                                                        className={`text-[10px] px-2 py-0.5 rounded-md font-medium border ${
+                                                        className={`text-[10px] px-2 py-0.5 rounded-md font-semibold border ${
                                                             isDel
-                                                                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                                                                : 'bg-muted text-muted-foreground border-border'
+                                                                ? 'bg-emerald-500/8 text-emerald-600/70 border-emerald-500/15 dark:text-emerald-500/60'
+                                                                : isShip
+                                                                ? 'bg-blue-500/10 text-blue-600 border-blue-500/30'
+                                                                : 'bg-amber-500/10 text-amber-700 border-amber-500/40 dark:text-amber-400 dark:border-amber-500/30'
                                                         }`}
                                                     >
-                                                        {isDel ? '✓ ' : ''}
+                                                        {isDel ? '✓ ' : isShip ? '🚚 ' : '⏳ '}
                                                         {item.nama_barang}
                                                     </span>
                                                 );
@@ -941,14 +1054,38 @@ export default function LogisticsDistribution({
                                     </div>
 
                                     {/* Action Button */}
-                                    <button
-                                        type="button"
-                                        onClick={() => setSelectedCustomer(customer)}
-                                        className="w-full py-2 px-3 rounded-xl border border-border bg-card hover:bg-muted text-xs font-bold text-foreground transition flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
-                                    >
-                                        <CheckSquare className="w-3.5 h-3.5 text-primary" />
-                                        <span>Checklist Serah Terima</span>
-                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShippingLabelCustomer(customer)}
+                                            className="py-2 px-3 rounded-xl border border-border bg-card hover:bg-muted text-xs font-bold text-foreground transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer shrink-0"
+                                            title="Cetak Label Pengiriman / Packing Koper"
+                                        >
+                                            <Printer className="w-3.5 h-3.5 text-primary" />
+                                            <span className="hidden sm:inline">Label</span>
+                                        </button>
+
+                                        {isShipped && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleConfirmDelivery(customer.id)}
+                                                className="py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center justify-center gap-1 shadow-xs cursor-pointer shrink-0"
+                                                title="Konfirmasi Paket Telah Sampai & Diterima"
+                                            >
+                                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                                <span>Diterima</span>
+                                            </button>
+                                        )}
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedCustomer(customer)}
+                                            className="flex-1 py-2 px-3 rounded-xl border border-border bg-card hover:bg-muted text-xs font-bold text-foreground transition flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
+                                        >
+                                            <CheckSquare className="w-3.5 h-3.5 text-primary" />
+                                            <span>Checklist</span>
+                                        </button>
+                                    </div>
                                 </div>
                             );
                         })
@@ -993,22 +1130,75 @@ export default function LogisticsDistribution({
 
                     <div className="flex-1 overflow-y-auto p-6 space-y-6 low-scrollbar">
                         {/* Summary Box */}
-                        <div className="p-4 rounded-2xl bg-card border border-border shadow-xs flex items-center justify-between">
+                        <div className="p-4 rounded-2xl bg-card border border-border shadow-xs flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <span className="text-xs text-muted-foreground block">Status Serah Terima Umum</span>
-                                <span className="text-sm font-bold text-foreground">
-                                    {selectedCustomer?.status_logistik === 'Handed_Over'
-                                        ? 'Telah Lengkap Diserahkan'
-                                        : 'Sebagian / Menunggu Diambil'}
+                                <span className="text-sm font-bold text-foreground flex items-center gap-1.5 mt-0.5">
+                                    {selectedCustomer?.status_logistik === 'Handed_Over' ? (
+                                        <span className="text-emerald-600 flex items-center gap-1">
+                                            <CheckCircle2 className="w-4 h-4" /> Telah Diterima Lengkap
+                                        </span>
+                                    ) : selectedCustomer?.status_logistik === 'Shipped' ? (
+                                        <span className="text-blue-600 flex items-center gap-1">
+                                            <Truck className="w-4 h-4" /> Sedang Dikirim ({selectedCustomer.ekspedisi_logistik || 'Ekspedisi'})
+                                        </span>
+                                    ) : (
+                                        <span className="text-amber-600 flex items-center gap-1">
+                                            <Clock className="w-4 h-4" /> Sebagian / Menunggu Diambil
+                                        </span>
+                                    )}
                                 </span>
+                                {selectedCustomer?.no_resi_logistik && (
+                                    <span className="text-xs font-mono text-muted-foreground block mt-1">
+                                        No. Resi: <strong>{selectedCustomer.no_resi_logistik}</strong>
+                                    </span>
+                                )}
                             </div>
-                            <button
-                                type="button"
-                                onClick={() => selectedCustomer && handleAllHandover(selectedCustomer.id)}
-                                className="px-3.5 py-2 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition shadow-xs cursor-pointer"
-                            >
-                                Tandai Semua Selesai
-                            </button>
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <button
+                                    type="button"
+                                    onClick={() => setShippingLabelCustomer(selectedCustomer)}
+                                    className="px-3 py-2 rounded-xl text-xs font-bold border border-border bg-background hover:bg-muted text-foreground transition shadow-2xs cursor-pointer flex items-center gap-1.5"
+                                >
+                                    <Printer className="w-3.5 h-3.5 text-primary" />
+                                    <span>Cetak Label Pengiriman</span>
+                                </button>
+                                {selectedCustomer?.status_logistik === 'Shipped' ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (!selectedCustomer) return;
+                                            if (confirmingDeliveryId === selectedCustomer.id) {
+                                                setConfirmingDeliveryId(null);
+                                                handleConfirmDelivery(selectedCustomer.id);
+                                            } else {
+                                                setConfirmingDeliveryId(selectedCustomer.id);
+                                            }
+                                        }}
+                                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-xs cursor-pointer flex items-center gap-1 ${
+                                            confirmingDeliveryId === selectedCustomer?.id
+                                                ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                                                : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                                        }`}
+                                    >
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                        <span>{confirmingDeliveryId === selectedCustomer?.id ? 'Yakin Diterima?' : 'Konfirmasi Telah Diterima'}</span>
+                                    </button>
+                                ) : selectedCustomer?.status_logistik === 'Handed_Over' ? (
+                                    <div className="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                        <span>Telah Diterima Lengkap</span>
+                                    </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => selectedCustomer && handleAllHandover(selectedCustomer.id)}
+                                        className="px-3.5 py-2 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition shadow-xs cursor-pointer"
+                                    >
+                                        Tandai Semua Selesai
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         {/* Receiver Form */}
@@ -1067,13 +1257,16 @@ export default function LogisticsDistribution({
                                     );
                                 }
 
+                                const isOverallHandedOver = selectedCustomer?.status_logistik === 'Handed_Over';
+
                                 return (
                                     <div className="space-y-2">
                                         {packageItems.map((inv) => {
                                             const dist = selectedCustomer?.item_distributions?.find(
                                                 (d) => d.inventaris_id === inv.id
                                             );
-                                            const isDelivered = dist?.status === 'Delivered';
+                                            const isDelivered = dist?.status === 'Delivered' || dist?.status === 'Handed_Over' || (isOverallHandedOver && !dist);
+                                            const isShippedItem = !isDelivered && dist?.status === 'Shipped';
                                             const itemQty = 'pivot' in inv && inv.pivot ? inv.pivot.qty : 1;
                                             const itemSatuan = 'satuan' in inv && inv.satuan ? inv.satuan : 'Pcs';
 
@@ -1085,12 +1278,14 @@ export default function LogisticsDistribution({
                                                         handleToggleItem(
                                                             selectedCustomer.id,
                                                             inv.id,
-                                                            dist?.status || 'Pending'
+                                                            isDelivered ? 'Delivered' : isShippedItem ? 'Shipped' : 'Pending'
                                                         )
                                                     }
                                                     className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
                                                         isDelivered
                                                             ? 'bg-emerald-500/10 border-emerald-500/30'
+                                                            : isShippedItem
+                                                            ? 'bg-blue-500/10 border-blue-500/30'
                                                             : 'bg-card hover:bg-muted/50 border-border'
                                                     }`}
                                                 >
@@ -1099,11 +1294,15 @@ export default function LogisticsDistribution({
                                                             className={`p-2 rounded-xl ${
                                                                 isDelivered
                                                                     ? 'bg-emerald-500 text-white'
+                                                                    : isShippedItem
+                                                                    ? 'bg-blue-500 text-white'
                                                                     : 'bg-muted text-muted-foreground'
                                                             }`}
                                                         >
                                                             {isDelivered ? (
                                                                 <CheckSquare className="w-4 h-4" />
+                                                            ) : isShippedItem ? (
+                                                                <Truck className="w-4 h-4" />
                                                             ) : (
                                                                 <Square className="w-4 h-4" />
                                                             )}
@@ -1118,6 +1317,12 @@ export default function LogisticsDistribution({
                                                             <p className="text-[10px] text-muted-foreground mt-0.5">
                                                                 {isDelivered && dist?.delivered_at
                                                                     ? `Diserahkan: ${new Date(dist.delivered_at).toLocaleDateString('id-ID')} (Penerima: ${dist.receiver_name || selectedCustomer?.nama_lengkap})`
+                                                                    : isDelivered
+                                                                    ? `Diserahkan / Diterima Lengkap (Penerima: ${selectedCustomer?.nama_lengkap})`
+                                                                    : isShippedItem && dist?.shipped_at
+                                                                    ? `Sedang Dikirim: ${new Date(dist.shipped_at).toLocaleDateString('id-ID')}`
+                                                                    : isShippedItem
+                                                                    ? `Sedang Dikirim via ${selectedCustomer?.ekspedisi_logistik || 'Ekspedisi'}`
                                                                     : 'Belum diserahkan ke jamaah'}
                                                             </p>
                                                         </div>
@@ -1128,10 +1333,12 @@ export default function LogisticsDistribution({
                                                             className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
                                                                 isDelivered
                                                                     ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                                                                    : isShippedItem
+                                                                    ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
                                                                     : 'bg-muted text-muted-foreground'
                                                             }`}
                                                         >
-                                                            {isDelivered ? 'Diterima' : 'Belum'}
+                                                            {isDelivered ? 'Diterima' : isShippedItem ? 'Mengirim' : 'Belum'}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -1154,6 +1361,39 @@ export default function LogisticsDistribution({
                     </SheetFooter>
                 </SheetContent>
             </Sheet>
+
+            {/* Modal: Cetak Label Pengiriman / Packing Koper */}
+            <ShippingPackageLabelModal
+                open={!!shippingLabelCustomer}
+                onOpenChange={(open) => !open && setShippingLabelCustomer(null)}
+                customer={shippingLabelCustomer}
+                tenantName="Travel Umroh & Haji"
+                selectedItems={(() => {
+                    if (!shippingLabelCustomer) return [];
+                    const packageItems =
+                        shippingLabelCustomer.paket?.inventaris && shippingLabelCustomer.paket.inventaris.length > 0
+                            ? shippingLabelCustomer.paket.inventaris
+                            : inventarisList;
+
+                    return packageItems.map((inv) => {
+                        const dist = shippingLabelCustomer.item_distributions?.find(
+                            (d) => d.inventaris_id === inv.id
+                        );
+                        const isDelivered = dist?.status === 'Delivered' || dist?.status === 'Handed_Over' || shippingLabelCustomer.status_logistik === 'Handed_Over';
+                        const qty = 'pivot' in inv && inv.pivot ? inv.pivot.qty : 1;
+                        const satuan = 'satuan' in inv && inv.satuan ? inv.satuan : 'Pcs';
+                        return {
+                            id: inv.id,
+                            nama_barang: inv.nama_barang,
+                            sku: 'sku' in inv ? inv.sku : undefined,
+                            satuan,
+                            qty,
+                            is_delivered: isDelivered,
+                            status: isDelivered ? 'Delivered' : dist?.status || 'Pending',
+                        };
+                    });
+                })()}
+            />
         </PageLayout>
     );
 }

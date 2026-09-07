@@ -81,6 +81,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/crm/logistics', [LogisticsDistributionController::class, 'index'])->name('crm.logistics.index');
     Route::post('/crm/logistics/{jamaah}/handover', [LogisticsDistributionController::class, 'handover'])->name('crm.logistics.handover');
     Route::post('/crm/logistics/{jamaah}/item-handover', [LogisticsDistributionController::class, 'saveItemHandover'])->name('crm.logistics.item-handover');
+    Route::post('/crm/logistics/{jamaah}/ship-items', [LogisticsDistributionController::class, 'shipItems'])->name('crm.logistics.ship-items');
+    Route::post('/crm/logistics/{jamaah}/confirm-delivery', [LogisticsDistributionController::class, 'confirmDelivery'])->name('crm.logistics.confirm-delivery');
     Route::get('/crm/schedules', [DepartureScheduleController::class, 'index'])->name('crm.schedules.index');
     Route::post('/crm/schedules/{jamaah}/update-departure', [DepartureScheduleController::class, 'updateDeparture'])->name('crm.schedules.update-departure');
 

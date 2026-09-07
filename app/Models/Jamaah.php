@@ -57,6 +57,9 @@ class Jamaah extends Model
         'tanggal_keberangkatan',
         'status_logistik',
         'tanggal_serah_terima_logistik',
+        'no_resi_logistik',
+        'ekspedisi_logistik',
+        'tanggal_kirim_logistik',
         'catatan_admin',
     ];
 
@@ -64,6 +67,7 @@ class Jamaah extends Model
         'tanggal_lahir' => 'date',
         'tanggal_keberangkatan' => 'date',
         'tanggal_serah_terima_logistik' => 'datetime',
+        'tanggal_kirim_logistik' => 'datetime',
     ];
 
     public function tenant(): BelongsTo
