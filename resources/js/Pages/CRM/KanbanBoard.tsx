@@ -42,6 +42,13 @@ import {
     CreditCard,
     UploadCloud,
     Eye,
+    UserPlus,
+    User,
+    Package,
+    Phone,
+    HeartPulse,
+    MapPin,
+    Calendar,
 } from 'lucide-react';
 import DataTablePagination from '@/Components/DataTablePagination';
 import PerPageSelector from '@/Components/PerPageSelector';
@@ -200,10 +207,23 @@ export default function KanbanBoard({ auth, stages: initialStages, packages, age
     const addForm = useForm<{
         nama_lengkap: string;
         nik: string;
+        jenis_kelamin: string;
+        tempat_lahir: string;
+        tanggal_lahir: string;
+        nomor_paspor: string;
+        golongan_darah: string;
+        status_pernikahan: string;
         no_hp: string;
         email: string;
+        alamat_ktp: string;
+        alamat_domisili: string;
+        kontak_darurat_nama: string;
+        kontak_darurat_hp: string;
+        kontak_darurat_hubungan: string;
+        riwayat_penyakit: string;
         paket_id: string;
         agen_id: string;
+        tanggal_keberangkatan: string;
         catatan_admin: string;
         file_ktp: File | null;
         file_kk: File | null;
@@ -212,10 +232,23 @@ export default function KanbanBoard({ auth, stages: initialStages, packages, age
     }>({
         nama_lengkap: '',
         nik: '',
+        jenis_kelamin: 'L',
+        tempat_lahir: '',
+        tanggal_lahir: '',
+        nomor_paspor: '',
+        golongan_darah: '',
+        status_pernikahan: 'Menikah',
         no_hp: '',
         email: '',
+        alamat_ktp: '',
+        alamat_domisili: '',
+        kontak_darurat_nama: '',
+        kontak_darurat_hp: '',
+        kontak_darurat_hubungan: '',
+        riwayat_penyakit: '',
         paket_id: '',
         agen_id: auth.user.role === 'agen' ? auth.user.id.toString() : '',
+        tanggal_keberangkatan: '',
         catatan_admin: '',
         file_ktp: null,
         file_kk: null,
@@ -894,217 +927,495 @@ export default function KanbanBoard({ auth, stages: initialStages, packages, age
 
             {/* Slide-out Drawer: Tambah Calon Nasabah */}
             <Sheet open={isAddLeadOpen} onOpenChange={setIsAddLeadOpen}>
-                <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2">
-                    <SheetHeader>
-                        <SheetTitle>Tambah Calon Nasabah Baru</SheetTitle>
-                        <SheetDescription>Daftarkan prospek baru ke dalam CRM pipeline.</SheetDescription>
-                    </SheetHeader>
-                    <form onSubmit={handleAddLeadSubmit} noValidate className="flex flex-col gap-4 p-4 flex-1">
-                        <div>
-                            <InputLabel htmlFor="nama_lengkap" value="Nama Lengkap Calon Jamaah *" />
-                            <TextInput
-                                id="nama_lengkap"
-                                type="text"
-                                value={addForm.data.nama_lengkap}
-                                onChange={(e) => addForm.setData('nama_lengkap', e.target.value)}
-                                className={`mt-1 block w-full ${addForm.errors.nama_lengkap ? 'border-destructive focus:border-destructive focus:ring-destructive' : ''}`}
-                                placeholder="Misal: Bapak Hendra Pratama"
-                            />
-                            <InputError message={addForm.errors.nama_lengkap} className="mt-2" />
-                        </div>
+                <SheetContent side="right" className="w-full sm:max-w-3xl lg:max-w-5xl flex flex-col justify-between p-0">
+                    <div className="p-6 border-b border-border/80 bg-muted/20">
+                        <SheetHeader>
+                            <SheetTitle className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
+                                <UserPlus className="w-5 h-5 text-primary" />
+                                <span>Tambah Calon Nasabah Baru</span>
+                            </SheetTitle>
+                            <SheetDescription className="text-xs text-muted-foreground mt-1">
+                                Daftarkan prospek baru ke dalam CRM pipeline beserta paket &amp; kelengkapan awal dokumen.
+                            </SheetDescription>
+                        </SheetHeader>
+                    </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <InputLabel htmlFor="nik" value="NIK (Opsional)" />
-                                <TextInput
-                                    id="nik"
-                                    type="text"
-                                    value={addForm.data.nik}
-                                    onChange={(e) => addForm.setData('nik', e.target.value)}
-                                    className={`mt-1 block w-full ${addForm.errors.nik ? 'border-destructive focus:border-destructive focus:ring-destructive' : ''}`}
-                                    maxLength={16}
-                                    placeholder="16 Digit NIK KTP"
-                                />
-                                <InputError message={addForm.errors.nik} className="mt-2" />
-                            </div>
-                            <div>
-                                <InputLabel htmlFor="no_hp" value="Nomor HP / WhatsApp *" />
-                                <TextInput
-                                    id="no_hp"
-                                    type="text"
-                                    value={addForm.data.no_hp}
-                                    onChange={(e) => addForm.setData('no_hp', e.target.value)}
-                                    className={`mt-1 block w-full ${addForm.errors.no_hp ? 'border-destructive focus:border-destructive focus:ring-destructive' : ''}`}
-                                    placeholder="08123456789"
-                                />
-                                <InputError message={addForm.errors.no_hp} className="mt-2" />
-                            </div>
-                        </div>
+                    <form id="add-lead-form" onSubmit={handleAddLeadSubmit} noValidate className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 low-scrollbar">
+                        {/* Seksi 1: Data Diri & Identitas */}
+                        <div className="bg-card p-4 rounded-2xl border border-border/80 shadow-2xs flex flex-col gap-3.5">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5 pb-2 border-b border-border/60">
+                                <User className="w-3.5 h-3.5" /> Identitas Pribadi
+                            </h4>
 
-                        <div>
-                            <InputLabel htmlFor="email" value="Alamat Email (Opsional)" />
-                            <TextInput
-                                id="email"
-                                type="email"
-                                value={addForm.data.email}
-                                onChange={(e) => addForm.setData('email', e.target.value)}
-                                className={`mt-1 block w-full ${addForm.errors.email ? 'border-destructive focus:border-destructive focus:ring-destructive' : ''}`}
-                                placeholder="hendra@gmail.com"
-                            />
-                            <InputError message={addForm.errors.email} className="mt-2" />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <InputLabel htmlFor="paket_id" value="Pilihan Paket Umroh *" />
-                                <select
-                                    id="paket_id"
-                                    value={addForm.data.paket_id}
-                                    onChange={(e) => addForm.setData('paket_id', e.target.value)}
-                                    className={`mt-1 block w-full bg-background border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 ${addForm.errors.paket_id ? 'border-destructive focus:border-destructive focus:ring-destructive' : 'border-border'}`}
-                                >
-                                    <option value="">Pilih Paket...</option>
-                                    {packages.map((pkg) => (
-                                        <option key={pkg.id} value={pkg.id}>
-                                            {pkg.nama_paket} (Rp {Number(pkg.harga).toLocaleString('id-ID')})
-                                        </option>
-                                    ))}
-                                </select>
-                                <InputError message={addForm.errors.paket_id} className="mt-2" />
-                            </div>
-
-                            <div>
-                                <InputLabel htmlFor="agen_id" value="Mitra Agen Perujuk" />
-                                <select
-                                    id="agen_id"
-                                    value={addForm.data.agen_id}
-                                    onChange={(e) => addForm.setData('agen_id', e.target.value)}
-                                    disabled={auth.user.role === 'agen'}
-                                    className="mt-1 block w-full bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-muted"
-                                >
-                                    <option value="">Direct / Kantor Pusat</option>
-                                    {agents.map((ag) => (
-                                        <option key={ag.id} value={ag.id}>
-                                            {ag.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                <InputError message={addForm.errors.agen_id} className="mt-2" />
-                            </div>
-                        </div>
-
-                        {/* Section Upload Dokumen */}
-                        <div className="pt-3 border-t border-border/70 flex flex-col gap-3">
-                            <div>
-                                <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                                    <span>Upload Dokumen Kelengkapan Jamaah</span>
-                                </h4>
-                                <p className="text-[11px] text-muted-foreground mt-0.5">
-                                    KTP dan KK wajib diunggah untuk kelengkapan administrasi registrasi prospek.
-                                </p>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                                {/* KTP - Mandatory */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <InputLabel htmlFor="add_file_ktp" value="File KTP (Wajib *)" />
-                                    <input
-                                        id="add_file_ktp"
-                                        type="file"
-                                        accept="image/jpeg,image/png,application/pdf"
-                                        onChange={(e) => addForm.setData('file_ktp', e.target.files?.[0] || null)}
-                                        className="mt-1 block w-full text-xs rounded-xl border border-border bg-background p-1.5 text-foreground file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+                                    <InputLabel htmlFor="add_nama_lengkap" value="Nama Lengkap Calon Jamaah *" className="text-xs font-semibold" />
+                                    <TextInput
+                                        id="add_nama_lengkap"
+                                        type="text"
+                                        value={addForm.data.nama_lengkap}
+                                        onChange={(e) => addForm.setData('nama_lengkap', e.target.value)}
+                                        className={`mt-1 block w-full text-xs font-medium ${addForm.errors.nama_lengkap ? 'border-destructive focus:border-destructive focus:ring-destructive' : ''}`}
+                                        placeholder="Misal: Bapak Hendra Pratama"
+                                        required
                                     />
+                                    <InputError message={addForm.errors.nama_lengkap} className="mt-1" />
+                                </div>
+
+                                <div>
+                                    <InputLabel htmlFor="add_nik" value="NIK (KTP 16 Digit)" className="text-xs font-semibold" />
+                                    <TextInput
+                                        id="add_nik"
+                                        type="text"
+                                        value={addForm.data.nik}
+                                        onChange={(e) => addForm.setData('nik', e.target.value)}
+                                        className={`mt-1 block w-full text-xs font-mono ${addForm.errors.nik ? 'border-destructive focus:border-destructive focus:ring-destructive' : ''}`}
+                                        maxLength={16}
+                                        placeholder="32xxxxxxxxxxxxxx"
+                                    />
+                                    <InputError message={addForm.errors.nik} className="mt-1" />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <InputLabel htmlFor="add_jenis_kelamin" value="Jenis Kelamin" className="text-xs font-semibold" />
+                                    <select
+                                        id="add_jenis_kelamin"
+                                        value={addForm.data.jenis_kelamin}
+                                        onChange={(e) => addForm.setData('jenis_kelamin', e.target.value)}
+                                        className="mt-1 block w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-primary focus:border-primary"
+                                    >
+                                        <option value="L">Laki-laki</option>
+                                        <option value="P">Perempuan</option>
+                                    </select>
+                                    <InputError message={addForm.errors.jenis_kelamin} className="mt-1" />
+                                </div>
+
+                                <div>
+                                    <InputLabel htmlFor="add_tempat_lahir" value="Tempat Lahir" className="text-xs font-semibold" />
+                                    <TextInput
+                                        id="add_tempat_lahir"
+                                        type="text"
+                                        value={addForm.data.tempat_lahir}
+                                        className="mt-1 block w-full text-xs"
+                                        onChange={(e) => addForm.setData('tempat_lahir', e.target.value)}
+                                        placeholder="Kota Kelahiran"
+                                    />
+                                    <InputError message={addForm.errors.tempat_lahir} className="mt-1" />
+                                </div>
+
+                                <div>
+                                    <InputLabel htmlFor="add_tanggal_lahir" value="Tanggal Lahir" className="text-xs font-semibold" />
+                                    <TextInput
+                                        id="add_tanggal_lahir"
+                                        type="date"
+                                        value={addForm.data.tanggal_lahir}
+                                        className="mt-1 block w-full text-xs"
+                                        onChange={(e) => addForm.setData('tanggal_lahir', e.target.value)}
+                                    />
+                                    <InputError message={addForm.errors.tanggal_lahir} className="mt-1" />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <InputLabel htmlFor="add_nomor_paspor" value="Nomor Paspor" className="text-xs font-semibold" />
+                                    <TextInput
+                                        id="add_nomor_paspor"
+                                        type="text"
+                                        value={addForm.data.nomor_paspor}
+                                        className="mt-1 block w-full text-xs font-mono uppercase"
+                                        placeholder="A1234567"
+                                        onChange={(e) => addForm.setData('nomor_paspor', e.target.value)}
+                                    />
+                                    <InputError message={addForm.errors.nomor_paspor} className="mt-1" />
+                                </div>
+
+                                <div>
+                                    <InputLabel htmlFor="add_golongan_darah" value="Golongan Darah" className="text-xs font-semibold" />
+                                    <select
+                                        id="add_golongan_darah"
+                                        value={addForm.data.golongan_darah}
+                                        onChange={(e) => addForm.setData('golongan_darah', e.target.value)}
+                                        className="mt-1 block w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-primary focus:border-primary"
+                                    >
+                                        <option value="">- Belum Ditentukan -</option>
+                                        <option value="A">A</option>
+                                        <option value="B">B</option>
+                                        <option value="AB">AB</option>
+                                        <option value="O">O</option>
+                                    </select>
+                                    <InputError message={addForm.errors.golongan_darah} className="mt-1" />
+                                </div>
+
+                                <div>
+                                    <InputLabel htmlFor="add_status_pernikahan" value="Status Pernikahan" className="text-xs font-semibold" />
+                                    <select
+                                        id="add_status_pernikahan"
+                                        value={addForm.data.status_pernikahan}
+                                        onChange={(e) => addForm.setData('status_pernikahan', e.target.value)}
+                                        className="mt-1 block w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-primary focus:border-primary"
+                                    >
+                                        <option value="Menikah">Menikah</option>
+                                        <option value="Belum Menikah">Belum Menikah</option>
+                                        <option value="Duda/Janda">Duda / Janda</option>
+                                    </select>
+                                    <InputError message={addForm.errors.status_pernikahan} className="mt-1" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Seksi 2: Kontak & Alamat Domisili */}
+                        <div className="bg-card p-4 rounded-2xl border border-border/80 shadow-2xs flex flex-col gap-3.5">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5 pb-2 border-b border-border/60">
+                                <Phone className="w-3.5 h-3.5" /> Kontak &amp; Alamat
+                            </h4>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <InputLabel htmlFor="add_no_hp" value="Nomor WhatsApp / HP *" className="text-xs font-semibold" />
+                                    <TextInput
+                                        id="add_no_hp"
+                                        type="text"
+                                        value={addForm.data.no_hp}
+                                        onChange={(e) => addForm.setData('no_hp', e.target.value)}
+                                        className={`mt-1 block w-full text-xs font-mono ${addForm.errors.no_hp ? 'border-destructive focus:border-destructive focus:ring-destructive' : ''}`}
+                                        placeholder="08123456789"
+                                        required
+                                    />
+                                    <InputError message={addForm.errors.no_hp} className="mt-1" />
+                                </div>
+
+                                <div>
+                                    <InputLabel htmlFor="add_email" value="Alamat Email (Opsional)" className="text-xs font-semibold" />
+                                    <TextInput
+                                        id="add_email"
+                                        type="email"
+                                        value={addForm.data.email}
+                                        onChange={(e) => addForm.setData('email', e.target.value)}
+                                        className={`mt-1 block w-full text-xs ${addForm.errors.email ? 'border-destructive focus:border-destructive focus:ring-destructive' : ''}`}
+                                        placeholder="hendra@gmail.com"
+                                    />
+                                    <InputError message={addForm.errors.email} className="mt-1" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <InputLabel htmlFor="add_alamat_ktp" value="Alamat Lengkap Sesuai KTP" className="text-xs font-semibold" />
+                                <textarea
+                                    id="add_alamat_ktp"
+                                    rows={2}
+                                    value={addForm.data.alamat_ktp}
+                                    onChange={(e) => addForm.setData('alamat_ktp', e.target.value)}
+                                    className="mt-1 block w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-primary focus:border-primary"
+                                    placeholder="Jalan, RT/RW, Kelurahan, Kecamatan, Kota/Kabupaten, Provinsi"
+                                />
+                                <InputError message={addForm.errors.alamat_ktp} className="mt-1" />
+                            </div>
+
+                            <div>
+                                <InputLabel htmlFor="add_alamat_domisili" value="Alamat Domisili (Bila berbeda dengan KTP)" className="text-xs font-semibold" />
+                                <textarea
+                                    id="add_alamat_domisili"
+                                    rows={2}
+                                    value={addForm.data.alamat_domisili}
+                                    onChange={(e) => addForm.setData('alamat_domisili', e.target.value)}
+                                    className="mt-1 block w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-primary focus:border-primary"
+                                    placeholder="Alamat tempat tinggal saat ini..."
+                                />
+                                <InputError message={addForm.errors.alamat_domisili} className="mt-1" />
+                            </div>
+                        </div>
+
+                        {/* Seksi 3: Kontak Darurat & Riwayat Kesehatan */}
+                        <div className="bg-card p-4 rounded-2xl border border-border/80 shadow-2xs flex flex-col gap-3.5">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5 pb-2 border-b border-border/60">
+                                <HeartPulse className="w-3.5 h-3.5" /> Kontak Darurat &amp; Riwayat Penyakit
+                            </h4>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <InputLabel htmlFor="add_kontak_darurat_nama" value="Nama Kontak Darurat" className="text-xs font-semibold" />
+                                    <TextInput
+                                        id="add_kontak_darurat_nama"
+                                        type="text"
+                                        value={addForm.data.kontak_darurat_nama}
+                                        className="mt-1 block w-full text-xs"
+                                        onChange={(e) => addForm.setData('kontak_darurat_nama', e.target.value)}
+                                    />
+                                    <InputError message={addForm.errors.kontak_darurat_nama} className="mt-1" />
+                                </div>
+                                <div>
+                                    <InputLabel htmlFor="add_kontak_darurat_hp" value="No. HP Darurat" className="text-xs font-semibold" />
+                                    <TextInput
+                                        id="add_kontak_darurat_hp"
+                                        type="text"
+                                        value={addForm.data.kontak_darurat_hp}
+                                        className="mt-1 block w-full text-xs font-mono"
+                                        onChange={(e) => addForm.setData('kontak_darurat_hp', e.target.value)}
+                                    />
+                                    <InputError message={addForm.errors.kontak_darurat_hp} className="mt-1" />
+                                </div>
+                                <div>
+                                    <InputLabel htmlFor="add_kontak_darurat_hubungan" value="Hubungan Keluarga" className="text-xs font-semibold" />
+                                    <TextInput
+                                        id="add_kontak_darurat_hubungan"
+                                        type="text"
+                                        value={addForm.data.kontak_darurat_hubungan}
+                                        className="mt-1 block w-full text-xs"
+                                        placeholder="Suami/Istri/Anak/Saudara"
+                                        onChange={(e) => addForm.setData('kontak_darurat_hubungan', e.target.value)}
+                                    />
+                                    <InputError message={addForm.errors.kontak_darurat_hubungan} className="mt-1" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <InputLabel htmlFor="add_riwayat_penyakit" value="Riwayat Penyakit / Catatan Khusus Medis" className="text-xs font-semibold" />
+                                <TextInput
+                                    id="add_riwayat_penyakit"
+                                    type="text"
+                                    value={addForm.data.riwayat_penyakit}
+                                    className="mt-1 block w-full text-xs"
+                                    placeholder="Contoh: Asma, Hipertensi, Alergi Makanan Laut, dll"
+                                    onChange={(e) => addForm.setData('riwayat_penyakit', e.target.value)}
+                                />
+                                <InputError message={addForm.errors.riwayat_penyakit} className="mt-1" />
+                            </div>
+                        </div>
+
+                        {/* Seksi 4: Paket & Jadwal Operasional */}
+                        <div className="bg-card p-4 rounded-2xl border border-border/80 shadow-2xs flex flex-col gap-3.5">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5 pb-2 border-b border-border/60">
+                                <Package className="w-3.5 h-3.5" /> Pilihan Paket &amp; Mitra Keagenan
+                            </h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <InputLabel htmlFor="add_paket_id" value="Pilihan Paket Umroh *" className="text-xs font-semibold" />
+                                    <select
+                                        id="add_paket_id"
+                                        value={addForm.data.paket_id}
+                                        onChange={(e) => addForm.setData('paket_id', e.target.value)}
+                                        className={`mt-1 block w-full text-xs rounded-xl border bg-background p-2.5 text-foreground focus:ring-primary focus:border-primary ${addForm.errors.paket_id ? 'border-destructive' : 'border-border'}`}
+                                        required
+                                    >
+                                        <option value="">Pilih Paket...</option>
+                                        {packages.map((pkg) => (
+                                            <option key={pkg.id} value={pkg.id}>
+                                                {pkg.nama_paket} (Rp {Number(pkg.harga).toLocaleString('id-ID')})
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <InputError message={addForm.errors.paket_id} className="mt-1" />
+                                </div>
+
+                                <div>
+                                    <InputLabel htmlFor="add_agen_id" value="Mitra Agen Perujuk" className="text-xs font-semibold" />
+                                    <select
+                                        id="add_agen_id"
+                                        value={addForm.data.agen_id}
+                                        onChange={(e) => addForm.setData('agen_id', e.target.value)}
+                                        disabled={auth.user.role === 'agen'}
+                                        className="mt-1 block w-full text-xs rounded-xl border border-border bg-background p-2.5 text-foreground focus:ring-primary focus:border-primary disabled:bg-muted"
+                                    >
+                                        <option value="">Direct / Kantor Pusat</option>
+                                        {agents.map((ag) => (
+                                            <option key={ag.id} value={ag.id}>
+                                                {ag.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <InputError message={addForm.errors.agen_id} className="mt-1" />
+                                </div>
+
+                                <div>
+                                    <InputLabel htmlFor="add_tanggal_keberangkatan" value="Rencana Tanggal Keberangkatan" className="text-xs font-semibold" />
+                                    <TextInput
+                                        id="add_tanggal_keberangkatan"
+                                        type="date"
+                                        value={addForm.data.tanggal_keberangkatan}
+                                        className="mt-1 block w-full text-xs"
+                                        onChange={(e) => addForm.setData('tanggal_keberangkatan', e.target.value)}
+                                    />
+                                    <InputError message={addForm.errors.tanggal_keberangkatan} className="mt-1" />
+                                </div>
+
+                                <div>
+                                    <InputLabel htmlFor="add_catatan_admin" value="Catatan Khusus Operasional" className="text-xs font-semibold" />
+                                    <TextInput
+                                        id="add_catatan_admin"
+                                        type="text"
+                                        value={addForm.data.catatan_admin}
+                                        className="mt-1 block w-full text-xs"
+                                        onChange={(e) => addForm.setData('catatan_admin', e.target.value)}
+                                        placeholder="Permintaan kamar khusus, dll..."
+                                    />
+                                    <InputError message={addForm.errors.catatan_admin} className="mt-1" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Seksi 5: Berkas Persyaratan & Dokumen Awal */}
+                        <div className="bg-card p-4 rounded-2xl border border-border/80 shadow-2xs flex flex-col gap-3.5">
+                            <div className="flex items-center justify-between pb-2 border-b border-border/60">
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                                    <FileText className="w-3.5 h-3.5" /> Berkas Persyaratan &amp; Dokumen Awal
+                                </h4>
+                                <span className="text-[11px] text-muted-foreground">
+                                    KTP &amp; KK wajib untuk registrasi awal
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {/* KTP */}
+                                <div className={`p-3 rounded-xl border transition flex flex-col justify-between gap-2.5 ${addForm.data.file_ktp ? 'bg-primary/5 border-primary/40' : 'bg-muted/30 border-border/70'}`}>
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <FileText className="w-4 h-4 text-primary shrink-0" />
+                                            <span className="text-xs font-bold text-foreground">File KTP</span>
+                                        </div>
+                                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 shrink-0">
+                                            Wajib *
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                                            Pilih File (JPG/PNG/PDF):
+                                        </label>
+                                        <input
+                                            id="add_file_ktp"
+                                            type="file"
+                                            accept="image/jpeg,image/png,application/pdf"
+                                            onChange={(e) => addForm.setData('file_ktp', e.target.files?.[0] || null)}
+                                            className="block w-full text-[11px] file:mr-2.5 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer text-muted-foreground"
+                                        />
+                                    </div>
                                     {addForm.data.file_ktp && (
-                                        <p className="text-[10px] text-emerald-600 font-medium mt-1 truncate">
-                                            ✓ {addForm.data.file_ktp.name}
-                                        </p>
+                                        <div className="text-[10px] text-primary font-semibold truncate flex items-center gap-1">
+                                            <UploadCloud className="w-3 h-3 shrink-0" />
+                                            <span>✓ {addForm.data.file_ktp.name}</span>
+                                        </div>
                                     )}
                                     <InputError message={addForm.errors.file_ktp} className="mt-1" />
                                 </div>
 
-                                {/* KK - Mandatory */}
-                                <div>
-                                    <InputLabel htmlFor="add_file_kk" value="File Kartu Keluarga (Wajib *)" />
-                                    <input
-                                        id="add_file_kk"
-                                        type="file"
-                                        accept="image/jpeg,image/png,application/pdf"
-                                        onChange={(e) => addForm.setData('file_kk', e.target.files?.[0] || null)}
-                                        className="mt-1 block w-full text-xs rounded-xl border border-border bg-background p-1.5 text-foreground file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
-                                    />
+                                {/* KK */}
+                                <div className={`p-3 rounded-xl border transition flex flex-col justify-between gap-2.5 ${addForm.data.file_kk ? 'bg-primary/5 border-primary/40' : 'bg-muted/30 border-border/70'}`}>
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <FileText className="w-4 h-4 text-primary shrink-0" />
+                                            <span className="text-xs font-bold text-foreground">File Kartu Keluarga (KK)</span>
+                                        </div>
+                                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 shrink-0">
+                                            Wajib *
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                                            Pilih File (JPG/PNG/PDF):
+                                        </label>
+                                        <input
+                                            id="add_file_kk"
+                                            type="file"
+                                            accept="image/jpeg,image/png,application/pdf"
+                                            onChange={(e) => addForm.setData('file_kk', e.target.files?.[0] || null)}
+                                            className="block w-full text-[11px] file:mr-2.5 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer text-muted-foreground"
+                                        />
+                                    </div>
                                     {addForm.data.file_kk && (
-                                        <p className="text-[10px] text-emerald-600 font-medium mt-1 truncate">
-                                            ✓ {addForm.data.file_kk.name}
-                                        </p>
+                                        <div className="text-[10px] text-primary font-semibold truncate flex items-center gap-1">
+                                            <UploadCloud className="w-3 h-3 shrink-0" />
+                                            <span>✓ {addForm.data.file_kk.name}</span>
+                                        </div>
                                     )}
                                     <InputError message={addForm.errors.file_kk} className="mt-1" />
                                 </div>
 
-                                {/* Foto - Optional */}
-                                <div>
-                                    <InputLabel htmlFor="add_file_foto" value="Pas Foto (Opsional)" />
-                                    <input
-                                        id="add_file_foto"
-                                        type="file"
-                                        accept="image/jpeg,image/png"
-                                        onChange={(e) => addForm.setData('file_foto', e.target.files?.[0] || null)}
-                                        className="mt-1 block w-full text-xs rounded-xl border border-border bg-background p-1.5 text-foreground file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-muted file:text-foreground hover:file:bg-muted/80 cursor-pointer"
-                                    />
+                                {/* Foto */}
+                                <div className={`p-3 rounded-xl border transition flex flex-col justify-between gap-2.5 ${addForm.data.file_foto ? 'bg-primary/5 border-primary/40' : 'bg-muted/30 border-border/70'}`}>
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+                                            <span className="text-xs font-bold text-foreground">Pas Foto 4x6</span>
+                                        </div>
+                                        <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-muted text-muted-foreground shrink-0">
+                                            Opsional
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                                            Pilih File (JPG/PNG):
+                                        </label>
+                                        <input
+                                            id="add_file_foto"
+                                            type="file"
+                                            accept="image/jpeg,image/png"
+                                            onChange={(e) => addForm.setData('file_foto', e.target.files?.[0] || null)}
+                                            className="block w-full text-[11px] file:mr-2.5 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-muted file:text-foreground hover:file:bg-muted/80 cursor-pointer text-muted-foreground"
+                                        />
+                                    </div>
                                     {addForm.data.file_foto && (
-                                        <p className="text-[10px] text-muted-foreground font-medium mt-1 truncate">
-                                            ✓ {addForm.data.file_foto.name}
-                                        </p>
+                                        <div className="text-[10px] text-primary font-semibold truncate flex items-center gap-1">
+                                            <UploadCloud className="w-3 h-3 shrink-0" />
+                                            <span>✓ {addForm.data.file_foto.name}</span>
+                                        </div>
                                     )}
                                     <InputError message={addForm.errors.file_foto} className="mt-1" />
                                 </div>
 
-                                {/* Paspor - Optional */}
-                                <div>
-                                    <InputLabel htmlFor="add_file_paspor" value="File Paspor (Opsional)" />
-                                    <input
-                                        id="add_file_paspor"
-                                        type="file"
-                                        accept="image/jpeg,image/png,application/pdf"
-                                        onChange={(e) => addForm.setData('file_paspor', e.target.files?.[0] || null)}
-                                        className="mt-1 block w-full text-xs rounded-xl border border-border bg-background p-1.5 text-foreground file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-muted file:text-foreground hover:file:bg-muted/80 cursor-pointer"
-                                    />
+                                {/* Paspor */}
+                                <div className={`p-3 rounded-xl border transition flex flex-col justify-between gap-2.5 ${addForm.data.file_paspor ? 'bg-primary/5 border-primary/40' : 'bg-muted/30 border-border/70'}`}>
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+                                            <span className="text-xs font-bold text-foreground">Buku Paspor</span>
+                                        </div>
+                                        <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-muted text-muted-foreground shrink-0">
+                                            Opsional
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                                            Pilih File (JPG/PNG/PDF):
+                                        </label>
+                                        <input
+                                            id="add_file_paspor"
+                                            type="file"
+                                            accept="image/jpeg,image/png,application/pdf"
+                                            onChange={(e) => addForm.setData('file_paspor', e.target.files?.[0] || null)}
+                                            className="block w-full text-[11px] file:mr-2.5 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-muted file:text-foreground hover:file:bg-muted/80 cursor-pointer text-muted-foreground"
+                                        />
+                                    </div>
                                     {addForm.data.file_paspor && (
-                                        <p className="text-[10px] text-muted-foreground font-medium mt-1 truncate">
-                                            ✓ {addForm.data.file_paspor.name}
-                                        </p>
+                                        <div className="text-[10px] text-primary font-semibold truncate flex items-center gap-1">
+                                            <UploadCloud className="w-3 h-3 shrink-0" />
+                                            <span>✓ {addForm.data.file_paspor.name}</span>
+                                        </div>
                                     )}
                                     <InputError message={addForm.errors.file_paspor} className="mt-1" />
                                 </div>
                             </div>
                         </div>
-
-                        <div>
-                            <InputLabel htmlFor="catatan_admin" value="Catatan Kebutuhan Calon Jamaah" />
-                            <textarea
-                                id="catatan_admin"
-                                rows={3}
-                                value={addForm.data.catatan_admin}
-                                onChange={(e) => addForm.setData('catatan_admin', e.target.value)}
-                                placeholder="Catatan khusus, tanggal rencana berangkat, permintaan sekamar, dll..."
-                                className="mt-1 w-full bg-background border border-border rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground placeholder:text-muted-foreground"
-                            />
-                            <InputError message={addForm.errors.catatan_admin} className="mt-2" />
-                        </div>
-
-                        <SheetFooter>
-                            <button
-                                type="button"
-                                onClick={() => setIsAddLeadOpen(false)}
-                                className="px-4 py-2 border border-border rounded-lg text-sm"
-                            >
-                                Batal
-                            </button>
-                            <PrimaryButton type="submit" disabled={addForm.processing}>
-                                Simpan Prospek
-                            </PrimaryButton>
-                        </SheetFooter>
                     </form>
+
+                    <SheetFooter className="p-4 border-t border-border/80 bg-muted/20 flex flex-row items-center justify-end gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setIsAddLeadOpen(false)}
+                            className="px-4 py-2.5 rounded-xl border border-border text-xs font-semibold hover:bg-muted text-muted-foreground hover:text-foreground transition cursor-pointer"
+                        >
+                            Batal
+                        </button>
+                        <PrimaryButton
+                            form="add-lead-form"
+                            type="submit"
+                            disabled={addForm.processing}
+                            className="text-xs font-bold px-5 py-2.5"
+                        >
+                            {addForm.processing ? 'Menyimpan...' : 'Simpan Prospek'}
+                        </PrimaryButton>
+                    </SheetFooter>
                 </SheetContent>
             </Sheet>
 

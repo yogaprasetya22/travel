@@ -5,6 +5,7 @@ namespace App\Http\Controllers\CRM;
 use App\Http\Controllers\Controller;
 use App\Models\DocumentPermission;
 use App\Models\Jamaah;
+use App\Models\JamaahDocument;
 use App\Models\Paket;
 use App\Models\Pembayaran;
 use App\Models\RekeningTenant;
@@ -189,7 +190,7 @@ class CustomerController extends Controller
     }
 
     /**
-     * Update customer complete profile (biodata, personal details, passport, departure date, emergency contacts, notes).
+     * Update customer complete profile (biodata, personal details, passport, departure date, emergency contacts, notes, and documents).
      */
     public function update(Request $request, Jamaah $jamaah): RedirectResponse
     {
@@ -212,11 +213,38 @@ class CustomerController extends Controller
             'nomor_paspor' => ['nullable', 'string', 'max:50'],
             'tanggal_keberangkatan' => ['nullable', 'date'],
             'catatan_admin' => ['nullable', 'string', 'max:1000'],
+            'doc_files' => ['nullable', 'array'],
+            'doc_files.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:10240'],
         ]);
 
-        $jamaah->update($validated);
+        $jamaahData = collect($validated)->except(['doc_files'])->toArray();
+        $jamaah->update($jamaahData);
 
-        return redirect()->back()->with('success', 'Data lengkap nasabah berhasil diperbarui.');
+        if ($request->hasFile('doc_files')) {
+            $tenantId = $jamaah->tenant_id;
+            $userId = $request->user()->id;
+
+            foreach ($request->file('doc_files') as $type => $file) {
+                if ($file && $file->isValid()) {
+                    $filename = time().'_'.preg_replace('/[^a-zA-Z0-9._-]/', '', $file->getClientOriginalName());
+                    $path = $file->storeAs("tenants/{$tenantId}/jamaah/{$jamaah->id}/documents", $filename, 'public');
+
+                    JamaahDocument::create([
+                        'tenant_id' => $tenantId,
+                        'jamaah_id' => $jamaah->id,
+                        'type' => $type,
+                        'title' => strtoupper($type).' - '.$jamaah->nama_lengkap,
+                        'file_path' => $path,
+                        'file_name' => $file->getClientOriginalName(),
+                        'mime_type' => $file->getClientMimeType(),
+                        'file_size' => $file->getSize(),
+                        'uploaded_by' => $userId,
+                    ]);
+                }
+            }
+        }
+
+        return redirect()->back()->with('success', 'Data lengkap dan berkas nasabah berhasil diperbarui.');
     }
 
     /**

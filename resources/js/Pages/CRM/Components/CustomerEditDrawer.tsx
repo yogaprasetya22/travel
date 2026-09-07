@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { useForm } from '@inertiajs/react';
+import React, { useEffect, useState } from 'react';
+import { useForm, router } from '@inertiajs/react';
 import TextInput from '@/Components/TextInput';
 import InputLabel from '@/Components/InputLabel';
 import InputError from '@/Components/InputError';
@@ -12,8 +12,9 @@ import {
     SheetDescription,
     SheetFooter,
 } from '@/Components/ui/sheet';
-import { User, MapPin, Phone, Calendar, HeartPulse, Shield, FileText } from 'lucide-react';
+import { User, MapPin, Phone, Calendar, HeartPulse, Shield, FileText, CheckCircle2, UploadCloud, AlertCircle, Eye } from 'lucide-react';
 import type { Customer } from './CustomerDrawer';
+import { DOCUMENT_TYPES } from './types';
 
 interface Props {
     customer: Customer | null;
@@ -22,6 +23,9 @@ interface Props {
 }
 
 export default function CustomerEditDrawer({ customer, isOpen, onClose }: Props) {
+    const [docFiles, setDocFiles] = useState<Record<string, File | null>>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const editForm = useForm({
         nama_lengkap: '',
         jenis_kelamin: 'L',
@@ -66,17 +70,48 @@ export default function CustomerEditDrawer({ customer, isOpen, onClose }: Props)
                 catatan_admin: customer.catatan_admin || '',
             });
             editForm.clearErrors();
+            setDocFiles({});
         }
     }, [customer, isOpen]);
+
+    const handleFileChange = (type: string, file: File | null) => {
+        setDocFiles((prev) => ({
+            ...prev,
+            [type]: file,
+        }));
+    };
 
     const handleUpdate = (e: React.FormEvent) => {
         e.preventDefault();
         if (!customer) return;
 
-        editForm.put(route('crm.jamaah.update', customer.id), {
+        setIsSubmitting(true);
+        const formData = new FormData();
+        formData.append('_method', 'PUT');
+
+        Object.entries(editForm.data).forEach(([key, value]) => {
+            if (value !== null && value !== undefined) {
+                formData.append(key, String(value));
+            }
+        });
+
+        Object.entries(docFiles).forEach(([type, file]) => {
+            if (file) {
+                formData.append(`doc_files[${type}]`, file);
+            }
+        });
+
+        router.post(route('crm.jamaah.update', customer.id), formData, {
             preserveScroll: true,
+            forceFormData: true,
             onSuccess: () => {
+                setIsSubmitting(false);
+                setDocFiles({});
                 onClose();
+            },
+            onError: (errors) => {
+                setIsSubmitting(false);
+                editForm.setError(errors as any);
             },
         });
     };
@@ -326,34 +361,84 @@ export default function CustomerEditDrawer({ customer, isOpen, onClose }: Props)
                         </div>
                     </div>
 
-                    {/* Seksi 4: Jadwal & Catatan Operasional */}
+                    {/* Seksi 5: Berkas Persyaratan & Dokumen */}
                     <div className="bg-card p-4 rounded-2xl border border-border/80 shadow-2xs flex flex-col gap-3.5">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5 pb-2 border-b border-border/60">
-                            <Calendar className="w-3.5 h-3.5" /> Jadwal &amp; Catatan Khusus
-                        </h4>
+                        <div className="flex items-center justify-between pb-2 border-b border-border/60">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                                <FileText className="w-3.5 h-3.5" /> Berkas Persyaratan &amp; Dokumen
+                            </h4>
+                            <span className="text-[11px] text-muted-foreground">
+                                Upload atau ganti berkas langsung saat edit data
+                            </span>
+                        </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <InputLabel htmlFor="edit_tanggal_keberangkatan" value="Rencana Tanggal Keberangkatan" className="text-xs font-semibold" />
-                                <TextInput
-                                    id="edit_tanggal_keberangkatan"
-                                    type="date"
-                                    value={editForm.data.tanggal_keberangkatan}
-                                    className="mt-1 block w-full text-xs"
-                                    onChange={(e) => editForm.setData('tanggal_keberangkatan', e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <InputLabel htmlFor="edit_catatan_admin" value="Catatan Khusus Operasional" className="text-xs font-semibold" />
-                                <TextInput
-                                    id="edit_catatan_admin"
-                                    type="text"
-                                    value={editForm.data.catatan_admin}
-                                    className="mt-1 block w-full text-xs"
-                                    onChange={(e) => editForm.setData('catatan_admin', e.target.value)}
-                                    placeholder="Permintaan kamar khusus, kursi roda, dll..."
-                                />
-                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {DOCUMENT_TYPES.filter((dt) => dt.value !== 'other').map((dt) => {
+                                const existingDoc = (customer.documents || []).find((d) => d.type === dt.value);
+                                const selectedFile = docFiles[dt.value];
+
+                                return (
+                                    <div
+                                        key={dt.value}
+                                        className={`p-3 rounded-xl border transition flex flex-col justify-between gap-2.5 ${
+                                            selectedFile
+                                                ? 'bg-primary/5 border-primary/40'
+                                                : existingDoc
+                                                ? 'bg-emerald-500/5 border-emerald-500/20'
+                                                : 'bg-muted/30 border-border/70'
+                                        }`}
+                                    >
+                                        <div className="flex items-center justify-between gap-2">
+                                            <div className="flex items-center gap-2">
+                                                {existingDoc ? (
+                                                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                                                ) : (
+                                                    <AlertCircle className="w-4 h-4 text-amber-500/70 shrink-0" />
+                                                )}
+                                                <span className="text-xs font-bold text-foreground">
+                                                    {dt.label}
+                                                </span>
+                                            </div>
+
+                                            {existingDoc ? (
+                                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                                                    Tersedia
+                                                </span>
+                                            ) : (
+                                                <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-muted text-muted-foreground shrink-0">
+                                                    Belum Ada
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {existingDoc && (
+                                            <div className="text-[11px] text-muted-foreground truncate flex items-center gap-1.5 bg-background/50 px-2 py-1 rounded-lg border border-border/50">
+                                                <FileText className="w-3 h-3 text-muted-foreground shrink-0" />
+                                                <span className="truncate">{existingDoc.file_name}</span>
+                                            </div>
+                                        )}
+
+                                        <div>
+                                            <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                                                {existingDoc ? 'Ganti Berkas / Upload Ulang:' : 'Pilih File (JPG/PNG/PDF):'}
+                                            </label>
+                                            <input
+                                                type="file"
+                                                accept=".jpg,.jpeg,.png,.webp,.pdf"
+                                                onChange={(e) => handleFileChange(dt.value, e.target.files?.[0] || null)}
+                                                className="block w-full text-[11px] file:mr-2.5 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer text-muted-foreground"
+                                            />
+                                        </div>
+
+                                        {selectedFile && (
+                                            <div className="text-[10px] text-primary font-semibold truncate flex items-center gap-1">
+                                                <UploadCloud className="w-3 h-3 shrink-0" />
+                                                <span>Akan diunggah: {selectedFile.name}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </form>
@@ -362,6 +447,7 @@ export default function CustomerEditDrawer({ customer, isOpen, onClose }: Props)
                     <button
                         type="button"
                         onClick={onClose}
+                        disabled={isSubmitting}
                         className="px-4 py-2.5 rounded-xl border border-border text-xs font-semibold hover:bg-muted text-muted-foreground hover:text-foreground transition cursor-pointer"
                     >
                         Batal
@@ -369,10 +455,10 @@ export default function CustomerEditDrawer({ customer, isOpen, onClose }: Props)
                     <PrimaryButton
                         form="customer-edit-form"
                         type="submit"
-                        disabled={editForm.processing}
+                        disabled={isSubmitting}
                         className="text-xs font-bold px-5 py-2.5"
                     >
-                        {editForm.processing ? 'Menyimpan...' : 'Simpan Perubahan Data'}
+                        {isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan Data'}
                     </PrimaryButton>
                 </SheetFooter>
             </SheetContent>
