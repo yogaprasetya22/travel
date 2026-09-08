@@ -1,0 +1,1 @@
+import{d as e,m as t}from"./app-B0cgEzQC.js";import{E as n,O as r}from"./button-CNhJAtDb.js";var i=t(e(),1);function a(e,t){let a=i.useRef(e),o=n(t);r(()=>{a.current!==e&&o(a.current),a.current=e},[e,o])}export{a as t};

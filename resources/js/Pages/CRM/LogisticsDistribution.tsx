@@ -424,8 +424,12 @@ export default function LogisticsDistribution({
             });
         }
 
+        const postUrl = typeof route === 'function' && route().has?.('crm.logistics.confirm-delivery')
+            ? route('crm.logistics.confirm-delivery', jamaahId)
+            : `/crm/logistics/${jamaahId}/confirm-delivery`;
+
         router.post(
-            route('crm.logistics.confirm-delivery', jamaahId),
+            postUrl,
             {
                 receiver_name: receiverName || selectedCustomer?.nama_lengkap,
                 notes: handoverNotes || 'Paket telah diterima dengan baik oleh jamaah.',
