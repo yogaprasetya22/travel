@@ -211,13 +211,20 @@ export default function VerifyInvoice({ tenant, payment }: Props) {
 
                     {/* Footer */}
                     <div className="p-4 bg-muted/30 border-t border-border flex items-center justify-between text-xs">
-                        <Link
-                            href={route('home')}
-                            className="inline-flex items-center gap-1.5 font-bold text-primary hover:underline"
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (window.history.length > 1) {
+                                    window.history.back();
+                                } else {
+                                    window.location.href = route('home');
+                                }
+                            }}
+                            className="inline-flex items-center gap-1.5 font-bold text-primary hover:underline cursor-pointer"
                         >
                             <ArrowLeft className="w-4 h-4" />
-                            <span>Kembali ke Beranda</span>
-                        </Link>
+                            <span>Kembali</span>
+                        </button>
                         <span className="text-[10px] text-muted-foreground font-mono">
                             Ref #{payment.id}
                         </span>

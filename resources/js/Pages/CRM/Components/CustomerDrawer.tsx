@@ -79,7 +79,7 @@ export const CustomerDrawer: React.FC<CustomerDrawerProps> = ({
                                             {customer.nama_lengkap}
                                         </SheetTitle>
                                         <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
-                                            {customer.crm_stage_id ? `Stage #${customer.crm_stage_id}` : 'Calon Jamaah'}
+                                            {(customer as any).crm_stage?.nama_tahap || (customer as any).crmStage?.nama_tahap || (customer.crm_stage_id ? `Tahap #${customer.crm_stage_id}` : 'Calon Jamaah')}
                                         </span>
                                     </div>
                                     <SheetDescription className="text-xs text-muted-foreground mt-1">

@@ -319,6 +319,288 @@ class PublicLandingController extends Controller
     }
 
     /**
+     * Helper to mask sensitive string (e.g., NIK, phone number).
+     */
+    private function maskSensitive(?string $str, int $visibleStart = 4, int $visibleEnd = 4, string $maskChar = '•'): string
+    {
+        if (! $str) {
+            return '-';
+        }
+        $len = mb_strlen($str);
+        if ($len <= ($visibleStart + $visibleEnd)) {
+            return $str;
+        }
+        $start = mb_substr($str, 0, $visibleStart);
+        $end = mb_substr($str, -$visibleEnd);
+        $maskLen = min(6, $len - $visibleStart - $visibleEnd);
+
+        return $start.' '.str_repeat($maskChar, $maskLen).' '.$end;
+    }
+
+    /**
+     * Helper to mask email address.
+     */
+    private function maskEmail(?string $email): string
+    {
+        if (! $email || ! str_contains($email, '@')) {
+            return '-';
+        }
+        [$name, $domain] = explode('@', $email, 2);
+        $nameLen = mb_strlen($name);
+        $visible = min(2, $nameLen);
+        $maskedName = mb_substr($name, 0, $visible).'•••';
+
+        return $maskedName.'@'.$domain;
+    }
+
+    /**
+     * Display public customer tracking portal for real-time payment progress, schedules, and document status.
+     * Supports 2-Factor verification (Code/Invoice/Phone + Last 4 digits of phone PIN) and secure token.
+     */
+    public function trackingPage(Request $request): Response
+    {
+        $tenant = $this->resolveTenant($request);
+        $tenantId = $tenant?->id ?? 1;
+
+        $code = trim((string) $request->input('code', $request->input('q', $request->input('kode', ''))));
+        $pin = trim((string) $request->input('pin', $request->input('phone_last4', '')));
+        $token = trim((string) $request->input('token', ''));
+
+        $jamaahData = null;
+        $searchPerformed = ! empty($code) || ! empty($token);
+        $notFound = false;
+        $requirePin = false;
+        $invalidPin = false;
+        $candidateHint = null;
+
+        if ($searchPerformed) {
+            $cleanPhone = preg_replace('/[^0-9]/', '', $code);
+
+            $queryBuilder = Jamaah::where('tenant_id', $tenantId)
+                ->where(function ($q) use ($code, $cleanPhone) {
+                    if (! empty($code)) {
+                        $q->whereRaw('LOWER(kode_pendaftaran) = ?', [strtolower($code)])
+                            ->orWhereHas('pembayaran', function ($pQ) use ($code) {
+                                $pQ->whereRaw('LOWER(nomor_invoice) = ?', [strtolower($code)]);
+                            });
+
+                        if (strlen($cleanPhone) >= 8) {
+                            $q->orWhere('no_hp', 'like', "%{$cleanPhone}%");
+                        }
+                    }
+                })
+                ->with([
+                    'paket',
+                    'agen',
+                    'crmStage',
+                    'documents',
+                    'pembayaran.rekeningTenant',
+                    'itemDistributions.inventaris',
+                ])
+                ->latest();
+
+            $jamaah = $queryBuilder->first();
+
+            if ($jamaah) {
+                $cleanNik = preg_replace('/[^0-9]/', '', (string) $jamaah->nik);
+                $cleanJamaahPhone = preg_replace('/[^0-9]/', '', (string) $jamaah->no_hp);
+
+                // Priority PIN: 4 digit terakhir NIK KTP, fallback ke 4 digit terakhir No. HP
+                $hasNik = strlen($cleanNik) >= 4;
+                $expectedPin = $hasNik ? substr($cleanNik, -4) : substr($cleanJamaahPhone, -4);
+                $pinLabel = $hasNik ? 'NIK KTP' : 'Nomor WhatsApp';
+                $maskedHint = $hasNik
+                    ? substr($cleanNik, 0, 4).'••••••••'.substr($cleanNik, -2)
+                    : substr($cleanJamaahPhone, 0, 4).'••••'.substr($cleanJamaahPhone, -2);
+
+                $isTokenValid = ! empty($token) && $jamaah->isValidTrackingToken($token);
+
+                // If token is valid OR PIN matches expected PIN (4 digit NIK)
+                if ($isTokenValid || (! empty($pin) && $pin === $expectedPin)) {
+                    $totalPaket = (float) ($jamaah->paket?->harga ?? 0);
+                    $totalVerified = (float) $jamaah->pembayaran->filter(fn ($p) => in_array(strtolower((string) $p->status_verifikasi), ['verified', 'diverifikasi']))->sum('nominal');
+                    $totalPending = (float) $jamaah->pembayaran->filter(fn ($p) => in_array(strtolower((string) $p->status_verifikasi), ['pending', 'menunggu']))->sum('nominal');
+                    $sisaTagihan = max(0, $totalPaket - $totalVerified);
+                    $persentase = $totalPaket > 0 ? min(100, round(($totalVerified / $totalPaket) * 100)) : 0;
+                    $isLunas = $totalPaket > 0 && $sisaTagihan <= 0;
+
+                    $jamaahData = [
+                        'id' => $jamaah->id,
+                        'kode_pendaftaran' => $jamaah->kode_pendaftaran,
+                        'nama_lengkap' => $jamaah->nama_lengkap,
+                        'no_hp' => $this->maskSensitive($jamaah->no_hp, 4, 4),
+                        'email' => $this->maskEmail($jamaah->email),
+                        'nik' => $this->maskSensitive($jamaah->nik, 4, 4),
+                        'tracking_token' => $jamaah->getTrackingToken(),
+                        'tanggal_keberangkatan' => $jamaah->tanggal_keberangkatan ?: $jamaah->paket?->periode_mulai,
+                        'created_at' => $jamaah->created_at?->toISOString(),
+                        'status_logistik' => $jamaah->status_logistik,
+                        'no_resi_logistik' => $jamaah->no_resi_logistik,
+                        'ekspedisi_logistik' => $jamaah->ekspedisi_logistik,
+                        'tanggal_serah_terima_logistik' => $jamaah->tanggal_serah_terima_logistik?->toISOString(),
+                        'stage' => [
+                            'name' => $jamaah->crmStage?->nama_tahap ?? 'Pendaftaran Baru',
+                            'urutan' => $jamaah->crmStage?->urutan ?? 1,
+                        ],
+                        'paket' => $jamaah->paket ? [
+                            'id' => $jamaah->paket->id,
+                            'nama_paket' => $jamaah->paket->nama_paket,
+                            'harga' => (float) $jamaah->paket->harga,
+                            'durasi_hari' => $jamaah->paket->durasi_hari ?? 9,
+                            'maskapai' => $jamaah->paket->maskapai,
+                            'hotel_makkah' => $jamaah->paket->hotel_makkah,
+                            'hotel_madinah' => $jamaah->paket->hotel_madinah,
+                            'bintang_makkah' => $jamaah->paket->bintang_makkah ?? 5,
+                            'bintang_madinah' => $jamaah->paket->bintang_madinah ?? 5,
+                            'brosur_url' => $jamaah->paket->brosur_url,
+                            'itinerary' => $jamaah->paket->itinerary,
+                            'fasilitas' => $jamaah->paket->fasilitas,
+                            'deskripsi' => $jamaah->paket->deskripsi,
+                        ] : null,
+                        'item_distributions' => $jamaah->itemDistributions->map(function ($item) {
+                            return [
+                                'id' => $item->id,
+                                'nama_barang' => $item->inventaris?->nama_barang ?? 'Perlengkapan Umroh',
+                                'status' => $item->status,
+                                'tanggal_serah_terima' => $item->tanggal_serah_terima?->toISOString(),
+                                'catatan' => $item->catatan,
+                            ];
+                        }),
+                        'agen' => $jamaah->agen ? [
+                            'name' => $jamaah->agen->name,
+                            'phone' => $jamaah->agen->no_telepon,
+                        ] : null,
+                        'financial_summary' => [
+                            'total_biaya' => $totalPaket,
+                            'total_terbayar' => $totalVerified,
+                            'total_pending' => $totalPending,
+                            'sisa_tagihan' => $sisaTagihan,
+                            'persentase_lunas' => $persentase,
+                            'is_lunas' => $isLunas,
+                            'status_label' => $isLunas ? 'LUNAS 100%' : ($totalVerified > 0 ? 'DP TERVERIFIKASI' : ($totalPending > 0 ? 'MENUNGGU VERIFIKASI' : 'BELUM ADA PEMBAYARAN')),
+                        ],
+                        'pembayaran_list' => $jamaah->pembayaran->sortBy('created_at')->values()->map(function ($p) {
+                            return [
+                                'id' => $p->id,
+                                'nomor_invoice' => $p->nomor_invoice,
+                                'nominal' => (float) $p->nominal,
+                                'jumlah_bayar' => (float) $p->nominal,
+                                'tipe_pembayaran' => $p->tipe_pembayaran,
+                                'metode_pembayaran' => $p->metode_pembayaran,
+                                'status_verifikasi' => $p->status_verifikasi,
+                                'keterangan' => $p->keterangan,
+                                'created_at' => $p->created_at?->toISOString(),
+                                'verified_at' => $p->verified_at?->toISOString(),
+                                'bank_tujuan' => $p->rekeningTenant ? [
+                                    'nama_bank' => $p->rekeningTenant->nama_bank,
+                                    'nomor_rekening' => $p->rekeningTenant->nomor_rekening,
+                                    'atas_nama' => $p->rekeningTenant->atas_nama,
+                                ] : null,
+                            ];
+                        }),
+                        'documents_count' => $jamaah->documents->count(),
+                    ];
+                } elseif (empty($pin)) {
+                    $requirePin = true;
+                    $candidateHint = [
+                        'kode' => $jamaah->kode_pendaftaran,
+                        'pin_type' => $hasNik ? 'NIK' : 'HP',
+                        'pin_label' => $pinLabel,
+                        'masked_identifier' => $maskedHint,
+                    ];
+                } else {
+                    $invalidPin = true;
+                    $candidateHint = [
+                        'kode' => $jamaah->kode_pendaftaran,
+                        'pin_type' => $hasNik ? 'NIK' : 'HP',
+                        'pin_label' => $pinLabel,
+                        'masked_identifier' => $maskedHint,
+                    ];
+                }
+            } else {
+                $notFound = true;
+            }
+        }
+
+        $bankAccounts = RekeningTenant::where('tenant_id', $tenantId)
+            ->where('is_active', true)
+            ->get(['id', 'nama_bank', 'nomor_rekening', 'atas_nama']);
+
+        return Inertia::render('Public/TrackingStatus', [
+            'tenant' => $tenant,
+            'query' => $code,
+            'code' => $code,
+            'pin' => $pin,
+            'token' => $token,
+            'searchPerformed' => $searchPerformed,
+            'notFound' => $notFound,
+            'requirePin' => $requirePin,
+            'invalidPin' => $invalidPin,
+            'candidateHint' => $candidateHint,
+            'jamaah' => $jamaahData,
+            'bank_accounts' => $bankAccounts,
+        ]);
+    }
+
+    /**
+     * Submit installment payment proof from public tracking portal.
+     */
+    public function submitInstallment(Request $request): RedirectResponse
+    {
+        $tenant = $this->resolveTenant($request);
+        $tenantId = $tenant?->id ?? 1;
+
+        $validated = $request->validate([
+            'jamaah_id' => ['required', 'exists:jamaah,id'],
+            'nominal' => ['required', 'numeric', 'min:10000'],
+            'rekening_tenant_id' => ['required', 'exists:rekening_tenant,id'],
+            'tipe_pembayaran' => ['required', 'string', 'in:Cicilan,Pelunasan,DP,Tambahan'],
+            'bukti_transfer' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'keterangan' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $jamaah = Jamaah::where('tenant_id', $tenantId)->where('id', $validated['jamaah_id'])->firstOrFail();
+
+        $storedPath = null;
+        if ($request->hasFile('bukti_transfer')) {
+            $uploadedFile = $request->file('bukti_transfer');
+            $storedPath = $uploadedFile->storeAs(
+                "tenants/{$tenantId}/jamaah/{$jamaah->id}/payments",
+                time().'_cicilan_'.$uploadedFile->getClientOriginalExtension(),
+                'public'
+            );
+
+            JamaahDocument::create([
+                'tenant_id' => $tenantId,
+                'jamaah_id' => $jamaah->id,
+                'type' => 'pembayaran',
+                'title' => 'Bukti Setor '.$validated['tipe_pembayaran'].' - '.$jamaah->nama_lengkap,
+                'file_path' => $storedPath,
+                'file_name' => $uploadedFile->getClientOriginalName(),
+                'mime_type' => $uploadedFile->getClientMimeType(),
+                'file_size' => $uploadedFile->getSize(),
+                'notes' => $validated['keterangan'] ?? 'Bukti setor cicilan diunggah via portal cek status.',
+            ]);
+        }
+
+        $pembayaran = Pembayaran::create([
+            'tenant_id' => $tenantId,
+            'jamaah_id' => $jamaah->id,
+            'rekening_tenant_id' => $validated['rekening_tenant_id'],
+            'tipe_pembayaran' => $validated['tipe_pembayaran'],
+            'nominal' => $validated['nominal'],
+            'bukti_transfer' => $storedPath,
+            'status_verifikasi' => 'Pending',
+            'keterangan' => $validated['keterangan'] ?? null,
+        ]);
+
+        return redirect()->route('public.tracking', [
+            'code' => $jamaah->kode_pendaftaran,
+            'token' => $jamaah->getTrackingToken(),
+        ])->with('success', 'Bukti setoran cicilan berhasil dikirim dengan Invoice #'.$pembayaran->nomor_invoice.'. Mohon tunggu verifikasi staf kami.');
+    }
+
+    /**
      * Display public invoice authenticity verification page using secure unique invoice token.
      */
     public function verifyInvoice(Request $request, string $invoice): Response

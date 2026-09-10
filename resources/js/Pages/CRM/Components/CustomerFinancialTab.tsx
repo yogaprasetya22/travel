@@ -17,7 +17,9 @@ import {
 } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
+import InputLabel from '@/Components/InputLabel';
+import InputError from '@/Components/InputError';
+import CurrencyInput from '@/Components/CurrencyInput';
 import {
     Select,
     SelectContent,
@@ -228,78 +230,109 @@ export const CustomerFinancialTab: React.FC<CustomerFinancialTabProps> = ({
                     </div>
                     <form onSubmit={handlePaymentSubmit} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                    Nominal Pembayaran (Rp) *
-                                </Label>
-                                <Input 
-                                    type="number"
-                                    placeholder="Contoh: 10000000"
+                            <div>
+                                <div className="flex items-center justify-between flex-wrap gap-1">
+                                    <InputLabel htmlFor="add_payment_nominal" value="Nominal Pembayaran (Rp) *" className="text-xs font-semibold" />
+                                    {outstanding > 0 && (
+                                        <div className="text-[11px] text-right">
+                                            <span className="text-muted-foreground">Sisa: </span>
+                                            {Number(paymentForm.data.nominal) > 0 ? (
+                                                <>
+                                                    <span className="line-through text-muted-foreground mr-1">
+                                                        Rp {formatCurrency(outstanding)}
+                                                    </span>
+                                                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                                                        → Rp {formatCurrency(Math.max(0, outstanding - (Number(paymentForm.data.nominal) || 0)))}
+                                                        {Math.max(0, outstanding - (Number(paymentForm.data.nominal) || 0)) === 0 && ' (Lunas 🎉)'}
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <strong className="font-mono text-foreground">
+                                                    Rp {formatCurrency(outstanding)}
+                                                </strong>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                                <CurrencyInput 
+                                    id="add_payment_nominal"
                                     value={paymentForm.data.nominal}
-                                    onChange={e => paymentForm.setData('nominal', e.target.value)}
+                                    onChange={(val) => paymentForm.setData('nominal', val)}
+                                    placeholder="Contoh: 10.000.000"
                                     required
-                                    className="bg-white dark:bg-slate-800 font-mono text-sm"
+                                    className="mt-1 block w-full text-xs font-mono"
                                 />
-                                {paymentForm.errors.nominal && (
-                                    <p className="text-xs text-rose-500">{paymentForm.errors.nominal}</p>
-                                )}
+                                <InputError message={paymentForm.errors.nominal} className="mt-1" />
                             </div>
 
-                            <div className="space-y-1.5">
-                                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                    Tipe Pembayaran *
-                                </Label>
-                                <Select 
-                                    value={paymentForm.data.tipe_pembayaran}
-                                    onValueChange={val => paymentForm.setData('tipe_pembayaran', val || 'Cicilan')}
-                                >
-                                    <SelectTrigger className="bg-white dark:bg-slate-800">
-                                        <SelectValue placeholder="Pilih Tipe" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="DP">Uang Muka (DP)</SelectItem>
-                                        <SelectItem value="Cicilan">Cicilan</SelectItem>
-                                        <SelectItem value="Pelunasan">Pelunasan</SelectItem>
-                                        <SelectItem value="Tambahan">Biaya Tambahan</SelectItem>
-                                        <SelectItem value="Lunas">Bayar Lunas</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                            <div>
+                                <InputLabel htmlFor="add_payment_tipe" value="Tipe Pembayaran *" className="text-xs font-semibold" />
+                                <div className="mt-1">
+                                    <Select 
+                                        value={paymentForm.data.tipe_pembayaran}
+                                        onValueChange={val => paymentForm.setData('tipe_pembayaran', val || 'Cicilan')}
+                                    >
+                                        <SelectTrigger id="add_payment_tipe" className="w-full text-xs sm:text-sm">
+                                            <span className="truncate">
+                                                {paymentForm.data.tipe_pembayaran === 'DP' ? 'Uang Muka (DP)' :
+                                                 paymentForm.data.tipe_pembayaran === 'Cicilan' ? 'Cicilan' :
+                                                 paymentForm.data.tipe_pembayaran === 'Pelunasan' ? 'Pelunasan' :
+                                                 paymentForm.data.tipe_pembayaran === 'Tambahan' ? 'Biaya Tambahan' :
+                                                 paymentForm.data.tipe_pembayaran === 'Lunas' ? 'Bayar Lunas' :
+                                                 (paymentForm.data.tipe_pembayaran || 'Pilih Tipe')}
+                                            </span>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="DP">Uang Muka (DP)</SelectItem>
+                                            <SelectItem value="Cicilan">Cicilan</SelectItem>
+                                            <SelectItem value="Pelunasan">Pelunasan</SelectItem>
+                                            <SelectItem value="Tambahan">Biaya Tambahan</SelectItem>
+                                            <SelectItem value="Lunas">Bayar Lunas</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <InputError message={paymentForm.errors.tipe_pembayaran} className="mt-1" />
                             </div>
 
-                            <div className="space-y-1.5">
-                                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                    Rekening Tujuan / Kas *
-                                </Label>
-                                <Select 
-                                    value={paymentForm.data.rekening_tenant_id}
-                                    onValueChange={val => paymentForm.setData('rekening_tenant_id', val || '')}
-                                >
-                                    <SelectTrigger className="bg-white dark:bg-slate-800">
-                                        <SelectValue placeholder="Pilih Rekening Tujuan" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {banks.map(ba => (
-                                            <SelectItem key={ba.id} value={String(ba.id)}>
-                                                {ba.nama_bank} - {ba.nomor_rekening} (a.n {ba.atas_nama})
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {paymentForm.errors.rekening_tenant_id && (
-                                    <p className="text-xs text-rose-500">{paymentForm.errors.rekening_tenant_id}</p>
-                                )}
+                            <div>
+                                <InputLabel htmlFor="add_payment_rekening" value="Rekening Tujuan / Kas *" className="text-xs font-semibold" />
+                                <div className="mt-1">
+                                    <Select 
+                                        value={paymentForm.data.rekening_tenant_id}
+                                        onValueChange={val => paymentForm.setData('rekening_tenant_id', val || '')}
+                                    >
+                                        <SelectTrigger id="add_payment_rekening" className="w-full text-xs sm:text-sm">
+                                            <span className="truncate">
+                                                {(() => {
+                                                    const found = banks.find(b => String(b.id) === String(paymentForm.data.rekening_tenant_id));
+                                                    return found 
+                                                        ? `${found.nama_bank} - ${found.nomor_rekening} (${found.atas_nama})`
+                                                        : 'Pilih Rekening Tujuan / Kas';
+                                                })()}
+                                            </span>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {banks.map(ba => (
+                                                <SelectItem key={ba.id} value={String(ba.id)}>
+                                                    {ba.nama_bank} - {ba.nomor_rekening} (a.n {ba.atas_nama})
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <InputError message={paymentForm.errors.rekening_tenant_id} className="mt-1" />
                             </div>
 
-                            <div className="space-y-1.5">
-                                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                    Unggah Bukti Transfer / Slip
-                                </Label>
+                            <div>
+                                <InputLabel htmlFor="add_payment_bukti" value="Unggah Bukti Transfer / Slip" className="text-xs font-semibold" />
                                 <Input 
+                                    id="add_payment_bukti"
                                     type="file"
                                     accept="image/*,application/pdf"
                                     onChange={e => paymentForm.setData('bukti_transfer', e.target.files?.[0] || null)}
-                                    className="bg-white dark:bg-slate-800 file:text-xs"
+                                    className="mt-1 file:text-xs text-xs"
                                 />
+                                <InputError message={paymentForm.errors.bukti_transfer} className="mt-1" />
                             </div>
                         </div>
 

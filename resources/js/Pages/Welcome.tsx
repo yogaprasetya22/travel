@@ -210,24 +210,23 @@ export default function Welcome({
 
     // --- 2. SELF-SERVICE TRACKING WIDGET STATE ---
     const [trackingCode, setTrackingCode] = useState('');
+    const [trackingPin, setTrackingPin] = useState('');
     const [trackingError, setTrackingError] = useState('');
 
     const handleTrackingSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setTrackingError('');
-        const code = trackingCode.trim().toUpperCase();
+        const code = trackingCode.trim();
+        const pin = trackingPin.trim();
         if (!code) {
-            setTrackingError('Silakan masukkan Kode Pendaftaran atau Nomor Invoice.');
+            setTrackingError('Silakan masukkan Kode Pendaftaran, Nomor Invoice, atau No. WhatsApp.');
             return;
         }
 
-        if (code.startsWith('INV-')) {
-            router.visit(route('public.verify-invoice', code));
-        } else if (code.startsWith('REG-') || code.length >= 6) {
-            router.visit(route('public.register.success', { booking_ref: code }));
-        } else {
-            setTrackingError('Format tidak valid. Contoh format: REG-20260900001-XXXXXX atau INV-20260900001-XXXXXX');
-        }
+        router.visit(route('public.tracking', {
+            code: code,
+            pin: pin,
+        }));
     };
 
     // --- 3. SAVINGS CALCULATOR STATE ---
@@ -245,10 +244,14 @@ export default function Welcome({
         `Assalamu'alaikum CS ${travelName},\nSaya ingin konsultasi Program Tabungan/Angsuran Umroh:\n- Paket: ${selectedCalcPackage?.nama_paket || 'Paket Umroh'}\n- Estimasi Harga: Rp ${packagePrice.toLocaleString('id-ID')}\n- Rencana DP: Rp ${calcDp.toLocaleString('id-ID')}\n- Target Tenor: ${calcTenor} Bulan\n- Estimasi Tabungan/Bulan: Rp ${monthlySaving.toLocaleString('id-ID')}\n\nMohon info panduan pendaftaran dan persyaratannya.`
     )}`;
 
+    const activeThemeStyle = useMemo(() => {
+        return (themeData.themes[(tenant?.theme_name as keyof typeof themeData.themes) || 'coffee']?.variables || themeData.themes['coffee'].variables) as React.CSSProperties;
+    }, [tenant?.theme_name]);
+
     return (
         <div 
             className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-white font-sans"
-            style={(themeData.themes[(tenant?.theme_name as keyof typeof themeData.themes) || 'coffee']?.variables || themeData.themes['coffee'].variables) as React.CSSProperties}
+            style={activeThemeStyle}
         >
             <Head title={`Travel Booking Engine - ${travelName}`} />
 
@@ -439,7 +442,7 @@ export default function Welcome({
                                         <label className="block text-[11px] sm:text-xs font-bold text-muted-foreground mb-1 invisible hidden sm:block">Aksi</label>
                                         <div className="flex items-center gap-2">
                                             <a href="#paket" className="flex-1">
-                                                <Button className="w-full rounded-xl text-xs sm:text-sm font-bold py-2 sm:py-2.5 bg-primary text-primary-foreground shadow-xs">
+                                                <Button className="w-full h-10 sm:h-11 rounded-xl text-xs sm:text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer">
                                                     Terapkan Filter
                                                 </Button>
                                             </a>
@@ -453,7 +456,7 @@ export default function Welcome({
                                                         setSelectedMonth('all');
                                                         setMaxPrice(0);
                                                     }}
-                                                    className="rounded-xl text-xs px-2.5 py-2 sm:py-2.5 border-border text-muted-foreground hover:text-foreground"
+                                                    className="h-10 sm:h-11 rounded-xl text-xs px-3 border-border text-muted-foreground hover:text-foreground cursor-pointer"
                                                     title="Reset Filter"
                                                 >
                                                     Reset
@@ -673,17 +676,16 @@ export default function Welcome({
                                             </div>
 
                                             {/* Action Buttons */}
-                                            <div className="p-4 sm:p-5 pt-0 flex items-center gap-2">
+                                            <div className="p-4 sm:p-5 pt-0 flex items-center gap-2.5">
                                                 <Button
                                                     variant="outline"
-                                                    size="sm"
-                                                    className="flex-1 rounded-xl text-xs font-bold border-border group-hover:border-primary/40 group-hover:bg-primary/5 transition-colors gap-1.5"
+                                                    className="flex-1 h-10 sm:h-11 rounded-xl text-xs sm:text-sm font-bold border-border hover:border-primary/40 hover:bg-primary/5 transition-colors gap-1.5 cursor-pointer"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setSelectedPackage(pkg);
                                                     }}
                                                 >
-                                                    <Eye className="w-3.5 h-3.5" />
+                                                    <Eye className="w-4 h-4 text-muted-foreground" />
                                                     <span>Lihat Detail</span>
                                                 </Button>
                                                 <Link
@@ -692,11 +694,10 @@ export default function Welcome({
                                                     className="flex-1"
                                                 >
                                                     <Button
-                                                        size="sm"
-                                                        className="w-full rounded-xl text-xs font-bold bg-primary text-primary-foreground shadow-xs gap-1"
+                                                        className="w-full h-10 sm:h-11 rounded-xl text-xs sm:text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs gap-1.5 cursor-pointer"
                                                     >
                                                         <span>Daftar</span>
-                                                        <ArrowUpRight className="w-3.5 h-3.5" />
+                                                        <ArrowUpRight className="w-4 h-4" />
                                                     </Button>
                                                 </Link>
                                             </div>
@@ -994,25 +995,42 @@ export default function Welcome({
                                         Cek Status Pendaftaran &amp; Bukti Pembayaran
                                     </h2>
                                     <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                                        Sudah melakukan pendaftaran online? Masukkan <strong>Kode Registrasi (REG-XXXXXX)</strong> atau <strong>Nomor Invoice (INV-XXXXXX)</strong> Anda untuk memantau status verifikasi berkas, paspor, dan penerbitan kwitansi resmi secara transparan.
+                                        Sudah melakukan pendaftaran online? Masukkan <strong>Kode Registrasi / No. WhatsApp</strong> dan <strong>4 digit terakhir NIK KTP</strong> Anda untuk memantau status verifikasi berkas, paspor, dan penerbitan kwitansi resmi secara transparan &amp; terenkripsi.
                                     </p>
 
-                                    <form onSubmit={handleTrackingSubmit} className="flex flex-col gap-2.5 pt-1 sm:pt-2">
-                                        <div className="flex flex-col sm:flex-row gap-2">
-                                            <div className="relative flex-1">
-                                                <FileCheck2 className="w-4 h-4 absolute left-3.5 top-3.5 text-muted-foreground pointer-events-none" />
+                                    <form onSubmit={handleTrackingSubmit} className="flex flex-col gap-3 pt-1 sm:pt-2">
+                                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+                                            <div className="sm:col-span-7 relative">
+                                                <FileCheck2 className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                                                 <input
                                                     type="text"
-                                                    placeholder="Contoh: REG-20260900001-XXXXXX"
+                                                    placeholder="No. WhatsApp / Kode Reg / Invoice..."
                                                     value={trackingCode}
                                                     onChange={(e) => setTrackingCode(e.target.value)}
-                                                    className="w-full pl-10 pr-4 py-2.5 sm:py-3 text-xs sm:text-sm rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground font-mono uppercase shadow-2xs"
+                                                    className="w-full h-11 sm:h-12 pl-10 pr-3.5 text-xs sm:text-sm rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground font-mono placeholder:font-sans placeholder:normal-case shadow-2xs transition"
                                                 />
                                             </div>
-                                            <Button type="submit" className="rounded-xl px-5 py-2.5 sm:px-6 sm:py-3 text-xs sm:text-sm font-bold bg-primary text-primary-foreground shadow-xs shrink-0">
-                                                Lacak Status &rarr;
-                                            </Button>
+                                            <div className="sm:col-span-5 relative">
+                                                <Lock className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                                                <input
+                                                    type="password"
+                                                    inputMode="numeric"
+                                                    maxLength={4}
+                                                    placeholder="4 Digit NIK KTP"
+                                                    value={trackingPin}
+                                                    onChange={(e) => setTrackingPin(e.target.value.replace(/[^0-9]/g, ''))}
+                                                    className="w-full h-11 sm:h-12 pl-9 pr-3.5 text-xs sm:text-sm rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground font-mono placeholder:font-sans tracking-wider shadow-2xs transition"
+                                                />
+                                            </div>
                                         </div>
+                                        <Button
+                                            type="submit"
+                                            className="w-full h-11 sm:h-12 rounded-xl text-xs sm:text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
+                                        >
+                                            <Search className="w-4 h-4 shrink-0" />
+                                            <span>Lacak Status &amp; Kwitansi</span>
+                                            <ArrowRight className="w-4 h-4 shrink-0" />
+                                        </Button>
                                         {trackingError && (
                                             <p className="text-xs text-rose-500 font-medium">{trackingError}</p>
                                         )}
@@ -1025,6 +1043,10 @@ export default function Welcome({
                                         <span>Fitur Keamanan &amp; Transparansi</span>
                                     </div>
                                     <ul className="space-y-1.5 sm:space-y-2 text-muted-foreground text-[11px] sm:text-xs">
+                                        <li className="flex items-start gap-2">
+                                            <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                                            <span>Enkripsi 2-Faktor dengan 4 digit NIK KTP demi privasi data</span>
+                                        </li>
                                         <li className="flex items-start gap-2">
                                             <Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
                                             <span>Status verifikasi dokumen paspor, KTP, dan buku vaksin</span>
@@ -1181,86 +1203,178 @@ export default function Welcome({
                 </div>
             </footer>
 
-            {/* DETAIL PAKET & ITINERARY MODAL */}
+            {/* DETAIL PAKET MODAL */}
             <Dialog open={!!selectedPackage} onOpenChange={(open) => { if (!open) setSelectedPackage(null); }}>
-                <DialogContent className="max-w-3xl w-full max-h-[85vh] flex flex-col p-0 overflow-hidden">
-                    <DialogHeader className="p-6 pb-3 border-b border-border flex flex-row items-center justify-between">
-                        <div>
-                            <DialogTitle className="text-xl font-bold">{selectedPackage?.nama_paket}</DialogTitle>
-                            <div className="text-xs text-muted-foreground mt-0.5">
-                                Detail Brosur, Itinerary Jadwal Harian &amp; Sisa Kursi
-                            </div>
+                <DialogContent
+                    style={activeThemeStyle}
+                    className="sm:max-w-3xl md:max-w-4xl lg:max-w-5xl w-[95vw] max-h-[90vh] flex flex-col p-0 overflow-hidden bg-card text-foreground border border-border shadow-2xl rounded-2xl sm:rounded-3xl"
+                >
+                    <DialogHeader className="p-5 sm:p-6 pb-4 border-b border-border/80 flex flex-row items-center justify-between">
+                        <div className="space-y-1">
+                            <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] sm:text-xs font-bold">
+                                DETAIL PROGRAM RESMI
+                            </Badge>
+                            <DialogTitle className="text-xl sm:text-2xl font-black text-foreground">{selectedPackage?.nama_paket}</DialogTitle>
+                            <p className="text-xs text-muted-foreground">
+                                Informasi detail paket, fasilitas akomodasi, dan ketersediaan kuota real-time.
+                            </p>
                         </div>
                     </DialogHeader>
 
                     {selectedPackage && (
-                        <div className="p-6 flex-1 overflow-y-auto flex flex-col gap-6">
-                            {/* Poster / Brosur Preview */}
-                            {selectedPackage.brosur_url && (
-                                <div className="rounded-2xl overflow-hidden border border-border shadow-sm max-h-80 flex items-center justify-center bg-black/5">
-                                    <img
-                                        src={selectedPackage.brosur_url}
-                                        alt={selectedPackage.nama_paket}
-                                        className="w-full h-auto max-h-80 object-contain"
-                                    />
-                                </div>
-                            )}
-
-                            {/* Summary Bar */}
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-2xl bg-muted/40 border border-border">
-                                <div>
-                                    <div className="text-[11px] text-muted-foreground uppercase font-bold">Biaya Paket</div>
-                                    <div className="text-lg font-black text-primary">Rp {selectedPackage.harga.toLocaleString('id-ID')}</div>
-                                </div>
-                                <div>
-                                    <div className="text-[11px] text-muted-foreground uppercase font-bold">Sisa Kursi Tersedia</div>
-                                    <div className="text-lg font-bold text-foreground">
-                                        {selectedPackage.available_seats !== undefined ? selectedPackage.available_seats : (selectedPackage.kuota || 45)} / {selectedPackage.kuota || 45} Seat
+                        <div className="p-5 sm:p-7 flex-1 overflow-y-auto overflow-x-hidden">
+                            <div className={`grid grid-cols-1 ${selectedPackage.brosur_url ? 'md:grid-cols-12' : 'md:grid-cols-1'} gap-6 items-start`}>
+                                {/* Kolom Brosur (Hanya jika ada brosur_url) */}
+                                {selectedPackage.brosur_url && (
+                                    <div className="md:col-span-5 flex flex-col gap-3">
+                                        <div className="relative rounded-2xl overflow-hidden border border-border/80 bg-muted/30 shadow-sm aspect-[3/4] w-full max-h-[420px] flex items-center justify-center">
+                                            <img
+                                                src={selectedPackage.brosur_url}
+                                                alt={selectedPackage.nama_paket}
+                                                className="w-full h-full object-cover"
+                                            />
+                                            {selectedPackage.periode_mulai && (
+                                                <div className="absolute top-3 left-3">
+                                                    <Badge className="bg-black/75 text-white backdrop-blur-md border-black/40 text-xs font-semibold">
+                                                        Keberangkatan: {new Date(selectedPackage.periode_mulai).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+                                                    </Badge>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="flex items-center sm:justify-end">
-                                    <Link href={route('public.register', { paket: selectedPackage.id })}>
-                                        <Button className="rounded-xl text-xs font-bold px-4 py-2 bg-primary text-primary-foreground shadow-md">
-                                            Daftar Paket Ini
-                                        </Button>
-                                    </Link>
+                                )}
+
+                                {/* Kolom Detail & Fasilitas */}
+                                <div className={`${selectedPackage.brosur_url ? 'md:col-span-7' : 'w-full'} flex flex-col gap-5`}>
+                                    {/* Price & Kuota Hero Box */}
+                                    <div className="p-4 sm:p-5 rounded-2xl bg-muted/40 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div>
+                                            <div className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">Biaya Paket All-In</div>
+                                            <div className="text-2xl sm:text-3xl font-black text-primary mt-0.5">
+                                                Rp {selectedPackage.harga.toLocaleString('id-ID')}
+                                            </div>
+                                            <div className="text-[11px] text-muted-foreground mt-0.5">Termasuk Tiket PP, Visa, Hotel &amp; Handling</div>
+                                        </div>
+
+                                        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center border-t sm:border-t-0 pt-2 sm:pt-0 border-border/60">
+                                            <div className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">Sisa Kuota</div>
+                                            <div className="text-base sm:text-lg font-black text-foreground flex items-center gap-1.5 mt-0.5">
+                                                <Users className="w-4 h-4 text-primary" />
+                                                <span>
+                                                    {selectedPackage.available_seats !== undefined ? selectedPackage.available_seats : (selectedPackage.kuota || 45)} / {selectedPackage.kuota || 45} Seat
+                                                </span>
+                                            </div>
+                                            <Badge className="mt-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-[10px] font-bold">
+                                                Konfirmasi Instan
+                                            </Badge>
+                                        </div>
+                                    </div>
+
+                                    {/* Deskripsi */}
+                                    {selectedPackage.deskripsi && (
+                                        <div className="flex flex-col gap-1.5">
+                                            <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">Deskripsi Paket</h4>
+                                            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                                                {selectedPackage.deskripsi}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Fasilitas & Spesifikasi Utama */}
+                                    <div className="space-y-2">
+                                        <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">Fasilitas &amp; Layanan Termasuk</h4>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                                            <div className="p-3 rounded-xl bg-background border border-border/80 flex items-center gap-3">
+                                                <Plane className="w-4 h-4 text-primary shrink-0" />
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="text-[10px] text-muted-foreground">Penerbangan</div>
+                                                    <div className="font-bold text-foreground truncate">{selectedPackage.maskapai || 'Maskapai Bintang 5'}</div>
+                                                </div>
+                                            </div>
+                                            <div className="p-3 rounded-xl bg-background border border-border/80 flex items-center gap-3">
+                                                <Building2 className="w-4 h-4 text-primary shrink-0" />
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="text-[10px] text-muted-foreground">Akomodasi Hotel</div>
+                                                    <div className="font-bold text-foreground truncate">Hotel Bintang ⭐{selectedPackage.bintang_makkah || 5}</div>
+                                                </div>
+                                            </div>
+                                            <div className="p-3 rounded-xl bg-background border border-border/80 flex items-center gap-3">
+                                                <Clock className="w-4 h-4 text-primary shrink-0" />
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="text-[10px] text-muted-foreground">Durasi Program</div>
+                                                    <div className="font-bold text-foreground">{selectedPackage.durasi_hari || 9} Hari Perjalanan</div>
+                                                </div>
+                                            </div>
+                                            <div className="p-3 rounded-xl bg-background border border-border/80 flex items-center gap-3">
+                                                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="text-[10px] text-muted-foreground">Rute Perjalanan</div>
+                                                    <div className="font-bold text-emerald-600 dark:text-emerald-400">Direct / Langsung Madinah</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="pt-3 flex flex-col sm:flex-row gap-3 mt-auto">
+                                        <Link
+                                            href={route('public.register', { paket: selectedPackage.id })}
+                                            className="flex-1"
+                                        >
+                                            <Button className="w-full h-11 sm:h-12 rounded-xl text-xs sm:text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-md gap-2 cursor-pointer">
+                                                <span>Daftar Sekarang Online</span>
+                                                <ArrowUpRight className="w-4 h-4 shrink-0" />
+                                            </Button>
+                                        </Link>
+                                        <a
+                                            href={`https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Halo ${travelName}, saya ingin konsultasi mengenai paket "${selectedPackage.nama_paket}".`)}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex-1 sm:flex-initial"
+                                        >
+                                            <Button
+                                                variant="outline"
+                                                className="w-full h-11 sm:h-12 rounded-xl text-xs sm:text-sm font-bold border-border hover:bg-muted gap-2 cursor-pointer px-5"
+                                            >
+                                                <MessageCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                                                <span>Tanya via WhatsApp</span>
+                                            </Button>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Deskripsi */}
-                            {selectedPackage.deskripsi && (
-                                <div className="flex flex-col gap-1.5">
-                                    <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">Deskripsi Paket</h4>
-                                    <p className="text-xs text-muted-foreground leading-relaxed">
-                                        {selectedPackage.deskripsi}
-                                    </p>
+                            {/* Rundown & Itinerary Kegiatan Harian */}
+                            <div className="mt-6 pt-6 border-t border-border/80 flex flex-col gap-3.5">
+                                <div className="flex items-center justify-between">
+                                    <h4 className="text-xs sm:text-sm font-black uppercase tracking-wider text-foreground flex items-center gap-2">
+                                        <Calendar className="w-4 h-4 text-primary" />
+                                        <span>Rundown Jadwal &amp; Itinerary Harian</span>
+                                    </h4>
+                                    <span className="text-[11px] text-muted-foreground font-semibold">
+                                        {selectedPackage.itinerary?.length || selectedPackage.durasi_hari || 9} Hari Program
+                                    </span>
                                 </div>
-                            )}
-
-                            {/* Itinerary Section */}
-                            <div className="flex flex-col gap-3">
-                                <h4 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-                                    <Calendar className="w-4 h-4 text-primary" /> Jadwal Kegiatan Harian (Itinerary)
-                                </h4>
 
                                 {(!selectedPackage.itinerary || selectedPackage.itinerary.length === 0) ? (
-                                    <div className="p-4 rounded-xl bg-muted/20 text-center text-xs text-muted-foreground border border-dashed border-border">
-                                        Itinerary lengkap hari per hari akan dibagikan saat manasik resmi.
+                                    <div className="p-4 sm:p-5 rounded-2xl bg-muted/20 text-center text-xs text-muted-foreground border border-dashed border-border/80 space-y-1">
+                                        <div className="font-semibold text-foreground">Rundown Program &amp; Ziarah Lengkap</div>
+                                        <p>Rincian agenda harian (keberangkatan, manasik, city tour &amp; kepulangan) disesuaikan dan dibagikan resmi menjelang keberangkatan.</p>
                                     </div>
                                 ) : (
                                     <div className="space-y-3">
                                         {selectedPackage.itinerary.map((itin, idx) => (
-                                            <div key={idx} className="p-4 rounded-2xl bg-card border border-border/80 flex items-start gap-3.5 text-xs shadow-2xs">
+                                            <div key={idx} className="p-4 rounded-2xl bg-background border border-border flex items-start gap-3.5 text-xs shadow-2xs">
                                                 <div className="w-8 h-8 rounded-xl bg-primary text-primary-foreground font-black flex items-center justify-center shrink-0 text-xs shadow-xs">
                                                     H{itin.day || (idx + 1)}
                                                 </div>
-                                                <div className="flex-1 space-y-2">
-                                                    <div>
+                                                <div className="flex-1 space-y-1.5 min-w-0">
+                                                    <div className="flex flex-wrap items-center justify-between gap-1">
                                                         <div className="font-bold text-foreground text-sm">
                                                             {itin.title}
                                                         </div>
                                                         {itin.location && (
-                                                            <div className="text-[11px] text-primary font-semibold flex items-center gap-1 mt-0.5">
+                                                            <div className="text-[11px] text-primary font-semibold flex items-center gap-1">
                                                                 <MapPin className="w-3 h-3" /> {itin.location}
                                                             </div>
                                                         )}
@@ -1272,22 +1386,22 @@ export default function Welcome({
                                                         </p>
                                                     )}
 
-                                                    {/* Sub Rundown Timeline with Hours */}
+                                                    {/* Timeline agenda jam */}
                                                     {itin.rundowns && itin.rundowns.length > 0 && (
-                                                        <div className="mt-2.5 pt-2.5 border-t border-border/60 space-y-1.5">
+                                                        <div className="mt-2.5 pt-2 border-t border-border/60 space-y-1.5">
                                                             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                                                                <Clock className="w-3 h-3 text-primary" /> Rincian Agenda &amp; Waktu:
+                                                                <Clock className="w-3 h-3 text-primary" /> Rincian Waktu &amp; Agenda:
                                                             </span>
-                                                            <div className="space-y-1.5 pl-1">
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                                                                 {itin.rundowns.map((rd, rIdx) => (
                                                                     <div key={rIdx} className="flex items-start gap-2 text-xs bg-muted/40 p-2 rounded-xl border border-border/60">
-                                                                        <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary font-mono font-bold text-[10px] shrink-0">
+                                                                        <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-mono font-bold text-[10px] shrink-0">
                                                                             {rd.time}
                                                                         </span>
-                                                                        <div className="flex-1">
-                                                                            <span className="font-semibold text-foreground">{rd.activity}</span>
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <span className="font-semibold text-foreground truncate block">{rd.activity}</span>
                                                                             {rd.notes && (
-                                                                                <span className="block text-[10px] text-muted-foreground mt-0.5 italic">
+                                                                                <span className="text-[10px] text-muted-foreground truncate block italic">
                                                                                     {rd.notes}
                                                                                 </span>
                                                                             )}

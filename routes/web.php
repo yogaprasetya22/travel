@@ -36,6 +36,12 @@ Route::get('/daftar', [PublicLandingController::class, 'registerForm'])->name('p
 Route::post('/daftar', [PublicLandingController::class, 'registerSubmit'])->name('public.register.submit');
 Route::get('/daftar/sukses', [PublicLandingController::class, 'registerSuccess'])->name('public.register.success');
 
+Route::get('/cek-status', [PublicLandingController::class, 'trackingPage'])
+    ->middleware('throttle:30,1')
+    ->name('public.tracking');
+Route::post('/cek-status/bayar-cicilan', [PublicLandingController::class, 'submitInstallment'])
+    ->middleware('throttle:15,1')
+    ->name('public.submit-installment');
 Route::get('/agen/{referral_code}', [AgentProfileController::class, 'show'])->name('public.agent.profile');
 Route::get('/verifikasi-pembayaran/{invoice}', [PublicLandingController::class, 'verifyInvoice'])->name('public.verify-invoice');
 

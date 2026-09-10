@@ -4,6 +4,7 @@ namespace App\Http\Controllers\CRM;
 
 use App\Http\Controllers\Controller;
 use App\Models\CrmStage;
+use App\Models\DocumentPermission;
 use App\Models\Jamaah;
 use App\Models\Paket;
 use App\Models\RekeningTenant;

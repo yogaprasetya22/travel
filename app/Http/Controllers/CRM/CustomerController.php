@@ -135,6 +135,7 @@ class CustomerController extends Controller
         $customers = $query->with([
             'paket:id,nama_paket,harga,kuota',
             'agen:id,name,email',
+            'crmStage:id,nama_tahap,urutan',
             'pembayaran' => function ($q) {
                 $q->with(['rekeningTenant', 'verifiedBy'])->orderBy('created_at', 'asc');
             },

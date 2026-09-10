@@ -31,5 +31,8 @@ class DatabaseSeeder extends Seeder
 
         // 3. Seed Realistic Multi-Tenant Data (2 Tenants, 10,000+ Relational Records Each)
         $this->call(TenantDatasetSeeder::class);
+
+        // 4. Seed Detailed Package Itineraries & Daily Rundowns
+        $this->call(PaketRundownSeeder::class);
     }
 }

@@ -172,4 +172,24 @@ class Jamaah extends Model
             default => $query,
         };
     }
+
+    /**
+     * Generate secure tracking token for 1-click magic access.
+     */
+    public function getTrackingToken(): string
+    {
+        return substr(hash_hmac('sha256', $this->id.($this->kode_pendaftaran ?? '').config('app.key'), config('app.key')), 0, 32);
+    }
+
+    /**
+     * Verify whether a tracking token matches this jamaah record.
+     */
+    public function isValidTrackingToken(?string $token): bool
+    {
+        if (empty($token)) {
+            return false;
+        }
+
+        return hash_equals($this->getTrackingToken(), $token);
+    }
 }
