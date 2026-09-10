@@ -94,12 +94,22 @@ interface Props extends PageProps {
     packages: Package[];
     agents: Agent[];
     banks?: BankAccount[];
+    documentPermissions?: any[];
     filters: {
         search?: string;
     };
 }
 
-export default function KanbanBoard({ auth, stages: initialStages, packages, agents, banks = [], filters }: Props) {
+export default function KanbanBoard({
+    auth,
+    stages: initialStages,
+    packages,
+    agents,
+    banks = [],
+    documentPermissions = [],
+    filters,
+}: Props) {
+
     // View mode: 'kanban' (Card Pipeline) | 'table' (Tabular Listing)
     const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
 
@@ -916,7 +926,9 @@ export default function KanbanBoard({ auth, stages: initialStages, packages, age
                     setSelectedCustomer(null);
                     setEditingCustomer(cust);
                 }}
+                documentPermissions={documentPermissions}
             />
+
 
             {/* Slide-out Drawer: Edit Data Calon Nasabah */}
             <CustomerEditDrawer

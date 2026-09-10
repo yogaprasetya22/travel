@@ -41,6 +41,7 @@ interface CustomerListProps extends PageProps {
     banks: BankAccount[];
     pakets?: PackageOption[];
     metrics: CustomerMetrics;
+    documentPermissions?: any[];
     filters: {
         search: string;
         status: string;
@@ -54,7 +55,15 @@ interface CustomerListProps extends PageProps {
     };
 }
 
-export default function CustomerList({ customers, banks = [], pakets = [], metrics, filters }: CustomerListProps) {
+export default function CustomerList({
+    customers,
+    banks = [],
+    pakets = [],
+    metrics,
+    filters,
+    documentPermissions = [],
+}: CustomerListProps) {
+
     const isMounted = useMounted();
     const [searchQuery, setSearchQuery] = useState(filters?.search || '');
     const [statusFilter, setStatusFilter] = useState(filters?.status || 'ALL');
@@ -561,7 +570,9 @@ export default function CustomerList({ customers, banks = [], pakets = [], metri
                 banks={banks}
                 onClose={handleCloseDrawer}
                 onEdit={(cust) => handleOpenEdit(cust)}
+                documentPermissions={documentPermissions}
             />
+
 
             {/* Dedicated Edit Customer Drawer Component */}
             <CustomerEditDrawer

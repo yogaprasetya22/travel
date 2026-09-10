@@ -49,7 +49,9 @@ type PaymentItem = Pembayaran & {
         nomor_rekening: string;
         atas_nama: string;
     };
+    verified_by?: { name: string } | any;
     verified_by_user?: { name: string } | null;
+    verifiedBy?: { name: string } | null;
 };
 
 interface VerifyPaymentProps extends PageProps {
@@ -140,8 +142,8 @@ export default function VerifyPayment({
         const endStr = range?.to
             ? format(range.to, 'yyyy-MM-dd')
             : range?.from
-            ? format(range.from, 'yyyy-MM-dd')
-            : '';
+                ? format(range.from, 'yyyy-MM-dd')
+                : '';
         setStartDate(startStr);
         setEndDate(endStr);
     };
@@ -443,8 +445,8 @@ export default function VerifyPayment({
 
                                 return (
                                     <tr key={payment.id} className="hover:bg-muted/20 transition-colors">
-                                        <td className="p-4 pl-6 text-center font-mono text-xs text-muted-foreground">
-                                            #{payment.id}
+                                        <td className="p-4 pl-6 text-center font-mono text-xs font-semibold text-foreground">
+                                            {payment.nomor_invoice || `#${payment.id}`}
                                         </td>
                                         <td className="p-4">
                                             <div className="font-semibold text-foreground">
@@ -512,22 +514,20 @@ export default function VerifyPayment({
                                         </td>
                                         <td className="p-4 text-center">
                                             <span
-                                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
-                                                    isVerified
+                                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${isVerified
                                                         ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
                                                         : isRejected
-                                                        ? 'bg-destructive/10 text-destructive border-destructive/20'
-                                                        : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                                                }`}
+                                                            ? 'bg-destructive/10 text-destructive border-destructive/20'
+                                                            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                                                    }`}
                                             >
                                                 <span
-                                                    className={`w-1.5 h-1.5 rounded-full ${
-                                                        isVerified
+                                                    className={`w-1.5 h-1.5 rounded-full ${isVerified
                                                             ? 'bg-emerald-500'
                                                             : isRejected
-                                                            ? 'bg-destructive'
-                                                            : 'bg-amber-500'
-                                                    }`}
+                                                                ? 'bg-destructive'
+                                                                : 'bg-amber-500'
+                                                        }`}
                                                 />
                                                 {payment.status_verifikasi}
                                             </span>
@@ -563,8 +563,8 @@ export default function VerifyPayment({
                                                             <span>Invoice</span>
                                                         </button>
                                                     )}
-                                                    <span className="text-[11px] text-muted-foreground">
-                                                        Oleh: {payment.verified_by_user?.name || 'Sistem'}
+                                                    <span className="text-[11px] text-muted-foreground font-medium">
+                                                        Oleh: {(typeof payment.verified_by === 'object' && payment.verified_by?.name) || payment.verified_by_user?.name || (payment as any).verifiedBy?.name || 'Petugas Keuangan'}
                                                     </span>
                                                 </div>
                                             )}
@@ -610,7 +610,7 @@ export default function VerifyPayment({
 
             {/* Drawer: Bukti Transfer Preview */}
             <Sheet open={!!selectedSlip} onOpenChange={(open) => { if (!open) setSelectedSlip(null); }}>
-                <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2 flex flex-col justify-between">
+                <SheetContent side="right" className="w-full sm:max-w-5xl md:w-1/2 flex flex-col justify-between">
                     <SheetHeader>
                         <SheetTitle>Pratinjau Bukti Transfer</SheetTitle>
                     </SheetHeader>

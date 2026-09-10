@@ -68,7 +68,9 @@ export default function CommissionSlipModal({
 
     const terbilangText = terbilang(commission.nominal_komisi).trim() + " Rupiah";
     const refNumber = commission.nomor_referensi || `COMM-SLIP-${commission.id}`;
-    const qrPayload = `/commissions?ref=${encodeURIComponent(refNumber)}`;
+    const qrPayload = typeof window !== 'undefined'
+        ? `${window.location.origin}/commissions?search=${encodeURIComponent(refNumber)}`
+        : `https://travel.id/commissions?search=${encodeURIComponent(refNumber)}`;
 
     const handlePrint = () => {
         if (!printRef.current) return;
@@ -297,8 +299,10 @@ export default function CommissionSlipModal({
                             </div>
 
                             <div className="flex flex-col items-center justify-center text-center">
-                                <CuteQrCode value={qrPayload} size={70} color="#0f172a" />
-                                <span className="text-[9px] text-slate-400 font-mono mt-1">Verifikasi Digital</span>
+                                <div className="w-20 h-20 bg-white p-1 rounded-xl border border-slate-300 flex items-center justify-center shadow-xs overflow-hidden">
+                                    <CuteQrCode value={qrPayload} size={72} color="#000000" bgColor="#ffffff" />
+                                </div>
+                                <span className="text-[9px] text-slate-500 font-mono mt-1 font-semibold">Verifikasi Digital</span>
                             </div>
                         </div>
                     </div>

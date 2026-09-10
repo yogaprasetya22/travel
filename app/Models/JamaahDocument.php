@@ -54,7 +54,11 @@ class JamaahDocument extends Model
             return $this->file_path;
         }
 
-        return Storage::url($this->file_path);
+        if (app()->runningInConsole()) {
+            return Storage::url($this->file_path);
+        }
+
+        return route('crm.jamaah.documents.preview', $this->id);
     }
 
     public function getIsImageAttribute(): bool

@@ -82,7 +82,7 @@ export default function DistributeItemModal({
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2 flex flex-col">
+            <SheetContent side="right" className="w-full sm:max-w-5xl md:w-1/2 flex flex-col">
                 <SheetHeader>
                     <SheetTitle className="flex items-center gap-2">
                         <UserCheck className="w-5 h-5 text-primary" />
@@ -130,11 +130,10 @@ export default function DistributeItemModal({
                                     <div
                                         key={j.id}
                                         onClick={() => setData("jamaah_id", j.id)}
-                                        className={`p-2.5 flex items-center justify-between cursor-pointer transition text-xs ${
-                                            isSelected
+                                        className={`p-2.5 flex items-center justify-between cursor-pointer transition text-xs ${isSelected
                                                 ? "bg-primary/15 font-semibold text-primary"
                                                 : "hover:bg-muted/60 text-foreground"
-                                        }`}
+                                            }`}
                                     >
                                         <div className="flex items-center gap-2">
                                             <Users className="w-3.5 h-3.5 text-muted-foreground" />

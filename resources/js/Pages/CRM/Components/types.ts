@@ -51,6 +51,7 @@ export interface Customer {
     documents?: JamaahDocItem[];
     pembayaran: Array<{
         id: number;
+        nomor_invoice?: string;
         nominal: number;
         tipe_pembayaran: string;
         status_verifikasi: string;
@@ -97,15 +98,38 @@ export interface BankAccount {
     atas_nama: string;
 }
 
-export const DOCUMENT_TYPES = [
-    { value: 'ktp', label: 'KTP (Identitas)' },
-    { value: 'kk', label: 'Kartu Keluarga (KK)' },
-    { value: 'paspor', label: 'Buku Paspor' },
-    { value: 'foto', label: 'Pas Foto 4x6' },
-    { value: 'visa', label: 'E-Visa Umroh / Haji' },
-    { value: 'tiket', label: 'Tiket Pesawat' },
-    { value: 'asuransi', label: 'Polis Asuransi' },
-    { value: 'siskopatuh', label: 'Bukti SISKOPATUH' },
-    { value: 'vaksin', label: 'Buku / Sertifikat Vaksin' },
-    { value: 'other', label: 'Dokumen Lainnya' },
+export interface DocumentPermissionItem {
+    id?: number;
+    role_name: string;
+    document_type: string;
+    is_active?: boolean;
+    can_view: boolean;
+    can_upload: boolean;
+    can_delete: boolean;
+}
+
+export interface DocumentTypeDefinition {
+    value: string;
+    label: string;
+    category?: string;
+    description?: string;
+}
+
+export const DOCUMENT_TYPES: DocumentTypeDefinition[] = [
+    { value: 'ktp', label: 'KTP (Identitas)', category: 'Identitas & Kependudukan', description: 'Kartu Tanda Penduduk WNI' },
+    { value: 'kk', label: 'Kartu Keluarga (KK)', category: 'Identitas & Kependudukan', description: 'Salinan Kartu Keluarga' },
+    { value: 'buku_nikah', label: 'Buku Nikah / Akta Perkawinan', category: 'Identitas & Kependudukan', description: 'Bagi pasangan suami-istri' },
+    { value: 'akta_lahir', label: 'Akta Kelahiran', category: 'Identitas & Kependudukan', description: 'Bagi anak atau persyaratan imigrasi' },
+    { value: 'paspor', label: 'Buku Paspor Asli', category: 'Dokumen Perjalanan Internasional', description: 'Paspor masa berlaku min. 8 bulan' },
+    { value: 'foto', label: 'Pas Foto 4x6 Latar Putih', category: 'Dokumen Perjalanan Internasional', description: 'Fokus wajah 80% latar putih' },
+    { value: 'visa', label: 'E-Visa Umroh / Haji', category: 'Dokumen Perjalanan Internasional', description: 'Visa resmi terbitan Kementerian Haji' },
+    { value: 'tiket', label: 'Tiket Pesawat PP', category: 'Dokumen Perjalanan Internasional', description: 'E-Ticket penerbangan pulang-pergi' },
+    { value: 'siskopatuh', label: 'Bukti SISKOPATUH', category: 'Kesehatan & Regulasi Resmi', description: 'Pengawasan Terpadu Umroh Kemenag' },
+    { value: 'vaksin', label: 'Sertifikat Vaksin (Meningitis/Polio)', category: 'Kesehatan & Regulasi Resmi', description: 'Buku kuning atau sertifikat resmi' },
+    { value: 'asuransi', label: 'Polis Asuransi Perjalanan', category: 'Kesehatan & Regulasi Resmi', description: 'Polis asuransi perlindungan jamaah' },
+    { value: 'surat_rekomendasi', label: 'Surat Rekomendasi Kemenag/Imigrasi', category: 'Legalitas & Dokumen Tambahan', description: 'Surat pengantar paspor umroh' },
+    { value: 'surat_mahram', label: 'Surat Pernyataan / Izin Mahram', category: 'Legalitas & Dokumen Tambahan', description: 'Surat izin mahram jamaah wanita' },
+    { value: 'other', label: 'Dokumen Lainnya', category: 'Legalitas & Dokumen Tambahan', description: 'Berkas pendukung operasional travel' },
 ];
+
+

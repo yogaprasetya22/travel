@@ -89,7 +89,7 @@ export function LevelFormModal({
 
     return (
         <Sheet open={!!mode} onOpenChange={(open) => { if (!open) onClose(); }}>
-            <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2">
+            <SheetContent side="right" className="w-full sm:max-w-5xl md:w-1/2">
                 <SheetHeader>
                     <SheetTitle>
                         {mode === 'create' ? 'Tambah Tingkatan Jabatan Baru' : `Edit Level: ${editingLevel?.nama_level}`}
@@ -246,7 +246,7 @@ export function DeleteLevelModal({
 
     return (
         <Sheet open={!!deletingLevel} onOpenChange={(open) => { if (!open) onClose(); }}>
-            <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2">
+            <SheetContent side="right" className="w-full sm:max-w-5xl md:w-1/2">
                 <SheetHeader>
                     <SheetTitle className="text-red-600">Hapus Tingkatan: {deletingLevel?.nama_level}</SheetTitle>
                     <SheetDescription>

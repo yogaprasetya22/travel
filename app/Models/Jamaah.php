@@ -8,9 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
+ * @property string|null $kode_pendaftaran
  * @property int $tenant_id
  * @property int|null $agen_id
  * @property int $crm_stage_id
@@ -34,6 +36,7 @@ class Jamaah extends Model
     protected $table = 'jamaah';
 
     protected $fillable = [
+        'kode_pendaftaran',
         'tenant_id',
         'agen_id',
         'crm_stage_id',
@@ -69,6 +72,18 @@ class Jamaah extends Model
         'tanggal_serah_terima_logistik' => 'datetime',
         'tanggal_kirim_logistik' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Jamaah $jamaah) {
+            if (empty($jamaah->kode_pendaftaran)) {
+                $period = now()->format('Ym');
+                $randomSuffix = strtoupper(Str::random(6));
+                $randomDigits = str_pad((string) mt_rand(1, 99999), 5, '0', STR_PAD_LEFT);
+                $jamaah->kode_pendaftaran = "REG-{$period}{$randomDigits}-{$randomSuffix}";
+            }
+        });
+    }
 
     public function tenant(): BelongsTo
     {

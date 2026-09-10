@@ -4,9 +4,11 @@ import {
     PackageItem,
     PageProps,
     Stage,
+    ItineraryItem,
+    ItineraryRundown,
 } from '@/Types';
 
-export type { Stage, PackageItem, BankItem, InventoryItem };
+export type { Stage, PackageItem, BankItem, InventoryItem, ItineraryItem, ItineraryRundown };
 
 export interface MasterDataProps extends PageProps {
     stages: Stage[];
@@ -15,3 +17,4 @@ export interface MasterDataProps extends PageProps {
     inventoryItems: InventoryItem[];
     activeTab?: string;
 }
+

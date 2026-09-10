@@ -45,6 +45,7 @@ class PublicLandingController extends Controller
 
         $packages = Paket::where('tenant_id', $tenantId)
             ->where('is_active', true)
+            ->withCount('jamaah')
             ->with('inventaris')
             ->orderBy('harga')
             ->get();
@@ -289,26 +290,47 @@ class PublicLandingController extends Controller
         }
 
         return redirect()->route('public.register.success', [
-            'booking_id' => $jamaah->id,
+            'booking_ref' => $jamaah->kode_pendaftaran,
         ]);
     }
 
     /**
-     * Display booking success receipt screen.
+     * Display booking success receipt screen using secure unique booking token.
      */
     public function registerSuccess(Request $request): Response
     {
         $tenant = $this->resolveTenant($request);
         $tenantId = $tenant?->id ?? 1;
 
-        $bookingId = $request->query('booking_id');
+        $bookingRef = $request->query('booking_ref');
+        if (! $bookingRef) {
+            abort(404, 'Kode pendaftaran tidak ditemukan atau tautan tidak valid.');
+        }
+
         $jamaah = Jamaah::where('tenant_id', $tenantId)
+            ->where('kode_pendaftaran', $bookingRef)
             ->with(['paket', 'agen', 'documents', 'pembayaran.rekeningTenant'])
-            ->find($bookingId);
+            ->firstOrFail();
 
         return Inertia::render('Public/RegisterSuccess', [
             'tenant' => $tenant,
             'jamaah' => $jamaah,
+        ]);
+    }
+
+    /**
+     * Display public invoice authenticity verification page using secure unique invoice token.
+     */
+    public function verifyInvoice(Request $request, string $invoice): Response
+    {
+        $pembayaran = Pembayaran::where('nomor_invoice', $invoice)->firstOrFail();
+
+        $pembayaran->load(['jamaah.paket', 'rekeningTenant', 'verifiedBy']);
+        $tenant = $this->resolveTenant($request);
+
+        return Inertia::render('Public/VerifyInvoice', [
+            'tenant' => $tenant,
+            'payment' => $pembayaran,
         ]);
     }
 }

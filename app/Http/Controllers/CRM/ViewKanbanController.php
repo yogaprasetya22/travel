@@ -133,11 +133,16 @@ class ViewKanbanController extends Controller
                 ->get();
         }
 
+        $documentPermissions = DocumentPermission::where('tenant_id', $tenantId)
+            ->where('role_name', $user->role ?? 'staff')
+            ->get();
+
         return Inertia::render('CRM/KanbanBoard', [
             'stages' => $stagesData,
             'packages' => $packages,
             'agents' => $agents,
             'banks' => $banks,
+            'documentPermissions' => $documentPermissions,
             'filters' => [
                 'search' => $search ?? '',
                 'per_page' => $perPage,

@@ -78,7 +78,7 @@ export function AddAgentSheet({
 
     return (
         <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-            <SheetContent side="right" className="w-full sm:max-w-xl flex flex-col p-0 gap-0">
+            <SheetContent side="right" className="w-full sm:max-w-5xl flex flex-col p-0 gap-0">
                 <SheetHeader className="p-6 border-b border-border bg-muted/30">
                     <SheetTitle>Tambah Mitra Agen Baru</SheetTitle>
                     <SheetDescription>Daftarkan akun lengkap mitra agen / konsultan umroh baru beserta data rekening.</SheetDescription>
@@ -385,7 +385,7 @@ export function EditAgentSheet({
 
     return (
         <Sheet open={!!editingAgent} onOpenChange={(open) => { if (!open) onClose(); }}>
-            <SheetContent side="right" className="w-full sm:max-w-xl flex flex-col p-0 gap-0">
+            <SheetContent side="right" className="w-full sm:max-w-5xl flex flex-col p-0 gap-0">
                 <SheetHeader className="p-6 border-b border-border bg-muted/30">
                     <SheetTitle>Edit Data Mitra Agen</SheetTitle>
                     <SheetDescription>Perbarui data profil, kontak, jabatan, dan rekening bank agen.</SheetDescription>

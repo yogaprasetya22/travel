@@ -40,6 +40,18 @@ class TenantDetection
             }
         }
 
+        // Cross-Tenant Session Guard:
+        // If a specific tenant subdomain is accessed, but active user belongs to a different tenant
+        if ($tenant && auth()->check() && ! auth()->user()->isSuperAdmin()) {
+            if (auth()->user()->tenant_id && auth()->user()->tenant_id !== $tenant->id) {
+                auth()->guard('web')->logout();
+                if ($request->hasSession()) {
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+                }
+            }
+        }
+
         if ($tenant) {
             app()->instance('tenant', $tenant);
 

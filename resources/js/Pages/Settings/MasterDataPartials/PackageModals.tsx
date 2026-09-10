@@ -22,15 +22,12 @@ import {
     UploadCloud,
     MapPin,
     Package,
+    Clock,
 } from 'lucide-react';
-import { PackageItem, InventoryItem } from './types';
+import TimeRangePicker from '@/Components/TimeRangePicker';
+import { PackageItem, InventoryItem, ItineraryItem, ItineraryRundown } from './types';
 
-interface ItineraryRow {
-    day: number;
-    title: string;
-    description: string;
-    location?: string;
-}
+export interface ItineraryRow extends ItineraryItem {}
 
 interface AddPackageModalProps {
     isOpen: boolean;
@@ -41,7 +38,17 @@ interface AddPackageModalProps {
 export function AddPackageModal({ isOpen, onClose, inventoryItems }: AddPackageModalProps) {
     const [commissionType, setCommissionType] = useState<'flat' | 'percentage'>('flat');
     const [itineraries, setItineraries] = useState<ItineraryRow[]>([
-        { day: 1, title: 'Keberangkatan & Tiba di Jeddah/Madinah', description: 'Kumpul di Bandara Soekarno-Hatta, penerbangan langsung menuju Arab Saudi, check-in hotel.', location: 'Bandara & Hotel' },
+        {
+            day: 1,
+            title: 'Keberangkatan & Tiba di Jeddah/Madinah',
+            description: 'Kumpul di Bandara Soekarno-Hatta, penerbangan langsung menuju Arab Saudi, check-in hotel.',
+            location: 'Bandara & Hotel',
+            rundowns: [
+                { time: '04:00 - 06:00', activity: 'Kumpul Jamaah & Briefing Terminal 3 Bandara Soetta', notes: 'Pemberian ID Card & Paspor' },
+                { time: '08:30 - 14:30', activity: 'Penerbangan Internasional ke Madinah / Jeddah', notes: 'Direct Flight SV/GA' },
+                { time: '16:00 - 18:00', activity: 'Imigrasi, Bagasi & Check-in Hotel', notes: 'Istirahat & Persiapan Sholat' },
+            ],
+        },
     ]);
 
     const { data, setData, post, processing, errors, reset } = useForm<{
@@ -77,7 +84,17 @@ export function AddPackageModal({ isOpen, onClose, inventoryItems }: AddPackageM
             reset();
             setCommissionType('flat');
             setItineraries([
-                { day: 1, title: 'Keberangkatan & Tiba di Jeddah/Madinah', description: 'Kumpul di Bandara Soekarno-Hatta, penerbangan langsung menuju Arab Saudi, check-in hotel.', location: 'Bandara & Hotel' },
+                {
+                    day: 1,
+                    title: 'Keberangkatan & Tiba di Jeddah/Madinah',
+                    description: 'Kumpul di Bandara Soekarno-Hatta, penerbangan langsung menuju Arab Saudi, check-in hotel.',
+                    location: 'Bandara & Hotel',
+                    rundowns: [
+                        { time: '04:00 - 06:00', activity: 'Kumpul Jamaah & Briefing Terminal 3 Bandara Soetta', notes: 'Pemberian ID Card & Paspor' },
+                        { time: '08:30 - 14:30', activity: 'Penerbangan Internasional ke Madinah / Jeddah', notes: 'Direct Flight' },
+                        { time: '16:00 - 18:00', activity: 'Imigrasi, Bagasi & Check-in Hotel', notes: 'Istirahat' },
+                    ],
+                },
             ]);
         }
     }, [isOpen]);
@@ -86,7 +103,13 @@ export function AddPackageModal({ isOpen, onClose, inventoryItems }: AddPackageM
         const nextDay = itineraries.length + 1;
         setItineraries((prev) => [
             ...prev,
-            { day: nextDay, title: `Aktivitas Ibadah Hari ke-${nextDay}`, description: '', location: '' },
+            {
+                day: nextDay,
+                title: `Aktivitas Ibadah Hari ke-${nextDay}`,
+                description: '',
+                location: '',
+                rundowns: [{ time: '08:00 - 10:00', activity: '', notes: '' }],
+            },
         ]);
     };
 
@@ -98,6 +121,51 @@ export function AddPackageModal({ isOpen, onClose, inventoryItems }: AddPackageM
         setItineraries((prev) => {
             const next = [...prev];
             next[index] = { ...next[index], [field]: val };
+            return next;
+        });
+    };
+
+    const addRundown = (dayIdx: number) => {
+        setItineraries((prev) => {
+            const next = [...prev];
+            const currentRundowns = next[dayIdx].rundowns || [];
+            next[dayIdx] = {
+                ...next[dayIdx],
+                rundowns: [...currentRundowns, { time: '08:00 - 10:00', activity: '', notes: '' }],
+            };
+            return next;
+        });
+    };
+
+    const removeRundown = (dayIdx: number, rundownIdx: number) => {
+        setItineraries((prev) => {
+            const next = [...prev];
+            const currentRundowns = next[dayIdx].rundowns || [];
+            next[dayIdx] = {
+                ...next[dayIdx],
+                rundowns: currentRundowns.filter((_, rIdx) => rIdx !== rundownIdx),
+            };
+            return next;
+        });
+    };
+
+    const updateRundownField = (
+        dayIdx: number,
+        rundownIdx: number,
+        field: keyof ItineraryRundown,
+        val: string
+    ) => {
+        setItineraries((prev) => {
+            const next = [...prev];
+            const currentRundowns = [...(next[dayIdx].rundowns || [])];
+            currentRundowns[rundownIdx] = {
+                ...currentRundowns[rundownIdx],
+                [field]: val,
+            };
+            next[dayIdx] = {
+                ...next[dayIdx],
+                rundowns: currentRundowns,
+            };
             return next;
         });
     };
@@ -137,10 +205,10 @@ export function AddPackageModal({ isOpen, onClose, inventoryItems }: AddPackageM
 
     return (
         <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-            <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2 p-0 flex flex-col overflow-hidden">
+            <SheetContent side="right" className="w-full sm:max-w-5xl md:w-1/2 p-0 flex flex-col overflow-hidden">
                 <SheetHeader className="p-6 pb-2 border-b border-border">
                     <SheetTitle>Tambah Paket Umroh &amp; Haji</SheetTitle>
-                    <SheetDescription>Daftarkan produk paket travel, itinerary hari per hari, kuota kursi, dan brosur visual.</SheetDescription>
+                    <SheetDescription>Daftarkan produk paket travel, itinerary hari per hari dengan multi-rundown &amp; jam, kuota kursi, dan brosur visual.</SheetDescription>
                 </SheetHeader>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6 flex-1 overflow-y-auto">
@@ -209,11 +277,11 @@ export function AddPackageModal({ isOpen, onClose, inventoryItems }: AddPackageM
                         />
                     </div>
 
-                    {/* Itinerary Dynamic Repeater (Poin 8) */}
+                    {/* Itinerary Dynamic Repeater with Multi-Rundown */}
                     <div className="flex flex-col gap-3 p-4 bg-muted/30 rounded-2xl border border-border">
                         <div className="flex justify-between items-center">
                             <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
-                                <Calendar className="w-3.5 h-3.5" /> Jadwal Kegiatan Harian (Itinerary)
+                                <Calendar className="w-3.5 h-3.5" /> Jadwal Kegiatan Harian &amp; Multi-Rundown
                             </h4>
                             <button
                                 type="button"
@@ -224,19 +292,19 @@ export function AddPackageModal({ isOpen, onClose, inventoryItems }: AddPackageM
                             </button>
                         </div>
 
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                             {itineraries.map((row, idx) => (
-                                <div key={idx} className="p-3 bg-card border border-border rounded-xl flex flex-col gap-2">
+                                <div key={idx} className="p-3.5 bg-card border border-border rounded-xl flex flex-col gap-3 shadow-2xs">
                                     <div className="flex items-center justify-between gap-2">
-                                        <div className="flex items-center gap-2">
-                                            <span className="w-6 h-6 rounded-lg bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                                        <div className="flex items-center gap-2 flex-1">
+                                            <span className="w-7 h-7 rounded-lg bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0">
                                                 H{row.day}
                                             </span>
                                             <input
                                                 type="text"
                                                 value={row.title}
                                                 onChange={(e) => updateItineraryField(idx, 'title', e.target.value)}
-                                                className="text-xs font-bold py-1 px-2 rounded-lg border border-border bg-background w-48 sm:w-64"
+                                                className="text-xs font-bold py-1.5 px-2.5 rounded-lg border border-border bg-background flex-1"
                                                 placeholder="Judul Hari (misal: Ziarah Kota Madinah)"
                                             />
                                         </div>
@@ -244,10 +312,10 @@ export function AddPackageModal({ isOpen, onClose, inventoryItems }: AddPackageM
                                             <button
                                                 type="button"
                                                 onClick={() => removeItineraryDay(idx)}
-                                                className="p-1 text-muted-foreground hover:text-rose-500 transition"
-                                                title="Hapus Hari"
+                                                className="p-1.5 text-muted-foreground hover:text-rose-500 transition rounded-lg hover:bg-rose-500/10 cursor-pointer"
+                                                title="Hapus Hari Ini"
                                             >
-                                                <Trash2 className="w-3.5 h-3.5" />
+                                                <Trash2 className="w-4 h-4" />
                                             </button>
                                         )}
                                     </div>
@@ -257,21 +325,78 @@ export function AddPackageModal({ isOpen, onClose, inventoryItems }: AddPackageM
                                             type="text"
                                             value={row.location || ''}
                                             onChange={(e) => updateItineraryField(idx, 'location', e.target.value)}
-                                            className="text-[11px] py-1 px-2 rounded-lg border border-border bg-background"
+                                            className="text-xs py-1.5 px-2.5 rounded-lg border border-border bg-background"
                                             placeholder="Lokasi (misal: Masjid Nabawi, Raudhah)"
                                         />
                                         <input
                                             type="text"
                                             value={row.description}
                                             onChange={(e) => updateItineraryField(idx, 'description', e.target.value)}
-                                            className="text-[11px] py-1 px-2 rounded-lg border border-border bg-background"
-                                            placeholder="Deskripsi kegiatan..."
+                                            className="text-xs py-1.5 px-2.5 rounded-lg border border-border bg-background"
+                                            placeholder="Catatan / Ringkasan kegiatan hari ini..."
                                         />
+                                    </div>
+
+                                    {/* Multi-Rundown Sub Repeater */}
+                                    <div className="p-3 bg-muted/40 rounded-xl border border-border/70 flex flex-col gap-2">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[11px] font-bold text-foreground flex items-center gap-1">
+                                                <Clock className="w-3 h-3 text-primary" /> Rundown &amp; Jam Kegiatan (Hari ke-{row.day})
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => addRundown(idx)}
+                                                className="text-[11px] font-bold text-primary hover:underline inline-flex items-center gap-0.5 cursor-pointer"
+                                            >
+                                                <Plus className="w-3 h-3" /> Tambah Jam/Rundown
+                                            </button>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            {(!row.rundowns || row.rundowns.length === 0) ? (
+                                                <p className="text-[10px] text-muted-foreground italic">
+                                                    Belum ada sub-rundown jam. Klik "+ Tambah Jam/Rundown" di atas.
+                                                </p>
+                                            ) : (
+                                                row.rundowns.map((rd, rdIdx) => (
+                                                    <div key={rdIdx} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 bg-background p-2 rounded-lg border border-border">
+                                                        <TimeRangePicker
+                                                            value={rd.time}
+                                                            onChange={(val) => updateRundownField(idx, rdIdx, 'time', val)}
+                                                            className="w-full sm:w-40 shrink-0"
+                                                        />
+                                                        <input
+                                                            type="text"
+                                                            value={rd.activity}
+                                                            onChange={(e) => updateRundownField(idx, rdIdx, 'activity', e.target.value)}
+                                                            placeholder="Nama kegiatan (contoh: Ziarah Makam Rasulullah)"
+                                                            className="flex-1 text-[11px] py-1 px-2 rounded-md border border-border bg-card font-medium"
+                                                        />
+                                                        <input
+                                                            type="text"
+                                                            value={rd.notes || ''}
+                                                            onChange={(e) => updateRundownField(idx, rdIdx, 'notes', e.target.value)}
+                                                            placeholder="Catatan (opsional)"
+                                                            className="w-full sm:w-36 text-[10px] py-1 px-2 rounded-md border border-border bg-card"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeRundown(idx, rdIdx)}
+                                                            className="p-1 text-muted-foreground hover:text-rose-500 self-end sm:self-auto cursor-pointer"
+                                                            title="Hapus Agenda"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
+
 
                     {/* Commission Settings */}
                     <div className="flex flex-col gap-2 p-4 rounded-xl bg-muted/40 border border-border">
@@ -426,7 +551,13 @@ export function EditPackageModal({ isOpen, onClose, pkg, inventoryItems }: EditP
             setCommissionType(pkg.komisi_persentase && pkg.komisi_persentase > 0 ? 'percentage' : 'flat');
             setItineraries(Array.isArray(pkg.itinerary) && pkg.itinerary.length > 0
                 ? pkg.itinerary
-                : [{ day: 1, title: 'Keberangkatan & Tiba di Jeddah', description: 'Penerbangan langsung & check in hotel.', location: 'Bandara' }]);
+                : [{
+                    day: 1,
+                    title: 'Keberangkatan & Tiba di Jeddah',
+                    description: 'Penerbangan langsung & check in hotel.',
+                    location: 'Bandara',
+                    rundowns: [{ time: '08:00 - 10:00', activity: 'Kumpul & Persiapan', notes: '' }],
+                }]);
         }
     }, [pkg, isOpen]);
 
@@ -434,7 +565,13 @@ export function EditPackageModal({ isOpen, onClose, pkg, inventoryItems }: EditP
         const nextDay = itineraries.length + 1;
         setItineraries((prev) => [
             ...prev,
-            { day: nextDay, title: `Aktivitas Ibadah Hari ke-${nextDay}`, description: '', location: '' },
+            {
+                day: nextDay,
+                title: `Aktivitas Ibadah Hari ke-${nextDay}`,
+                description: '',
+                location: '',
+                rundowns: [{ time: '08:00 - 10:00', activity: '', notes: '' }],
+            },
         ]);
     };
 
@@ -446,6 +583,51 @@ export function EditPackageModal({ isOpen, onClose, pkg, inventoryItems }: EditP
         setItineraries((prev) => {
             const next = [...prev];
             next[index] = { ...next[index], [field]: val };
+            return next;
+        });
+    };
+
+    const addRundown = (dayIdx: number) => {
+        setItineraries((prev) => {
+            const next = [...prev];
+            const currentRundowns = next[dayIdx].rundowns || [];
+            next[dayIdx] = {
+                ...next[dayIdx],
+                rundowns: [...currentRundowns, { time: '08:00 - 10:00', activity: '', notes: '' }],
+            };
+            return next;
+        });
+    };
+
+    const removeRundown = (dayIdx: number, rundownIdx: number) => {
+        setItineraries((prev) => {
+            const next = [...prev];
+            const currentRundowns = next[dayIdx].rundowns || [];
+            next[dayIdx] = {
+                ...next[dayIdx],
+                rundowns: currentRundowns.filter((_, rIdx) => rIdx !== rundownIdx),
+            };
+            return next;
+        });
+    };
+
+    const updateRundownField = (
+        dayIdx: number,
+        rundownIdx: number,
+        field: keyof ItineraryRundown,
+        val: string
+    ) => {
+        setItineraries((prev) => {
+            const next = [...prev];
+            const currentRundowns = [...(next[dayIdx].rundowns || [])];
+            currentRundowns[rundownIdx] = {
+                ...currentRundowns[rundownIdx],
+                [field]: val,
+            };
+            next[dayIdx] = {
+                ...next[dayIdx],
+                rundowns: currentRundowns,
+            };
             return next;
         });
     };
@@ -485,10 +667,10 @@ export function EditPackageModal({ isOpen, onClose, pkg, inventoryItems }: EditP
 
     return (
         <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-            <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2 p-0 flex flex-col overflow-hidden">
+            <SheetContent side="right" className="w-full sm:max-w-5xl md:w-1/2 p-0 flex flex-col overflow-hidden">
                 <SheetHeader className="p-6 pb-2 border-b border-border">
                     <SheetTitle>Edit Paket: {pkg?.nama_paket}</SheetTitle>
-                    <SheetDescription>Perbarui rincian harga, kuota seat, itinerary jadwal harian, dan brosur paket.</SheetDescription>
+                    <SheetDescription>Perbarui rincian harga, kuota seat, itinerary jadwal harian &amp; multi-rundown, dan brosur paket.</SheetDescription>
                 </SheetHeader>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6 flex-1 overflow-y-auto">
@@ -551,11 +733,11 @@ export function EditPackageModal({ isOpen, onClose, pkg, inventoryItems }: EditP
                         />
                     </div>
 
-                    {/* Itinerary Dynamic Repeater */}
+                    {/* Itinerary Dynamic Repeater with Multi-Rundown */}
                     <div className="flex flex-col gap-3 p-4 bg-muted/30 rounded-2xl border border-border">
                         <div className="flex justify-between items-center">
                             <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
-                                <Calendar className="w-3.5 h-3.5" /> Jadwal Kegiatan Harian (Itinerary)
+                                <Calendar className="w-3.5 h-3.5" /> Jadwal Kegiatan Harian &amp; Multi-Rundown
                             </h4>
                             <button
                                 type="button"
@@ -566,19 +748,19 @@ export function EditPackageModal({ isOpen, onClose, pkg, inventoryItems }: EditP
                             </button>
                         </div>
 
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                             {itineraries.map((row, idx) => (
-                                <div key={idx} className="p-3 bg-card border border-border rounded-xl flex flex-col gap-2">
+                                <div key={idx} className="p-3.5 bg-card border border-border rounded-xl flex flex-col gap-3 shadow-2xs">
                                     <div className="flex items-center justify-between gap-2">
-                                        <div className="flex items-center gap-2">
-                                            <span className="w-6 h-6 rounded-lg bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                                        <div className="flex items-center gap-2 flex-1">
+                                            <span className="w-7 h-7 rounded-lg bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0">
                                                 H{row.day}
                                             </span>
                                             <input
                                                 type="text"
                                                 value={row.title}
                                                 onChange={(e) => updateItineraryField(idx, 'title', e.target.value)}
-                                                className="text-xs font-bold py-1 px-2 rounded-lg border border-border bg-background w-48 sm:w-64"
+                                                className="text-xs font-bold py-1.5 px-2.5 rounded-lg border border-border bg-background flex-1"
                                                 placeholder="Judul Hari"
                                             />
                                         </div>
@@ -586,9 +768,10 @@ export function EditPackageModal({ isOpen, onClose, pkg, inventoryItems }: EditP
                                             <button
                                                 type="button"
                                                 onClick={() => removeItineraryDay(idx)}
-                                                className="p-1 text-muted-foreground hover:text-rose-500 transition"
+                                                className="p-1.5 text-muted-foreground hover:text-rose-500 transition rounded-lg hover:bg-rose-500/10 cursor-pointer"
+                                                title="Hapus Hari Ini"
                                             >
-                                                <Trash2 className="w-3.5 h-3.5" />
+                                                <Trash2 className="w-4 h-4" />
                                             </button>
                                         )}
                                     </div>
@@ -598,21 +781,78 @@ export function EditPackageModal({ isOpen, onClose, pkg, inventoryItems }: EditP
                                             type="text"
                                             value={row.location || ''}
                                             onChange={(e) => updateItineraryField(idx, 'location', e.target.value)}
-                                            className="text-[11px] py-1 px-2 rounded-lg border border-border bg-background"
-                                            placeholder="Lokasi..."
+                                            className="text-xs py-1.5 px-2.5 rounded-lg border border-border bg-background"
+                                            placeholder="Lokasi (misal: Hotel Makkah, Masjidil Haram)"
                                         />
                                         <input
                                             type="text"
                                             value={row.description}
                                             onChange={(e) => updateItineraryField(idx, 'description', e.target.value)}
-                                            className="text-[11px] py-1 px-2 rounded-lg border border-border bg-background"
-                                            placeholder="Deskripsi kegiatan..."
+                                            className="text-xs py-1.5 px-2.5 rounded-lg border border-border bg-background"
+                                            placeholder="Catatan / Ringkasan kegiatan hari ini..."
                                         />
+                                    </div>
+
+                                    {/* Multi-Rundown Sub Repeater */}
+                                    <div className="p-3 bg-muted/40 rounded-xl border border-border/70 flex flex-col gap-2">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[11px] font-bold text-foreground flex items-center gap-1">
+                                                <Clock className="w-3 h-3 text-primary" /> Rundown &amp; Jam Kegiatan (Hari ke-{row.day})
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => addRundown(idx)}
+                                                className="text-[11px] font-bold text-primary hover:underline inline-flex items-center gap-0.5 cursor-pointer"
+                                            >
+                                                <Plus className="w-3 h-3" /> Tambah Jam/Rundown
+                                            </button>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            {(!row.rundowns || row.rundowns.length === 0) ? (
+                                                <p className="text-[10px] text-muted-foreground italic">
+                                                    Belum ada sub-rundown jam. Klik "+ Tambah Jam/Rundown" di atas.
+                                                </p>
+                                            ) : (
+                                                row.rundowns.map((rd, rdIdx) => (
+                                                    <div key={rdIdx} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 bg-background p-2 rounded-lg border border-border">
+                                                        <TimeRangePicker
+                                                            value={rd.time}
+                                                            onChange={(val) => updateRundownField(idx, rdIdx, 'time', val)}
+                                                            className="w-full sm:w-40 shrink-0"
+                                                        />
+                                                        <input
+                                                            type="text"
+                                                            value={rd.activity}
+                                                            onChange={(e) => updateRundownField(idx, rdIdx, 'activity', e.target.value)}
+                                                            placeholder="Nama kegiatan (contoh: Manasik / Ziarah)"
+                                                            className="flex-1 text-[11px] py-1 px-2 rounded-md border border-border bg-card font-medium"
+                                                        />
+                                                        <input
+                                                            type="text"
+                                                            value={rd.notes || ''}
+                                                            onChange={(e) => updateRundownField(idx, rdIdx, 'notes', e.target.value)}
+                                                            placeholder="Catatan (opsional)"
+                                                            className="w-full sm:w-36 text-[10px] py-1 px-2 rounded-md border border-border bg-card"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeRundown(idx, rdIdx)}
+                                                            className="p-1 text-muted-foreground hover:text-rose-500 self-end sm:self-auto cursor-pointer"
+                                                            title="Hapus Agenda"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
+
 
                     {/* Commission Settings */}
                     <div className="flex flex-col gap-2 p-4 rounded-xl bg-muted/40 border border-border">

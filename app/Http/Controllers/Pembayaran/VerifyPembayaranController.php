@@ -19,6 +19,13 @@ class VerifyPembayaranController extends Controller
      */
     public function __invoke(Request $request, Pembayaran $pembayaran): RedirectResponse
     {
+        $user = $request->user();
+        $tenantId = $user ? $user->getActiveTenantId() : null;
+
+        if ($pembayaran->tenant_id !== $tenantId && ! $user?->isSuperAdmin()) {
+            abort(403, 'Akses ditolak.');
+        }
+
         $validated = $request->validate([
             'status' => ['required', 'in:Verified,Rejected'],
         ]);

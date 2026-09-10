@@ -17,12 +17,14 @@ class DocumentPermission extends Model
         'tenant_id',
         'role_name',
         'document_type',
+        'is_active',
         'can_view',
         'can_upload',
         'can_delete',
     ];
 
     protected $casts = [
+        'is_active' => 'boolean',
         'can_view' => 'boolean',
         'can_upload' => 'boolean',
         'can_delete' => 'boolean',

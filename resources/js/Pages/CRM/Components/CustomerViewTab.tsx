@@ -1,7 +1,22 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
+import { usePage, router } from '@inertiajs/react';
 import { toRupiah } from '@/Components/CurrencyInput';
-import { User, MapPin, Calendar, FileText, ArrowRight, Eye, Edit3 } from 'lucide-react';
-import { Customer, JamaahDocItem, DOCUMENT_TYPES } from './types';
+import {
+    User,
+    MapPin,
+    Calendar,
+    FileText,
+    ArrowRight,
+    Eye,
+    Edit3,
+    Upload,
+    Plus,
+    Trash2,
+    Loader2,
+    CheckCircle2,
+    Download,
+} from 'lucide-react';
+import { Customer, JamaahDocItem, DOCUMENT_TYPES, DocumentPermissionItem } from './types';
 
 interface Props {
     customer: Customer;
@@ -9,6 +24,7 @@ interface Props {
     onEdit?: (customer: Customer) => void;
     onPreviewDoc: (doc: JamaahDocItem) => void;
     onSwitchToDocuments?: () => void;
+    documentPermissions?: DocumentPermissionItem[];
 }
 
 export default function CustomerViewTab({
@@ -17,9 +33,96 @@ export default function CustomerViewTab({
     onEdit,
     onPreviewDoc,
     onSwitchToDocuments,
+    documentPermissions: propPermissions,
 }: Props) {
+    const pageProps = usePage().props as any;
+    const authUser = pageProps.auth?.user;
+    const isSuperOrOwner =
+        authUser?.is_super_admin ||
+        authUser?.role === 'super_admin' ||
+        authUser?.role === 'owner_travel' ||
+        authUser?.role === 'tenant_owner' ||
+        authUser?.role === 'admin_travel';
+
+    const documentPermissions: DocumentPermissionItem[] =
+        propPermissions || pageProps.documentPermissions || [];
+
+    const userRole = authUser?.role || 'staff';
+
+    const isTypeActive = (type: string): boolean => {
+        const perm = documentPermissions.find((p) => p.document_type === type);
+        return perm ? perm.is_active !== false : true;
+    };
+
+    const canUploadType = (type: string): boolean => {
+        if (!isTypeActive(type)) return false;
+        if (isSuperOrOwner) return true;
+        const perm = documentPermissions.find(
+            (p) => p.role_name === userRole && p.document_type === type
+        );
+        return perm ? perm.can_upload : userRole !== 'staff';
+    };
+
+    const canViewType = (type: string): boolean => {
+        if (!isTypeActive(type)) return false;
+        if (isSuperOrOwner) return true;
+        const perm = documentPermissions.find(
+            (p) => p.role_name === userRole && p.document_type === type
+        );
+        return perm ? perm.can_view : true;
+    };
+
+    const canDeleteType = (type: string): boolean => {
+        if (!isTypeActive(type)) return false;
+        if (isSuperOrOwner) return true;
+        const perm = documentPermissions.find(
+            (p) => p.role_name === userRole && p.document_type === type
+        );
+        return perm ? perm.can_delete : false;
+    };
+
+    const [uploadingType, setUploadingType] = useState<string | null>(null);
+    const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+
     const finalPackagePrice = packagePrice ?? (customer.paket?.harga || 0);
-    const customerDocuments = customer.documents || [];
+    const customerDocuments = (customer.documents || []).filter((d) => canViewType(d.type));
+
+    const handleFileSelect = (type: string, e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !customer) return;
+
+        const formData = new FormData();
+        formData.append('type', type);
+        formData.append('file', file);
+        formData.append('title', `${type.toUpperCase()} - ${customer.nama_lengkap}`);
+
+        setUploadingType(type);
+
+        router.post(route('crm.jamaah.documents.store', customer.id), formData, {
+            forceFormData: true,
+            preserveScroll: true,
+            onFinish: () => {
+                setUploadingType(null);
+                if (fileInputRefs.current[type]) {
+                    fileInputRefs.current[type]!.value = '';
+                }
+            },
+        });
+    };
+
+    const handleDeleteDoc = (e: React.MouseEvent, doc: JamaahDocItem) => {
+        e.stopPropagation();
+        if (!canDeleteType(doc.type)) {
+            alert('Anda tidak memiliki hak akses untuk menghapus dokumen ini.');
+            return;
+        }
+
+        if (!confirm(`Hapus berkas ${doc.file_name}?`)) return;
+
+        router.delete(route('crm.jamaah.documents.destroy', doc.id), {
+            preserveScroll: true,
+        });
+    };
 
     return (
         <div className="flex flex-col gap-4">
@@ -142,51 +245,143 @@ export default function CustomerViewTab({
                 </div>
             </div>
 
-            {/* Lampiran Dokumen Persyaratan Card */}
+            {/* Lampiran Dokumen Persyaratan Card with Direct Upload & Multi-Doc View */}
             <div className="bg-card p-4 rounded-2xl border border-border/80 shadow-2xs flex flex-col gap-3">
                 <div className="flex items-center justify-between pb-2 border-b border-border/60">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
-                        <FileText className="w-3.5 h-3.5" /> Berkas Persyaratan ({customerDocuments.length})
-                    </h4>
-                    <button
-                        type="button"
-                        onClick={onSwitchToDocuments}
-                        className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
-                    >
-                        <span>Kelola Dokumen</span>
-                        <ArrowRight className="w-3 h-3" />
-                    </button>
+                    <div>
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                            <FileText className="w-3.5 h-3.5" /> Berkas Persyaratan Jamaah ({customerDocuments.length})
+                        </h4>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                            Lihat, preview (PDF/Gambar), dan unggah berkas KTP, Paspor, SISKOPATUH, dll langsung di sini.
+                        </p>
+                    </div>
+                    {onSwitchToDocuments && (
+                        <button
+                            type="button"
+                            onClick={onSwitchToDocuments}
+                            className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer shrink-0"
+                        >
+                            <span>Kelola Detail</span>
+                            <ArrowRight className="w-3 h-3" />
+                        </button>
+                    )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {DOCUMENT_TYPES.filter((dt) => dt.value !== 'other').map((dt) => {
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                    {DOCUMENT_TYPES.filter((dt) => canViewType(dt.value)).map((dt) => {
                         const docs = customerDocuments.filter((d) => d.type === dt.value);
                         const hasDocs = docs.length > 0;
+                        const canUpload = canUploadType(dt.value);
+                        const isUploading = uploadingType === dt.value;
+
                         return (
                             <div
                                 key={dt.value}
-                                className={`p-2.5 rounded-xl border flex items-center justify-between text-xs transition-all ${
-                                    hasDocs ? 'bg-muted/30 border-border' : 'bg-muted/10 border-dashed border-border/60 opacity-60'
+                                className={`p-3 rounded-xl border flex flex-col gap-2 text-xs transition-all ${
+                                    hasDocs
+                                        ? 'bg-card border-border/90 shadow-2xs'
+                                        : 'bg-muted/10 border-dashed border-border/60 opacity-80'
                                 }`}
                             >
-                                <span className="font-medium text-foreground">{dt.label}</span>
-                                {hasDocs ? (
-                                    <div className="flex items-center gap-1">
-                                        {docs.map((doc) => (
-                                            <button
-                                                key={doc.id}
-                                                type="button"
-                                                onClick={() => onPreviewDoc(doc)}
-                                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground font-bold text-[10px] transition cursor-pointer"
-                                                title={`Lihat ${doc.file_name}`}
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="font-bold text-foreground flex items-center gap-1.5">
+                                        {hasDocs && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
+                                        {dt.label}
+                                    </span>
+
+                                    {/* Direct Upload Button */}
+                                    {canUpload && (
+                                        <div>
+                                            <input
+                                                type="file"
+                                                accept=".jpg,.jpeg,.png,.webp,.pdf"
+                                                ref={(el) => (fileInputRefs.current[dt.value] = el)}
+                                                onChange={(e) => handleFileSelect(dt.value, e)}
+                                                className="hidden"
+                                                id={`upload-doc-${dt.value}`}
+                                            />
+                                            <label
+                                                htmlFor={`upload-doc-${dt.value}`}
+                                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold transition cursor-pointer ${
+                                                    isUploading
+                                                        ? 'bg-muted text-muted-foreground'
+                                                        : 'bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground'
+                                                }`}
                                             >
-                                                <Eye className="w-3 h-3" />
-                                                <span>{doc.is_pdf ? 'PDF' : 'IMG'}</span>
-                                            </button>
+                                                {isUploading ? (
+                                                    <>
+                                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                                        <span>Menyimpan...</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Plus className="w-3 h-3" />
+                                                        <span>{hasDocs ? 'Tambah File' : 'Upload'}</span>
+                                                    </>
+                                                )}
+                                            </label>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Multi-document list for this type */}
+                                {hasDocs ? (
+                                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                                        {docs.map((doc, dIdx) => (
+                                            <div
+                                                key={doc.id}
+                                                className="inline-flex items-center gap-1 bg-muted/50 hover:bg-muted border border-border/70 rounded-lg p-1 pr-1.5 text-[11px] transition group"
+                                            >
+                                                <button
+                                                    type="button"
+                                                    onClick={() => onPreviewDoc(doc)}
+                                                    className="inline-flex items-center gap-1 font-semibold text-foreground hover:text-primary cursor-pointer"
+                                                    title={`Klik untuk lihat berkas #${dIdx + 1}: ${doc.file_name}`}
+                                                >
+                                                    <span
+                                                        className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${
+                                                            doc.is_pdf
+                                                                ? 'bg-rose-500/10 text-rose-600'
+                                                                : 'bg-blue-500/10 text-blue-600'
+                                                        }`}
+                                                    >
+                                                        {doc.is_pdf ? 'PDF' : 'IMG'} {docs.length > 1 ? `#${dIdx + 1}` : ''}
+                                                    </span>
+                                                    <span className="truncate max-w-[100px] text-[10px]">
+                                                        {doc.file_name}
+                                                    </span>
+                                                </button>
+
+                                                {doc.url && (
+                                                    <a
+                                                        href={doc.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-muted-foreground hover:text-primary p-0.5"
+                                                        title="Download / Buka Tab Baru"
+                                                    >
+                                                        <Download className="w-3 h-3" />
+                                                    </a>
+                                                )}
+
+                                                {canDeleteType(doc.type) && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => handleDeleteDoc(e, doc)}
+                                                        className="text-muted-foreground hover:text-rose-500 p-0.5 cursor-pointer"
+                                                        title="Hapus file ini"
+                                                    >
+                                                        <Trash2 className="w-3 h-3" />
+                                                    </button>
+                                                )}
+                                            </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <span className="text-[10px] text-muted-foreground italic">Belum Ada</span>
+                                    <span className="text-[10px] text-muted-foreground italic">
+                                        Belum ada dokumen yang diunggah.
+                                    </span>
                                 )}
                             </div>
                         );
@@ -210,3 +405,4 @@ export default function CustomerViewTab({
         </div>
     );
 }
+

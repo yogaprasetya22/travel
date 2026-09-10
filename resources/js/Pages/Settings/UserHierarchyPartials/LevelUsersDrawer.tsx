@@ -35,7 +35,7 @@ export function LevelUsersDrawer({
 }: LevelUsersDrawerProps) {
     return (
         <Sheet open={!!activeDrawerLevel} onOpenChange={(open) => { if (!open) onClose(); }}>
-            <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2 flex flex-col justify-between">
+            <SheetContent side="right" className="w-full sm:max-w-5xl md:w-1/2 flex flex-col justify-between">
                 <div className="flex flex-col gap-5 p-4 flex-1 overflow-y-auto low-scrollbar">
                     <SheetHeader className="pb-3 border-b border-border/60">
                         <div className="flex justify-between items-start">

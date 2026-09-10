@@ -50,6 +50,30 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        $user = Auth::user();
+
+        // Multi-Tenant Isolation Guard:
+        if (app()->bound('tenant') && $user && ! $user->isSuperAdmin()) {
+            $currentTenant = app('tenant');
+
+            if ($user->tenant_id !== $currentTenant->id) {
+                Auth::guard('web')->logout();
+
+                if ($this->hasSession()) {
+                    $this->session()->invalidate();
+                    $this->session()->regenerateToken();
+                }
+
+                $travelName = $user->tenant?->nama_travel ?? 'travel lain';
+                $subdomain = $user->tenant?->domain_atau_subdomain;
+                $hint = $subdomain ? " (subdomain: {$subdomain})" : '';
+
+                throw ValidationException::withMessages([
+                    'email' => "Akun Anda terdaftar pada {$travelName}",
+                ]);
+            }
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

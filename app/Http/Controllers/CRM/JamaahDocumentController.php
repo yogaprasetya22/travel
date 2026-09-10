@@ -31,12 +31,16 @@ class JamaahDocumentController extends Controller
             ->where('document_type', $request->input('type'))
             ->first();
 
+        if ($permission && $permission->is_active === false) {
+            return redirect()->back()->withErrors(['document' => 'Jenis dokumen ini sedang dinonaktifkan oleh pihak travel.']);
+        }
+
         if ($permission && ! $permission->can_upload && ! $user->isOwner() && ! $user->isSuperAdmin()) {
             return redirect()->back()->withErrors(['document' => 'Role Anda tidak memiliki izin untuk mengunggah jenis dokumen ini.']);
         }
 
         $validated = $request->validate([
-            'type' => ['required', 'string', 'in:ktp,kk,paspor,foto,visa,tiket,asuransi,siskopatuh,vaksin,other'],
+            'type' => ['required', 'string', 'in:ktp,kk,buku_nikah,akta_lahir,paspor,foto,visa,tiket,asuransi,siskopatuh,vaksin,surat_rekomendasi,surat_mahram,other'],
             'title' => ['nullable', 'string', 'max:255'],
             'file' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:10240'], // max 10MB
             'notes' => ['nullable', 'string', 'max:500'],
@@ -92,5 +96,39 @@ class JamaahDocumentController extends Controller
         $document->delete();
 
         return redirect()->back()->with('success', 'Dokumen berhasil dihapus.');
+    }
+
+    /**
+     * Preview or stream document securely.
+     */
+    public function preview(Request $request, JamaahDocument $document): mixed
+    {
+        $user = $request->user();
+        $tenantId = $user->getActiveTenantId();
+
+        if ($document->tenant_id !== $tenantId && ! $user->isSuperAdmin()) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        // Check RBAC permission for view
+        $userRole = $user->role ?? 'staff';
+        $permission = DocumentPermission::where('tenant_id', $tenantId)
+            ->where('role_name', $userRole)
+            ->where('document_type', $document->type)
+            ->first();
+
+        if ($permission && $permission->is_active === false) {
+            abort(403, 'Jenis dokumen ini sedang dinonaktifkan oleh pihak travel.');
+        }
+
+        if ($permission && ! $permission->can_view && ! $user->isOwner() && ! $user->isSuperAdmin()) {
+            abort(403, 'Role Anda tidak memiliki izin untuk melihat dokumen ini.');
+        }
+
+        if (! Storage::disk('public')->exists($document->file_path)) {
+            abort(404, 'Berkas dokumen tidak ditemukan.');
+        }
+
+        return Storage::disk('public')->response($document->file_path, $document->file_name);
     }
 }

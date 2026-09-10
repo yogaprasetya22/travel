@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
@@ -43,6 +44,18 @@ class KomisiAgen extends Model
         'nominal_komisi' => 'float',
         'tanggal_pencairan' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (KomisiAgen $komisi) {
+            if (empty($komisi->nomor_referensi)) {
+                $period = now()->format('Ym');
+                $randomSuffix = strtoupper(Str::random(6));
+                $randomDigits = str_pad((string) mt_rand(1, 99999), 5, '0', STR_PAD_LEFT);
+                $komisi->nomor_referensi = "COMM-{$period}{$randomDigits}-{$randomSuffix}";
+            }
+        });
+    }
 
     public function tenant(): BelongsTo
     {

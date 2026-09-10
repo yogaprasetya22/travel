@@ -241,6 +241,7 @@ class MasterDataController extends Controller
             'permissions' => ['required', 'array'],
             'permissions.*.role_name' => ['required', 'string'],
             'permissions.*.document_type' => ['required', 'string'],
+            'permissions.*.is_active' => ['nullable', 'boolean'],
             'permissions.*.can_view' => ['required', 'boolean'],
             'permissions.*.can_upload' => ['required', 'boolean'],
             'permissions.*.can_delete' => ['required', 'boolean'],
@@ -254,6 +255,7 @@ class MasterDataController extends Controller
                     'document_type' => $perm['document_type'],
                 ],
                 [
+                    'is_active' => $perm['is_active'] ?? true,
                     'can_view' => $perm['can_view'],
                     'can_upload' => $perm['can_upload'],
                     'can_delete' => $perm['can_delete'],
@@ -262,6 +264,7 @@ class MasterDataController extends Controller
         }
 
         return redirect()->back()->with('success', 'Pengaturan hak akses dokumen (RBAC) berhasil disimpan.');
+
     }
 
     /**

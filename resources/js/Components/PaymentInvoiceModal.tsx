@@ -23,6 +23,7 @@ import { toRupiah } from '@/Components/CurrencyInput';
 
 export interface InvoicePaymentData {
     id: number;
+    nomor_invoice?: string;
     nominal: number;
     tipe_pembayaran: string;
     status_verifikasi: string;
@@ -44,7 +45,13 @@ export interface InvoicePaymentData {
         nomor_rekening: string;
         atas_nama: string;
     };
+    verified_by?: {
+        name: string;
+    } | number | null;
     verified_by_user?: {
+        name: string;
+    } | null;
+    verifiedBy?: {
         name: string;
     } | null;
 }
@@ -110,10 +117,12 @@ export const PaymentInvoiceModal: React.FC<PaymentInvoiceModalProps> = ({
     if (!payment) return null;
 
     const paymentDate = payment.created_at ? new Date(payment.created_at) : new Date();
-    const invoiceNumber = `INV-${paymentDate.getFullYear()}${String(paymentDate.getMonth() + 1).padStart(
-        2,
-        '0'
-    )}-${String(payment.id).padStart(5, '0')}`;
+    const invoiceNumber =
+        payment.nomor_invoice ||
+        `INV-${paymentDate.getFullYear()}${String(paymentDate.getMonth() + 1).padStart(
+            2,
+            '0'
+        )}-${String(payment.id).padStart(5, '0')}`;
 
     const formattedPaymentDate = paymentDate.toLocaleDateString('id-ID', {
         day: 'numeric',
@@ -128,6 +137,13 @@ export const PaymentInvoiceModal: React.FC<PaymentInvoiceModalProps> = ({
         month: 'long',
         year: 'numeric',
     });
+
+    const approverName =
+        (typeof payment.verified_by === 'object' && payment.verified_by?.name) ||
+        payment.verified_by_user?.name ||
+        payment.verifiedBy?.name ||
+        (payment as any).verifier?.name ||
+        'Bagian Keuangan';
 
     const isVerified =
         payment.status_verifikasi === 'Verified' || payment.status_verifikasi === 'verified';
@@ -430,17 +446,17 @@ export const PaymentInvoiceModal: React.FC<PaymentInvoiceModalProps> = ({
                                     </div>
 
                                     {/* Verified Official Box / Stamp */}
-                                    <div className="border-2 border-emerald-600/80 dark:border-emerald-500/60 rounded-xl p-3 bg-emerald-50/80 dark:bg-emerald-950/40 flex items-center gap-3 shadow-xs">
-                                        {/* Real Cute Scannable QR Code */}
-                                        <div className="w-14 h-14 bg-white p-1 rounded-xl border border-emerald-200 dark:border-emerald-800 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
+                                    <div className="border-2 border-emerald-600/80 dark:border-emerald-500/60 rounded-xl p-3 bg-emerald-50/80 dark:bg-emerald-950/40 flex items-center gap-3.5 shadow-xs">
+                                        {/* Real Scannable ISO QR Code */}
+                                        <div className="w-20 h-20 bg-white p-1 rounded-xl border border-slate-300 dark:border-emerald-800 flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
                                             <CuteQrCode
                                                 value={
                                                     typeof window !== 'undefined'
-                                                        ? `${window.location.origin}/keuangan/pembayaran?ref=${payment.id}`
-                                                        : `HAJJFLOW:${payment.id}:${payment.nominal}`
+                                                        ? `${window.location.origin}/verifikasi-pembayaran/${encodeURIComponent(payment.nomor_invoice || payment.id)}`
+                                                        : `https://travel.id/verifikasi-pembayaran/${encodeURIComponent(payment.nomor_invoice || payment.id)}`
                                                 }
-                                                size={50}
-                                                color="#065f46"
+                                                size={72}
+                                                color="#000000"
                                                 bgColor="#ffffff"
                                             />
                                         </div>
@@ -454,10 +470,11 @@ export const PaymentInvoiceModal: React.FC<PaymentInvoiceModalProps> = ({
                                                 DIGITALLY SIGNED &amp; SECURED
                                             </p>
                                             <p className="text-[10px] text-slate-700 dark:text-slate-300 font-semibold pt-0.5">
-                                                Petugas: {payment.verified_by_user?.name || 'Bagian Keuangan (Finance)'}
+                                                Petugas Approval: <span className="text-foreground font-bold">{approverName}</span>
                                             </p>
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
@@ -465,7 +482,7 @@ export const PaymentInvoiceModal: React.FC<PaymentInvoiceModalProps> = ({
                         {/* Bottom Watermark / Disclaimer */}
                         <div className="pt-2.5 border-t border-slate-200 dark:border-border flex flex-col sm:flex-row items-center justify-between text-[10px] text-slate-400 dark:text-muted-foreground gap-1">
                             <span>Dicetak otomatis melalui HajjFlow Smart ERP Suite</span>
-                            <span className="font-mono">ID Transaksi: #{payment.id} • Ref: {invoiceNumber}</span>
+                            <span className="font-mono font-semibold text-slate-600 dark:text-slate-400">No. Kuitansi: {invoiceNumber}</span>
                         </div>
                     </div>
                 </div>

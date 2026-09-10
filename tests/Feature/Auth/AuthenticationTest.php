@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Tenant;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -64,5 +65,88 @@ class AuthenticationTest extends TestCase
 
         $this->assertGuest();
         $response->assertRedirect('/');
+    }
+
+    public function test_user_cannot_login_to_different_tenant_subdomain(): void
+    {
+        $tenantBarokah = Tenant::create([
+            'nama_travel' => 'Barokah Travel',
+            'domain_atau_subdomain' => 'barokah',
+            'email' => 'barokah@travel.id',
+            'telepon' => '081234567891',
+        ]);
+
+        $tenantHajjflow = Tenant::create([
+            'nama_travel' => 'Hajjflow Travel',
+            'domain_atau_subdomain' => 'hajjflow',
+            'email' => 'hajjflow@travel.id',
+            'telepon' => '081234567892',
+        ]);
+
+        // Agent belongs to Hajjflow
+        $agentHajjflow = User::factory()->create([
+            'tenant_id' => $tenantHajjflow->id,
+            'role' => 'agen',
+            'email' => 'agent@hajjflow.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        // Attempt login on barokah subdomain
+        $response = $this->post('http://barokah.72.62.125.68.nip.io:8085/login', [
+            'email' => 'agent@hajjflow.com',
+            'password' => 'password',
+        ]);
+
+        $this->assertGuest();
+        $response->assertSessionHasErrors(['email']);
+    }
+
+    public function test_user_can_login_to_their_own_tenant_subdomain(): void
+    {
+        $tenantBarokah = Tenant::create([
+            'nama_travel' => 'Barokah Travel',
+            'domain_atau_subdomain' => 'barokah',
+            'email' => 'barokah@travel.id',
+            'telepon' => '081234567891',
+        ]);
+
+        $agentBarokah = User::factory()->create([
+            'tenant_id' => $tenantBarokah->id,
+            'role' => 'agen',
+            'email' => 'agent@barokah.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $response = $this->post('http://barokah.72.62.125.68.nip.io:8085/login', [
+            'email' => 'agent@barokah.com',
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('dashboard', absolute: false));
+    }
+
+    public function test_superadmin_can_login_to_any_tenant_subdomain(): void
+    {
+        $tenantBarokah = Tenant::create([
+            'nama_travel' => 'Barokah Travel',
+            'domain_atau_subdomain' => 'barokah',
+            'email' => 'barokah@travel.id',
+            'telepon' => '081234567891',
+        ]);
+
+        $superadmin = User::factory()->create([
+            'role' => 'super_admin_master',
+            'email' => 'super@master.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $response = $this->post('http://barokah.72.62.125.68.nip.io:8085/login', [
+            'email' => 'super@master.com',
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('dashboard', absolute: false));
     }
 }

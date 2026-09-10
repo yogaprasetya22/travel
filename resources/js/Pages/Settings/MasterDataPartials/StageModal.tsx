@@ -55,7 +55,7 @@ export function StageModal({ isOpen, onClose, nextUrutan }: StageModalProps) {
 
     return (
         <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-            <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2">
+            <SheetContent side="right" className="w-full sm:max-w-5xl md:w-1/2">
                 <SheetHeader>
                     <SheetTitle>Tambah Tahapan Pipeline CRM</SheetTitle>
                     <SheetDescription>Daftarkan tahapan baru pada siklus prospek jamaah beserta periode waktu aktif berlakunya.</SheetDescription>

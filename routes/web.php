@@ -23,6 +23,7 @@ use App\Http\Controllers\Pembayaran\ViewPaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicLandingController;
 use App\Http\Controllers\Settings\AppSettingsController;
+use App\Http\Controllers\Settings\LandingPageCmsController;
 use App\Http\Controllers\Settings\MasterDataController;
 use App\Http\Controllers\Settings\MenuController;
 use App\Http\Controllers\Settings\UserHierarchyController;
@@ -36,6 +37,7 @@ Route::post('/daftar', [PublicLandingController::class, 'registerSubmit'])->name
 Route::get('/daftar/sukses', [PublicLandingController::class, 'registerSuccess'])->name('public.register.success');
 
 Route::get('/agen/{referral_code}', [AgentProfileController::class, 'show'])->name('public.agent.profile');
+Route::get('/verifikasi-pembayaran/{invoice}', [PublicLandingController::class, 'verifyInvoice'])->name('public.verify-invoice');
 
 // Documentation & Manual Guide Routes (Public & In-App)
 Route::get('/docs-assets/{role}/screenshots/{file}', [DocsController::class, 'asset'])
@@ -77,6 +79,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/crm/customers/{jamaah}', [CustomerController::class, 'update'])->name('crm.customers.update');
     Route::post('/crm/customers/{jamaah}/payment', [CustomerController::class, 'recordPayment'])->name('crm.customers.payment');
     Route::post('/crm/jamaah/{jamaah}/documents', [JamaahDocumentController::class, 'store'])->name('crm.jamaah.documents.store');
+    Route::get('/crm/documents/{document}/preview', [JamaahDocumentController::class, 'preview'])->name('crm.jamaah.documents.preview');
     Route::delete('/crm/documents/{document}', [JamaahDocumentController::class, 'destroy'])->name('crm.jamaah.documents.destroy');
     Route::get('/crm/logistics', [LogisticsDistributionController::class, 'index'])->name('crm.logistics.index');
     Route::post('/crm/logistics/{jamaah}/handover', [LogisticsDistributionController::class, 'handover'])->name('crm.logistics.handover');
@@ -92,6 +95,8 @@ Route::middleware('auth')->group(function () {
 
     // Settings & App Configuration Routes
     Route::get('/settings/app', [AppSettingsController::class, 'index'])->name('settings.app.index');
+    Route::get('/settings/landing', [LandingPageCmsController::class, 'index'])->name('settings.landing.index');
+    Route::put('/settings/landing', [LandingPageCmsController::class, 'update'])->name('settings.landing.update');
     Route::get('/settings/users', [UserHierarchyController::class, 'index'])->name('settings.users.index');
     Route::post('/settings/users', [UserHierarchyController::class, 'store'])->name('settings.users.store');
     Route::put('/settings/users/{user}', [UserHierarchyController::class, 'update'])->name('settings.users.update');

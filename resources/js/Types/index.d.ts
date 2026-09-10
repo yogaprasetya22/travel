@@ -127,6 +127,20 @@ export interface CrmStage {
     updated_at?: string;
 }
 
+export interface ItineraryRundown {
+    time: string;
+    activity: string;
+    notes?: string;
+}
+
+export interface ItineraryItem {
+    day: number;
+    title: string;
+    description: string;
+    location?: string;
+    rundowns?: ItineraryRundown[];
+}
+
 export interface PackageItem {
     id: number;
     nama_paket: string;
@@ -136,7 +150,7 @@ export interface PackageItem {
     deskripsi?: string | null;
     brosur_image?: string | null;
     brosur_url?: string | null;
-    itinerary?: Array<{ day: number; title: string; description: string; location?: string }> | null;
+    itinerary?: ItineraryItem[] | null;
     fasilitas?: string[] | null;
     komisi_flat: number;
     komisi_persentase: number;
@@ -159,7 +173,7 @@ export interface Paket {
     deskripsi?: string | null;
     brosur_image?: string | null;
     brosur_url?: string | null;
-    itinerary?: Array<{ day: number; title: string; description: string; location?: string }> | null;
+    itinerary?: ItineraryItem[] | null;
     fasilitas?: string[] | null;
     komisi_flat: number;
     komisi_persentase: number;
@@ -167,6 +181,7 @@ export interface Paket {
     created_at?: string;
     updated_at?: string;
 }
+
 
 export interface Inventaris {
     id: number;
@@ -221,6 +236,7 @@ export interface Jamaah {
 
 export interface Pembayaran {
     id: number;
+    nomor_invoice?: string;
     tenant_id: number;
     jamaah_id: number;
     rekening_tenant_id: number;

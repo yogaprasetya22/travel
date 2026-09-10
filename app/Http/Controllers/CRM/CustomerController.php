@@ -136,7 +136,7 @@ class CustomerController extends Controller
             'paket:id,nama_paket,harga,kuota',
             'agen:id,name,email',
             'pembayaran' => function ($q) {
-                $q->orderBy('created_at', 'asc');
+                $q->with(['rekeningTenant', 'verifiedBy'])->orderBy('created_at', 'asc');
             },
             'documents.uploader:id,name',
             'itemDistributions.inventaris',

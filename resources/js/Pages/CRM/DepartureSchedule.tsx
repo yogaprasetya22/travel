@@ -236,7 +236,7 @@ export default function DepartureSchedule({
     const handleExportManifest = (dateKey: string, members: JamaahSchedule[]) => {
         const title = dateKey === 'Belum Ditentukan' ? 'Manifest_Antrean_Belum_Terjadwal' : `Manifest_Kloter_${dateKey}`;
         const headers = ['No', 'Nama Jamaah', 'No HP', 'No Paspor', 'Paket Umroh/Haji', 'Mitra Agen', 'Tanggal Keberangkatan'];
-        
+
         const rows = members.map((m, idx) => [
             idx + 1,
             `"${m.nama_lengkap.replace(/"/g, '""')}"`,
@@ -283,11 +283,10 @@ export default function DepartureSchedule({
                     <button
                         type="button"
                         onClick={() => setViewMode('group')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                            viewMode === 'group'
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${viewMode === 'group'
                                 ? 'bg-card text-foreground shadow-xs'
                                 : 'text-muted-foreground hover:text-foreground'
-                        }`}
+                            }`}
                     >
                         <LayoutGrid className="w-3.5 h-3.5" />
                         <span>Kloter Grup</span>
@@ -295,11 +294,10 @@ export default function DepartureSchedule({
                     <button
                         type="button"
                         onClick={() => setViewMode('table')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                            viewMode === 'table'
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${viewMode === 'table'
                                 ? 'bg-card text-foreground shadow-xs'
                                 : 'text-muted-foreground hover:text-foreground'
-                        }`}
+                            }`}
                     >
                         <TableIcon className="w-3.5 h-3.5" />
                         <span>Tabel Manifest</span>
@@ -514,7 +512,7 @@ export default function DepartureSchedule({
                                             </p>
                                         </div>
                                     </div>
-                                    
+
                                     <div className="flex items-center gap-2 self-end sm:self-center">
                                         <button
                                             type="button"
@@ -550,11 +548,10 @@ export default function DepartureSchedule({
                                                         <div className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">
                                                             {jm.nama_lengkap}
                                                         </div>
-                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
-                                                            jm.nomor_paspor
+                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${jm.nomor_paspor
                                                                 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
                                                                 : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                                                        }`}>
+                                                            }`}>
                                                             {jm.nomor_paspor ? `Paspor: ${jm.nomor_paspor}` : 'Paspor Pending'}
                                                         </span>
                                                     </div>
@@ -589,11 +586,10 @@ export default function DepartureSchedule({
                                                                     key={pg}
                                                                     type="button"
                                                                     onClick={() => setKloterPages((prev) => ({ ...prev, [dateKey]: pg }))}
-                                                                    className={`w-7 h-7 rounded-lg text-xs font-bold transition cursor-pointer ${
-                                                                        currentPage === pg
+                                                                    className={`w-7 h-7 rounded-lg text-xs font-bold transition cursor-pointer ${currentPage === pg
                                                                             ? 'bg-primary text-primary-foreground shadow-xs'
                                                                             : 'border border-border bg-card hover:bg-muted text-foreground'
-                                                                    }`}
+                                                                        }`}
                                                                 >
                                                                     {pg}
                                                                 </button>
@@ -732,7 +728,7 @@ export default function DepartureSchedule({
 
             {/* DETAILING & RESCHEDULE DRAWER (SLIDE-OUT SHEET) */}
             <Sheet open={!!selectedJamaah} onOpenChange={(open) => { if (!open) setSelectedJamaah(null); }}>
-                <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2 flex flex-col justify-between">
+                <SheetContent side="right" className="w-full sm:max-w-5xl md:w-1/2 flex flex-col justify-between">
                     <div className="flex flex-col gap-6 p-4 flex-1 overflow-y-auto">
                         <SheetHeader className="pb-4 border-b border-border/60">
                             <div className="flex justify-between items-start gap-4">
@@ -750,11 +746,10 @@ export default function DepartureSchedule({
                                     </SheetDescription>
                                 </div>
                                 <span
-                                    className={`text-xs font-bold px-3 py-1.5 rounded-full border shrink-0 ${
-                                        selectedJamaah?.tanggal_keberangkatan
+                                    className={`text-xs font-bold px-3 py-1.5 rounded-full border shrink-0 ${selectedJamaah?.tanggal_keberangkatan
                                             ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
                                             : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                                    }`}
+                                        }`}
                                 >
                                     {selectedJamaah?.tanggal_keberangkatan ? 'Terjadwal' : 'Belum Terjadwal'}
                                 </span>

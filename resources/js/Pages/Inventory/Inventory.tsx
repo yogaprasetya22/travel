@@ -381,9 +381,8 @@ export default function Inventory({
                 </div>
 
                 <div className="bg-card/70 border border-border/80 rounded-2xl p-5 shadow-xs flex items-center gap-4">
-                    <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${
-                        metrics.critical_count > 0 ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" : "bg-muted text-muted-foreground"
-                    }`}>
+                    <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${metrics.critical_count > 0 ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" : "bg-muted text-muted-foreground"
+                        }`}>
                         <AlertTriangle className="w-6 h-6" />
                     </div>
                     <div>
@@ -501,11 +500,10 @@ export default function Inventory({
                                 <button
                                     key={st.id}
                                     onClick={() => setStatusFilter(st.id)}
-                                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer shrink-0 ${
-                                        statusFilter === st.id
+                                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer shrink-0 ${statusFilter === st.id
                                             ? "bg-primary text-primary-foreground shadow-xs"
                                             : "bg-muted/70 hover:bg-muted text-foreground"
-                                    }`}
+                                        }`}
                                 >
                                     {st.label}
                                 </button>
@@ -565,13 +563,12 @@ export default function Inventory({
                                                     </div>
                                                 </td>
                                                 <td className="px-5 py-3.5">
-                                                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border ${
-                                                        isOutOfStock
+                                                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border ${isOutOfStock
                                                             ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
                                                             : isLow
-                                                            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
-                                                            : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                                                    }`}>
+                                                                ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                                                                : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                                                        }`}>
                                                         {isOutOfStock ? "Habis (0)" : isLow ? "Stok Kritis" : "Aman"}
                                                     </span>
                                                 </td>
@@ -731,11 +728,10 @@ export default function Inventory({
                                                 </span>
                                             </td>
                                             <td className="px-5 py-3.5">
-                                                <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold border ${
-                                                    log.tipe === "IN"
+                                                <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold border ${log.tipe === "IN"
                                                         ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                                                         : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
-                                                }`}>
+                                                    }`}>
                                                     {log.tipe === "IN" ? <ArrowDownLeft className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
                                                     <span>{log.tipe === "IN" ? "Stock IN (Masuk)" : "Stock OUT (Keluar)"}</span>
                                                 </span>
@@ -806,7 +802,7 @@ export default function Inventory({
 
             {/* Drawer: Tambah Barang Baru */}
             <Sheet open={isAddOpen} onOpenChange={setIsAddOpen}>
-                <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2 flex flex-col">
+                <SheetContent side="right" className="w-full sm:max-w-5xl md:w-1/2 flex flex-col">
                     <SheetHeader>
                         <SheetTitle>Tambah Barang Inventaris Baru</SheetTitle>
                         <SheetDescription>Lengkapi data master barang, SKU, harga pokok beli, dan penempatan gudang.</SheetDescription>
@@ -932,7 +928,7 @@ export default function Inventory({
 
             {/* Drawer: Edit Master Barang */}
             <Sheet open={!!editingItem} onOpenChange={(open) => { if (!open) setEditingItem(null) }}>
-                <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2 flex flex-col">
+                <SheetContent side="right" className="w-full sm:max-w-5xl md:w-1/2 flex flex-col">
                     <SheetHeader>
                         <SheetTitle>Edit Master Barang</SheetTitle>
                         <SheetDescription>Perbarui informasi metadata, SKU, HPP, atau batas stok minimum.</SheetDescription>
@@ -1055,7 +1051,7 @@ export default function Inventory({
 
             {/* Drawer: Quick Restock / Stock Out Adjustment */}
             <Sheet open={!!adjustingItem} onOpenChange={(open) => { if (!open) setAdjustingItem(null) }}>
-                <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2 flex flex-col">
+                <SheetContent side="right" className="w-full sm:max-w-5xl md:w-1/2 flex flex-col">
                     <SheetHeader>
                         <SheetTitle>Penyesuaian Stok Cepat (Restock / Out)</SheetTitle>
                         <SheetDescription>
@@ -1078,11 +1074,10 @@ export default function Inventory({
                                     <button
                                         type="button"
                                         onClick={() => adjustForm.setData("tipe", "IN")}
-                                        className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
-                                            adjustForm.data.tipe === "IN"
+                                        className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${adjustForm.data.tipe === "IN"
                                                 ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
                                                 : "bg-card hover:bg-muted text-foreground border-border"
-                                        }`}
+                                            }`}
                                     >
                                         <ArrowDownLeft className="w-4 h-4" />
                                         <span>Stock IN (Masuk / Restock)</span>
@@ -1090,11 +1085,10 @@ export default function Inventory({
                                     <button
                                         type="button"
                                         onClick={() => adjustForm.setData("tipe", "OUT")}
-                                        className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
-                                            adjustForm.data.tipe === "OUT"
+                                        className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${adjustForm.data.tipe === "OUT"
                                                 ? "bg-rose-600 text-white border-rose-600 shadow-xs"
                                                 : "bg-card hover:bg-muted text-foreground border-border"
-                                        }`}
+                                            }`}
                                     >
                                         <ArrowUpRight className="w-4 h-4" />
                                         <span>Stock OUT (Keluar / Rusak)</span>

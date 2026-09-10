@@ -33,12 +33,39 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+            'tenant' => function () use ($request) {
+                if (app()->bound('tenant')) {
+                    return app('tenant');
+                }
+                $host = $request->getHost();
+                $subdomain = explode('.', $host)[0];
+                if (! in_array($subdomain, ['localhost', 'travel', 'app', 'www', '127']) && ! filter_var($host, FILTER_VALIDATE_IP)) {
+                    $t = Tenant::where('domain_atau_subdomain', $subdomain)->first();
+                    if ($t) {
+                        return $t;
+                    }
+                }
+
+                return Tenant::first();
+            },
             'auth' => [
                 'user' => $request->user() ? $request->user()->load('tenant') : null,
                 'active_tenant' => function () use ($request) {
                     $user = $request->user();
                     if (! $user) {
-                        return null;
+                        if (app()->bound('tenant')) {
+                            return app('tenant');
+                        }
+                        $host = $request->getHost();
+                        $subdomain = explode('.', $host)[0];
+                        if (! in_array($subdomain, ['localhost', 'travel', 'app', 'www', '127']) && ! filter_var($host, FILTER_VALIDATE_IP)) {
+                            $t = Tenant::where('domain_atau_subdomain', $subdomain)->first();
+                            if ($t) {
+                                return $t;
+                            }
+                        }
+
+                        return Tenant::first();
                     }
                     if ($user->role === 'super_admin_master') {
                         $tenantId = $request->session()->get('tenant_id', Tenant::first()?->id);
@@ -46,7 +73,7 @@ class HandleInertiaRequests extends Middleware
                         return Tenant::find($tenantId) ?? Tenant::first();
                     }
 
-                    return $user->tenant;
+                    return $user->tenant ?? (app()->bound('tenant') ? app('tenant') : Tenant::first());
                 },
                 'tenants' => function () use ($request) {
                     $user = $request->user();

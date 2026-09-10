@@ -60,11 +60,11 @@ export function DatePickerWithRange({
   const isThisMonthActive = selectedRange?.from && selectedRange?.to && isSameDay(selectedRange.from, startOfMonth(new Date())) && isSameDay(selectedRange.to, endOfMonth(new Date()))
 
   return (
-    <div className={cn("grid gap-2", className)}>
+    <div className={cn("w-full", className)}>
       <Popover>
         <PopoverTrigger
           className={cn(
-            "flex items-center justify-between gap-2 px-3 py-2 text-xs font-medium rounded-xl border border-border bg-background hover:bg-muted/40 transition cursor-pointer text-foreground shadow-xs focus:outline-none focus:ring-2 focus:ring-primary/20",
+            "flex w-full items-center justify-between gap-2 px-3 py-2 text-xs font-medium rounded-xl border border-border bg-background hover:bg-muted/40 transition cursor-pointer text-foreground shadow-xs focus:outline-none focus:ring-2 focus:ring-primary/20",
             !selectedRange?.from && "text-muted-foreground"
           )}
         >

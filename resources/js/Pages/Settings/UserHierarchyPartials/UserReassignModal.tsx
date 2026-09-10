@@ -50,7 +50,7 @@ export function UserReassignModal({
 
     return (
         <Sheet open={!!reassigningUser} onOpenChange={(open) => { if (!open) onClose(); }}>
-            <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2">
+            <SheetContent side="right" className="w-full sm:max-w-5xl md:w-1/2">
                 <SheetHeader>
                     <SheetTitle>Pindahkan Jabatan: {reassigningUser?.name}</SheetTitle>
                     <SheetDescription>

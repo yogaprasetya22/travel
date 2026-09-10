@@ -384,6 +384,7 @@ export const CustomerFinancialTab: React.FC<CustomerFinancialTabProps> = ({
                                             onClick={() => {
                                                 setSelectedInvoice({
                                                     id: p.id,
+                                                    nomor_invoice: p.nomor_invoice,
                                                     nominal: Number(p.nominal || 0),
                                                     tipe_pembayaran: p.tipe_pembayaran || 'Pembayaran',
                                                     status_verifikasi: p.status_verifikasi,
@@ -400,6 +401,7 @@ export const CustomerFinancialTab: React.FC<CustomerFinancialTabProps> = ({
                                                         } : undefined,
                                                     },
                                                     rekening_tenant: banks.find(b => b.id === p.rekening_tenant_id),
+                                                    verified_by: (p as any).verified_by || (p as any).verifiedBy || (p as any).verified_by_user,
                                                 });
                                             }}
                                             className="h-8 px-3 gap-1.5 text-xs font-semibold border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/50 hover:bg-indigo-600 text-indigo-700 hover:text-white dark:text-indigo-400 dark:hover:text-white rounded-xl transition cursor-pointer"

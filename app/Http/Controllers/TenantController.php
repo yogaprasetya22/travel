@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -99,23 +100,42 @@ class TenantController extends Controller
             'nama_travel' => ['required', 'string', 'max:255'],
             'domain_atau_subdomain' => ['required', 'string', 'max:100', 'unique:tenants,domain_atau_subdomain'],
             'no_telepon' => ['nullable', 'string', 'max:30'],
-            'logo' => ['nullable', 'string', 'max:255'],
+            'logo' => ['nullable'],
             'owner_name' => ['required', 'string', 'max:255'],
             'owner_email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'owner_password' => ['required', 'string', 'min:6'],
             'theme_name' => ['nullable', 'string', 'max:50'],
             'is_docs_enabled' => ['nullable', 'boolean'],
+            'landing_config' => ['nullable'],
         ]);
 
-        DB::transaction(function () use ($validated, $user, $request) {
+        if ($request->hasFile('logo')) {
+            $request->validate([
+                'logo' => ['image', 'mimes:jpeg,png,jpg,svg,webp,gif', 'max:2048'],
+            ]);
+            $path = $request->file('logo')->store('tenants/logos', 'public');
+            $logoUrl = Storage::url($path);
+        } elseif ($request->filled('logo') && is_string($request->input('logo'))) {
+            $logoUrl = $request->input('logo');
+        } else {
+            $logoUrl = null;
+        }
+
+        $landingConfig = $request->input('landing_config');
+        if (is_string($landingConfig)) {
+            $landingConfig = json_decode($landingConfig, true);
+        }
+
+        DB::transaction(function () use ($validated, $user, $request, $logoUrl, $landingConfig) {
             // 1. Create Tenant
             $tenant = Tenant::create([
                 'nama_travel' => $validated['nama_travel'],
                 'domain_atau_subdomain' => strtolower(preg_replace('/[^a-zA-Z0-9.-]/', '', $validated['domain_atau_subdomain'])),
                 'no_telepon' => $validated['no_telepon'] ?? '6281234567890',
-                'logo' => $validated['logo'] ?? null,
+                'logo' => $logoUrl,
                 'theme_name' => $validated['theme_name'] ?? 'luxury',
                 'is_docs_enabled' => $request->has('is_docs_enabled') ? (bool) $request->input('is_docs_enabled') : true,
+                'landing_config' => $landingConfig,
             ]);
 
             // 2. Create Default Hierarchy Levels
@@ -197,19 +217,56 @@ class TenantController extends Controller
             'nama_travel' => ['required', 'string', 'max:255'],
             'domain_atau_subdomain' => ['required', 'string', 'max:100', Rule::unique('tenants', 'domain_atau_subdomain')->ignore($tenant->id)],
             'no_telepon' => ['nullable', 'string', 'max:30'],
-            'logo' => ['nullable', 'string', 'max:255'],
+            'logo' => ['nullable'],
+            'logo_remove' => ['nullable', 'boolean'],
             'theme_name' => ['nullable', 'string', 'max:50'],
             'is_docs_enabled' => ['nullable', 'boolean'],
+            'landing_config' => ['nullable'],
         ]);
 
-        $tenant->update([
+        $logoUrl = $tenant->logo;
+        if ($request->hasFile('logo')) {
+            $request->validate([
+                'logo' => ['image', 'mimes:jpeg,png,jpg,svg,webp,gif', 'max:2048'],
+            ]);
+            if ($tenant->logo && str_starts_with($tenant->logo, '/storage/')) {
+                $oldPath = str_replace('/storage/', '', $tenant->logo);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+            $path = $request->file('logo')->store('tenants/logos', 'public');
+            $logoUrl = Storage::url($path);
+        } elseif ($request->boolean('logo_remove')) {
+            if ($tenant->logo && str_starts_with($tenant->logo, '/storage/')) {
+                $oldPath = str_replace('/storage/', '', $tenant->logo);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+            $logoUrl = null;
+        } elseif ($request->filled('logo') && is_string($request->input('logo'))) {
+            $logoUrl = $request->input('logo');
+        }
+
+        $updateData = [
             'nama_travel' => $validated['nama_travel'],
             'domain_atau_subdomain' => strtolower(preg_replace('/[^a-zA-Z0-9.-]/', '', $validated['domain_atau_subdomain'])),
             'no_telepon' => $validated['no_telepon'] ?? $tenant->no_telepon,
-            'logo' => $validated['logo'] ?? $tenant->logo,
+            'logo' => $logoUrl,
             'theme_name' => $validated['theme_name'] ?? $tenant->theme_name,
             'is_docs_enabled' => $request->has('is_docs_enabled') ? (bool) $request->input('is_docs_enabled') : $tenant->is_docs_enabled,
-        ]);
+        ];
+
+        if ($request->has('landing_config')) {
+            $landingConfig = $request->input('landing_config');
+            if (is_string($landingConfig)) {
+                $landingConfig = json_decode($landingConfig, true);
+            }
+            $updateData['landing_config'] = $landingConfig;
+        }
+
+        $tenant->update($updateData);
 
         return redirect()->back()->with('success', "Informasi tenant {$tenant->nama_travel} berhasil diperbarui.");
     }

@@ -197,6 +197,14 @@ class MenuSeeder extends Seeder
             'urutan' => 6,
         ]);
 
+        Menu::create([
+            'parent_id' => $settingsMenu->id,
+            'title' => 'CMS Landing Page',
+            'url' => '/settings/landing',
+            'roles' => ['super_admin_master', 'owner_travel'],
+            'urutan' => 7,
+        ]);
+
         // 8. Dokumentasi & Panduan Pengguna
         Menu::create([
             'title' => 'Buku Panduan',

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Customer, BankAccount, JamaahDocItem } from './types';
+import { Customer, BankAccount, JamaahDocItem, DocumentPermissionItem } from './types';
+
 import {
     Sheet,
     SheetContent,
@@ -33,6 +34,7 @@ interface CustomerDrawerProps {
     banks?: BankAccount[];
     initialTab?: string;
     onEdit?: (customer: Customer) => void;
+    documentPermissions?: DocumentPermissionItem[];
 }
 
 export const CustomerDrawer: React.FC<CustomerDrawerProps> = ({
@@ -42,7 +44,9 @@ export const CustomerDrawer: React.FC<CustomerDrawerProps> = ({
     banks = [],
     initialTab = 'view',
     onEdit,
+    documentPermissions = [],
 }) => {
+
     // If isOpen is explicitly passed use it, otherwise show if customer is truthy
     const isSheetOpen = isOpen !== undefined ? isOpen : !!customer;
 
@@ -143,6 +147,7 @@ export const CustomerDrawer: React.FC<CustomerDrawerProps> = ({
                                     onEdit={onEdit}
                                     onPreviewDoc={(doc) => setViewingDoc(doc)}
                                     onSwitchToDocuments={() => setActiveTab('documents')}
+                                    documentPermissions={documentPermissions}
                                 />
                             </TabsContent>
 
@@ -150,7 +155,9 @@ export const CustomerDrawer: React.FC<CustomerDrawerProps> = ({
                                 <CustomerDocumentsTab
                                     customer={customer}
                                     onPreviewDoc={(doc) => setViewingDoc(doc)}
+                                    documentPermissions={documentPermissions}
                                 />
+
                             </TabsContent>
 
                             <TabsContent value="financial" className="m-0 focus-visible:outline-none">

@@ -20,6 +20,7 @@ import { Badge } from '@/Components/ui/badge';
 
 interface JamaahItem {
     id: number;
+    kode_pendaftaran?: string;
     nama_lengkap: string;
     no_hp: string;
     email: string | null;
@@ -63,7 +64,7 @@ interface Props extends PageProps {
 
 export default function RegisterSuccess({ tenant, jamaah }: Props) {
     const travelName = tenant?.nama_travel || 'HajjFlow Umroh & Haji';
-    const regCode = `REG-${String(jamaah?.id || 1).padStart(5, '0')}`;
+    const regCode = jamaah?.kode_pendaftaran || `REG-${String(jamaah?.id || 1).padStart(5, '0')}`;
     const cleanPhone = (tenant?.no_telepon || '6281234567890').replace(/[^0-9]/g, '').replace(/^0/, '62');
 
     const waMessage = encodeURIComponent(

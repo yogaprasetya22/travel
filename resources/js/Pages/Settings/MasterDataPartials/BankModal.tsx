@@ -49,7 +49,7 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
 
     return (
         <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-            <SheetContent side="right" className="w-full sm:max-w-xl md:w-1/2">
+            <SheetContent side="right" className="w-full sm:max-w-5xl md:w-1/2">
                 <SheetHeader>
                     <SheetTitle>Tambah Rekening Bank Travel</SheetTitle>
                     <SheetDescription>Daftarkan rekening bank resmi travel untuk penerimaan pembayaran jamaah.</SheetDescription>

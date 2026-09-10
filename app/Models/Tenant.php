@@ -30,10 +30,12 @@ class Tenant extends Model
         'no_telepon',
         'theme_name',
         'is_docs_enabled',
+        'landing_config',
     ];
 
     protected $casts = [
         'is_docs_enabled' => 'boolean',
+        'landing_config' => 'array',
     ];
 
     public function users(): HasMany
