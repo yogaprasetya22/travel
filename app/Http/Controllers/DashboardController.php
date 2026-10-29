@@ -23,7 +23,7 @@ class DashboardController extends Controller
     {
         $user = $request->user();
         $tenantId = $user->getActiveTenantId();
-        $tenant = Tenant::find($tenantId) ?? Tenant::first();
+        $tenant = Tenant::find($tenantId) ?? Tenant::oldest('id')->first();
 
         // Parameter filter periode & kloter (Ponytail: simple, direct query filtering)
         $period = $request->input('period', 'this_year');

@@ -81,7 +81,7 @@ class TenantController extends Controller
                 'search' => $search ?? '',
                 'per_page' => $perPage,
             ],
-            'activeTenantId' => (int) $request->session()->get('tenant_id', Tenant::first()?->id ?? 1),
+            'activeTenantId' => (int) $request->session()->get('tenant_id', Tenant::oldest('id')->first()?->id ?? 1),
             'domainSuffix' => $domainSuffix,
         ]);
     }

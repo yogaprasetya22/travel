@@ -46,7 +46,7 @@ class HandleInertiaRequests extends Middleware
                     }
                 }
 
-                return Tenant::first();
+                return Tenant::oldest('id')->first();
             },
             'auth' => [
                 'user' => $request->user() ? $request->user()->load('tenant') : null,
@@ -65,15 +65,15 @@ class HandleInertiaRequests extends Middleware
                             }
                         }
 
-                        return Tenant::first();
+                        return Tenant::oldest('id')->first();
                     }
                     if ($user->role === 'super_admin_master') {
-                        $tenantId = $request->session()->get('tenant_id', Tenant::first()?->id);
+                        $tenantId = $request->session()->get('tenant_id', Tenant::oldest('id')->first()?->id);
 
-                        return Tenant::find($tenantId) ?? Tenant::first();
+                        return Tenant::find($tenantId) ?? Tenant::oldest('id')->first();
                     }
 
-                    return $user->tenant ?? (app()->bound('tenant') ? app('tenant') : Tenant::first());
+                    return $user->tenant ?? (app()->bound('tenant') ? app('tenant') : Tenant::oldest('id')->first());
                 },
                 'tenants' => function () use ($request) {
                     $user = $request->user();
@@ -123,7 +123,7 @@ class HandleInertiaRequests extends Middleware
                 }
 
                 $activeTenant = $user->role === 'super_admin_master'
-                    ? (Tenant::find($request->session()->get('tenant_id')) ?? Tenant::first())
+                    ? (Tenant::find($request->session()->get('tenant_id')) ?? Tenant::oldest('id')->first())
                     : $user->tenant;
 
                 $menus = Menu::whereNull('parent_id')

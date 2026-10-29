@@ -32,7 +32,7 @@ class PublicLandingController extends Controller
 
         $tenant = Tenant::where('domain_atau_subdomain', $subdomain)->first();
 
-        return $tenant ?: Tenant::first();
+        return $tenant ?: Tenant::oldest('id')->first();
     }
 
     /**

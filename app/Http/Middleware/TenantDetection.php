@@ -36,7 +36,7 @@ class TenantDetection
                 $tenant = Tenant::find($request->session()->get('tenant_id'));
             }
             if (! $tenant) {
-                $tenant = Tenant::first();
+                $tenant = Tenant::oldest('id')->first();
             }
         }
 

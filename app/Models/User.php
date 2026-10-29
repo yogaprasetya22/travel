@@ -242,7 +242,7 @@ class User extends Authenticatable
             return (int) request()->session()->get('tenant_id');
         }
 
-        return (int) (Tenant::first()?->id ?? 1);
+        return (int) (Tenant::oldest('id')->first()?->id ?? 1);
     }
 
     /**
