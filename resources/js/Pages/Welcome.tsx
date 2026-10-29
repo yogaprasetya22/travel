@@ -339,7 +339,7 @@ export default function Welcome({
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex flex-col items-center text-center gap-4 sm:gap-6 max-w-4xl mx-auto">
                             <Badge className="w-fit bg-primary/15 text-primary border-primary/30 font-bold text-[11px] sm:text-xs px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full shadow-xs">
-                                {cfg.hero.badge_text || '🕋 Travel Booking Engine Resmi & Terpercaya'}
+                                {cfg.hero.badge_text || 'Travel Booking Engine Resmi & Terpercaya'}
                             </Badge>
                             <h1 className="text-2xl sm:text-4xl lg:text-6xl font-black text-foreground tracking-tight leading-snug sm:leading-tight">
                                 {cfg.hero.title || 'Wujudkan Ibadah ke Baitullah dengan Kepastian Jadwal & Layanan Prima'}
@@ -518,13 +518,15 @@ export default function Welcome({
                         </div>
                         <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 opacity-85">
                             {(cfg.partners.airlines || []).map((airline, idx) => (
-                                <span key={`airline-${idx}`} className="px-3 py-1.5 sm:px-3.5 sm:py-1.5 rounded-xl bg-card border border-border text-[11px] sm:text-xs font-extrabold text-foreground shadow-2xs">
-                                    ✈️ {airline}
+                                <span key={`airline-${idx}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-1.5 rounded-xl bg-card border border-border text-[11px] sm:text-xs font-semibold text-foreground shadow-2xs">
+                                    <Plane className="w-3.5 h-3.5 text-primary" />
+                                    <span>{airline}</span>
                                 </span>
                             ))}
                             {(cfg.partners.hotels || []).map((hotel, idx) => (
-                                <span key={`hotel-${idx}`} className="px-3 py-1.5 sm:px-3.5 sm:py-1.5 rounded-xl bg-card border border-border text-[11px] sm:text-xs font-extrabold text-foreground shadow-2xs">
-                                    🏨 {hotel}
+                                <span key={`hotel-${idx}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-1.5 rounded-xl bg-card border border-border text-[11px] sm:text-xs font-semibold text-foreground shadow-2xs">
+                                    <Building2 className="w-3.5 h-3.5 text-primary" />
+                                    <span>{hotel}</span>
                                 </span>
                             ))}
                         </div>
@@ -662,7 +664,7 @@ export default function Welcome({
                                                     </div>
                                                     <div className="flex items-center gap-1.5 text-muted-foreground">
                                                         <Building2 className="w-3.5 h-3.5 text-primary shrink-0" />
-                                                        <span className="truncate">Hotel ⭐{pkg.bintang_makkah || 5}</span>
+                                                        <span className="truncate">Hotel Bintang {pkg.bintang_makkah || 5}</span>
                                                     </div>
                                                     <div className="flex items-center gap-1.5 text-muted-foreground">
                                                         <Clock className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -1295,7 +1297,7 @@ export default function Welcome({
                                                 <Building2 className="w-4 h-4 text-primary shrink-0" />
                                                 <div className="min-w-0 flex-1">
                                                     <div className="text-[10px] text-muted-foreground">Akomodasi Hotel</div>
-                                                    <div className="font-bold text-foreground truncate">Hotel Bintang ⭐{selectedPackage.bintang_makkah || 5}</div>
+                                                    <div className="font-bold text-foreground truncate">Hotel Bintang {selectedPackage.bintang_makkah || 5}</div>
                                                 </div>
                                             </div>
                                             <div className="p-3 rounded-xl bg-background border border-border/80 flex items-center gap-3">

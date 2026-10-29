@@ -397,10 +397,10 @@ export default function AgentLandingTemplate({
                                         {item.title || 'Tautan Tanpa Judul'}
                                     </span>
                                     {targetType === 'tenant_wa' && (
-                                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-[11px]'} opacity-75 font-normal`}>➔ CS Induk Travel</span>
+                                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-[11px]'} opacity-75 font-normal`}>CS Induk Travel</span>
                                     )}
                                     {targetType === 'agent_wa' && (
-                                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-[11px]'} opacity-75 font-normal`}>➔ WA Pribadi Agen</span>
+                                        <span className={`${isPreview ? 'text-[7.5px]' : 'text-[10px] sm:text-[11px]'} opacity-75 font-normal`}>WA Pribadi Agen</span>
                                     )}
                                 </div>
                             </div>

@@ -17,53 +17,63 @@ interface Props {
 export default function CustomerMetricsCards({ metrics }: Props) {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-card/70 border border-border/80 rounded-2xl p-5 shadow-xs flex items-center gap-4">
-                <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                    <Users className="w-6 h-6" />
+            <div className="bg-card border border-border rounded-lg p-4 flex flex-col justify-between gap-2">
+                <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">Total Jamaah Closing</span>
+                    <Users className="w-4 h-4 text-muted-foreground" />
                 </div>
                 <div>
-                    <div className="text-xs font-semibold text-muted-foreground">Total Jamaah Closing</div>
-                    <div className="text-2xl font-extrabold text-foreground mt-0.5">
+                    <div className="text-2xl font-bold tracking-tight text-foreground">
                         {metrics?.total_customers || 0} <span className="text-xs font-normal text-muted-foreground">Orang</span>
                     </div>
                 </div>
+                <div className="text-[11px] text-muted-foreground">
+                    Terdaftar di sistem
+                </div>
             </div>
 
-            <div className="bg-card/70 border border-border/80 rounded-2xl p-5 shadow-xs flex items-center gap-4">
-                <div className="h-12 w-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                    <TrendingUp className="w-6 h-6" />
+            <div className="bg-card border border-border rounded-lg p-4 flex flex-col justify-between gap-2">
+                <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">Kas Masuk Terverifikasi</span>
+                    <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                    <div className="text-xs font-semibold text-muted-foreground">Total Pembayaran Masuk (Cash)</div>
-                    <div className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                    <div className="text-xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
                         {toRupiah(metrics?.total_paid_received || 0)}
                     </div>
                 </div>
+                <div className="text-[11px] text-muted-foreground">
+                    Dana pembayaran sah
+                </div>
             </div>
 
-            <div className="bg-card/70 border border-border/80 rounded-2xl p-5 shadow-xs flex items-center gap-4">
-                <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${
-                    (metrics?.total_pending_receivables || 0) > 0 ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" : "bg-muted text-muted-foreground"
-                }`}>
-                    <Wallet className="w-6 h-6" />
+            <div className="bg-card border border-border rounded-lg p-4 flex flex-col justify-between gap-2">
+                <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">Sisa Piutang Jamaah</span>
+                    <Wallet className="w-4 h-4 text-muted-foreground" />
                 </div>
                 <div>
-                    <div className="text-xs font-semibold text-muted-foreground">Sisa Piutang / Belum Lunas</div>
-                    <div className={`text-xl font-extrabold mt-0.5 ${(metrics?.total_pending_receivables || 0) > 0 ? "text-amber-600 dark:text-amber-400" : "text-foreground"}`}>
+                    <div className={`text-xl font-bold tracking-tight ${(metrics?.total_pending_receivables || 0) > 0 ? "text-amber-600 dark:text-amber-400" : "text-foreground"}`}>
                         {toRupiah(metrics?.total_pending_receivables || 0)}
                     </div>
                 </div>
+                <div className="text-[11px] text-muted-foreground">
+                    Belum lunas
+                </div>
             </div>
 
-            <div className="bg-card/70 border border-border/80 rounded-2xl p-5 shadow-xs flex items-center gap-4">
-                <div className="h-12 w-12 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-                    <Coins className="w-6 h-6" />
+            <div className="bg-card border border-border rounded-lg p-4 flex flex-col justify-between gap-2">
+                <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">Total Komisi Agen</span>
+                    <Coins className="w-4 h-4 text-muted-foreground" />
                 </div>
                 <div>
-                    <div className="text-xs font-semibold text-muted-foreground">Total Hak Komisi Agen</div>
-                    <div className="text-xl font-extrabold text-purple-600 dark:text-purple-400 mt-0.5">
+                    <div className="text-xl font-bold tracking-tight text-foreground">
                         {toRupiah(metrics?.total_commission_payable || 0)}
                     </div>
+                </div>
+                <div className="text-[11px] text-muted-foreground">
+                    Hak mitra aktif
                 </div>
             </div>
         </div>

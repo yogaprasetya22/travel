@@ -1,52 +1,9 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Head, Link } from "@inertiajs/react";
 import PageLayout from "@/Components/Layouts/PageLayout";
-import {
-    SidebarProvider,
-    Sidebar,
-    SidebarContent,
-    SidebarHeader,
-    SidebarFooter,
-    SidebarRail,
-    SidebarInset,
-    SidebarTrigger,
-    SidebarGroup,
-    SidebarGroupLabel,
-    SidebarMenu,
-    SidebarMenuItem,
-    SidebarMenuButton,
-} from "@/Components/ui/sidebar";
-import { Separator } from "@/Components/ui/separator";
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from "@/Components/ui/breadcrumb";
 import { useTheme } from "@/Components/ThemeProvider";
-import {
-    BookOpen,
-    Search,
-    ChevronRight,
-    ArrowLeft,
-    ArrowRight,
-    Layers,
-    Compass,
-    X,
-    Sparkles,
-    ShieldCheck,
-    Users,
-    Briefcase,
-    LogIn,
-    Sun,
-    Moon,
-    Hash,
-    CheckCircle2,
-    ListTree,
-    ExternalLink,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink, ListFilter, LogIn, Moon, Search, Sun, X } from "lucide-react";
 
 interface NavItem {
     title: string;
@@ -66,10 +23,13 @@ interface ActiveDoc {
     title: string;
     slug: string;
     role: string;
+    meta?: { peran?: string; kategori?: string; halaman?: string; ringkasan?: string };
     headings: HeadingItem[];
     html: string;
     raw: string;
 }
+
+type Role = "portal" | "owner" | "agent";
 
 interface Props {
     tenant: {
@@ -78,7 +38,7 @@ interface Props {
         domain_atau_subdomain: string;
         logo?: string;
     } | null;
-    currentRole: "portal" | "owner" | "agent";
+    currentRole: Role;
     currentSlug: string;
     navigation: {
         owner: NavItem[];
@@ -93,55 +53,141 @@ interface Props {
     } | null;
 }
 
-interface SectionGroup {
-    h2: HeadingItem;
-    children: HeadingItem[];
+const roleTabs: { role: Role; label: string; href: string }[] = [
+    { role: "portal", label: "Ringkasan", href: "/docs" },
+    { role: "owner", label: "Owner & staf", href: "/docs/owner" },
+    { role: "agent", label: "Mitra agen", href: "/docs/agent" },
+];
+
+const proseStyles = `
+.docs-prose { font-size: 0.9375rem; line-height: 1.75; color: hsl(var(--foreground) / 0.88); }
+.docs-prose > *:first-child { margin-top: 0; }
+.docs-prose h1 { font-size: 1.875rem; line-height: 1.2; font-weight: 700; letter-spacing: -0.02em; color: hsl(var(--foreground)); margin: 0 0 0.75rem; }
+.docs-prose h1 + p { font-size: 1.0625rem; line-height: 1.65; color: hsl(var(--muted-foreground)); margin-bottom: 1.5rem; }
+.docs-prose h2 { font-size: 1.25rem; line-height: 1.3; font-weight: 650; letter-spacing: -0.01em; color: hsl(var(--foreground)); margin: 2.75rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid hsl(var(--border)); }
+.docs-prose h3 { font-size: 1rem; font-weight: 600; color: hsl(var(--foreground)); margin: 1.75rem 0 0.5rem; }
+.docs-prose h2 a, .docs-prose h3 a { margin-left: 0.5rem; text-decoration: none; font-weight: 400; color: hsl(var(--muted-foreground)); }
+.docs-prose p { margin: 0 0 1rem; }
+.docs-prose strong { font-weight: 600; color: hsl(var(--foreground)); }
+.docs-prose a { color: hsl(var(--primary)); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: hsl(var(--primary) / 0.35); }
+.docs-prose a:hover { text-decoration-color: currentColor; }
+.docs-prose ul, .docs-prose ol { margin: 0 0 1.25rem; padding-left: 1.4rem; }
+.docs-prose ul { list-style: disc; }
+.docs-prose ol { list-style: decimal; }
+.docs-prose li { margin: 0.35rem 0; padding-left: 0.25rem; }
+.docs-prose li::marker { color: hsl(var(--muted-foreground)); }
+.docs-prose blockquote { margin: 1.25rem 0; padding: 0.25rem 0 0.25rem 1rem; border-left: 2px solid hsl(var(--border)); color: hsl(var(--muted-foreground)); }
+.docs-prose blockquote p { margin-bottom: 0.4rem; }
+.docs-prose code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8125rem; padding: 0.1rem 0.35rem; border-radius: 0.3rem; background: hsl(var(--muted)); color: hsl(var(--foreground)); }
+.docs-prose pre { margin: 1.25rem 0; padding: 1rem; overflow-x: auto; border-radius: 0.5rem; border: 1px solid hsl(var(--border)); background: hsl(var(--muted)); }
+.docs-prose pre code { padding: 0; background: transparent; }
+.docs-prose table { width: 100%; margin: 1.25rem 0; font-size: 0.875rem; border-collapse: collapse; }
+.docs-prose th { text-align: left; font-weight: 600; padding: 0.5rem 0.75rem; border-bottom: 1px solid hsl(var(--border)); color: hsl(var(--foreground)); }
+.docs-prose td { padding: 0.5rem 0.75rem; border-bottom: 1px solid hsl(var(--border) / 0.6); }
+.docs-prose hr { border: 0; border-top: 1px solid hsl(var(--border)); margin: 2.5rem 0; }
+.docs-prose img { display: block; max-width: 100%; height: auto; margin: 1rem 0; border-radius: 0.5rem; border: 1px solid hsl(var(--border)); cursor: zoom-in; }
+.docs-prose img[src*="/dark/"], .docs-prose img[src*="gh-dark-mode-only"] { display: none; }
+.dark .docs-prose img[src*="/light/"], .dark .docs-prose img[src*="gh-light-mode-only"] { display: none; }
+.dark .docs-prose img[src*="/dark/"], .dark .docs-prose img[src*="gh-dark-mode-only"] { display: block; }
+`;
+
+function RoleTabs({ currentRole }: { currentRole: Role }) {
+    return (
+        <nav aria-label="Pilih panduan" className="flex gap-6 border-b border-border">
+            {roleTabs.map((tab) => {
+                const active = tab.role === currentRole;
+                return (
+                    <Link
+                        key={tab.role}
+                        href={tab.href}
+                        aria-current={active ? "page" : undefined}
+                        className={`-mb-px border-b-2 pb-3 text-sm font-medium transition-colors ${
+                            active
+                                ? "border-foreground text-foreground"
+                                : "border-transparent text-muted-foreground hover:text-foreground"
+                        }`}
+                    >
+                        {tab.label}
+                    </Link>
+                );
+            })}
+        </nav>
+    );
 }
 
-// Table of Contents Section Component
+function PageNav({
+    groups,
+    role,
+    currentSlug,
+    search,
+    onSearch,
+}: {
+    groups: Record<string, NavItem[]>;
+    role: Role;
+    currentSlug: string;
+    search: string;
+    onSearch: (value: string) => void;
+}) {
+    const entries = Object.entries(groups);
+
+    return (
+        <div className="space-y-5">
+            <label className="relative block">
+                <span className="sr-only">Cari halaman panduan</span>
+                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                    type="search"
+                    value={search}
+                    onChange={(e) => onSearch(e.target.value)}
+                    placeholder="Cari halaman"
+                    className="h-9 w-full rounded-lg border border-border bg-background pl-9 pr-3 text-sm outline-none transition focus:border-foreground/40 focus:ring-2 focus:ring-ring/20"
+                />
+            </label>
+
+            {entries.length === 0 && <p className="px-1 text-sm text-muted-foreground">Tidak ada halaman yang cocok.</p>}
+
+            {entries.map(([category, items]) => (
+                <div key={category}>
+                    <div className="mb-1.5 px-2 text-xs font-medium text-muted-foreground">{category}</div>
+                    <ul className="space-y-0.5">
+                        {items.map((item) => {
+                            const active = item.slug === currentSlug;
+                            return (
+                                <li key={item.slug}>
+                                    <Link
+                                        href={`/docs/${role}/${item.slug}`}
+                                        aria-current={active ? "page" : undefined}
+                                        className={`flex items-baseline gap-2.5 rounded-md px-2.5 py-1.5 text-sm leading-snug transition-colors ${
+                                            active
+                                                ? "bg-background font-semibold text-primary shadow-2xs border border-border/60"
+                                                : "text-muted-foreground hover:bg-background/80 hover:text-foreground"
+                                        }`}
+                                    >
+                                        <span className="w-5 shrink-0 text-right font-mono text-[11px] tabular-nums opacity-60">
+                                            {item.order > 0 ? String(item.order).padStart(2, "0") : ""}
+                                        </span>
+                                        <span>{item.title}</span>
+                                    </Link>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+            ))}
+        </div>
+    );
+}
+
 function TableOfContents({ headings }: { headings: HeadingItem[] }) {
-    const [activeAnchor, setActiveAnchor] = useState<string>("");
+    const [activeAnchor, setActiveAnchor] = useState("");
 
-    // Group headings into structured sections (H2 with its H3 children)
-    const sections = useMemo(() => {
-        const result: SectionGroup[] = [];
-        let currentGroup: SectionGroup | null = null;
-
-        headings.forEach((h) => {
-            if (h.level === 2) {
-                currentGroup = { h2: h, children: [] };
-                result.push(currentGroup);
-            } else if (h.level === 3) {
-                if (currentGroup) {
-                    currentGroup.children.push(h);
-                } else {
-                    // Orphan H3
-                    result.push({ h2: h, children: [] });
-                }
-            }
-        });
-
-        return result;
-    }, [headings]);
-
-    // Scrollspy to detect currently visible heading
     useEffect(() => {
         if (!headings.length) return;
 
         const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        setActiveAnchor(entry.target.id);
-                    }
-                });
-            },
-            {
-                rootMargin: "-80px 0px -60% 0px",
-                threshold: 0.1,
-            }
+            (entries) => entries.forEach((entry) => entry.isIntersecting && setActiveAnchor(entry.target.id)),
+            { rootMargin: "-80px 0px -65% 0px", threshold: 0.1 }
         );
-
         headings.forEach((h) => {
             const el = document.getElementById(h.anchor);
             if (el) observer.observe(el);
@@ -150,940 +196,287 @@ function TableOfContents({ headings }: { headings: HeadingItem[] }) {
         return () => observer.disconnect();
     }, [headings]);
 
-    const scrollToAnchor = (anchor: string) => {
-        const el = document.getElementById(anchor);
-        if (el) {
-            el.scrollIntoView({ behavior: "smooth", block: "start" });
-            setActiveAnchor(anchor);
-            history.replaceState(null, "", `#${anchor}`);
-        }
-    };
-
-    if (!headings.length) return null;
+    if (headings.length < 2) return null;
 
     return (
-        <div className="space-y-4">
-            {/* Header Card */}
-            <div className="p-4 rounded-2xl bg-card border border-border shadow-xs space-y-3">
-                <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
-                        <ListTree className="w-4 h-4 text-primary" />
-                        Daftar Isi Halaman
+        <nav aria-label="Isi halaman" className="text-sm">
+            <div className="mb-2 text-xs font-medium text-muted-foreground">Di halaman ini</div>
+            <ul className="space-y-1 border-l border-border">
+                {headings.map((h) => (
+                    <li key={h.anchor}>
+                        <a
+                            href={`#${h.anchor}`}
+                            className={`-ml-px block border-l py-1 leading-snug transition-colors ${
+                                h.level === 3 ? "pl-6 text-[13px]" : "pl-3"
+                            } ${
+                                activeAnchor === h.anchor
+                                    ? "border-foreground font-medium text-foreground"
+                                    : "border-transparent text-muted-foreground hover:text-foreground"
+                            }`}
+                        >
+                            {h.title}
+                        </a>
+                    </li>
+                ))}
+            </ul>
+        </nav>
+    );
+}
+
+function Pager({ role, prev, next }: { role: Role; prev: NavItem | null; next: NavItem | null }) {
+    if (!prev && !next) return null;
+
+    return (
+        <div className="mt-14 grid gap-3 border-t border-border pt-6 sm:grid-cols-2">
+            {prev ? (
+                <Link
+                    href={`/docs/${role}/${prev.slug}`}
+                    className="rounded-lg border border-border p-4 transition-colors hover:bg-muted/50"
+                >
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <ArrowLeft className="size-3" /> Sebelumnya
                     </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-primary/10 text-primary border border-primary/20">
-                        {sections.length} Bagian
+                    <span className="mt-1 block text-sm font-medium">{prev.title}</span>
+                </Link>
+            ) : (
+                <span />
+            )}
+            {next && (
+                <Link
+                    href={`/docs/${role}/${next.slug}`}
+                    className="rounded-lg border border-border p-4 text-right transition-colors hover:bg-muted/50 sm:col-start-2"
+                >
+                    <span className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
+                        Berikutnya <ArrowRight className="size-3" />
                     </span>
-                </div>
-
-                <div className="space-y-2 pt-1">
-                    {sections.map((sec, idx) => {
-                        const isH2Active = activeAnchor === sec.h2.anchor;
-                        const hasActiveChild = sec.children.some(
-                            (c) => c.anchor === activeAnchor
-                        );
-                        const isSectionActive = isH2Active || hasActiveChild;
-
-                        return (
-                            <div
-                                key={sec.h2.anchor || idx}
-                                className={`rounded-xl border transition-all p-2.5 space-y-1.5 ${
-                                    isSectionActive
-                                        ? "bg-primary/5 border-primary/30 shadow-xs"
-                                        : "bg-muted/30 border-transparent hover:bg-muted/60 hover:border-border"
-                                }`}
-                            >
-                                {/* Main H2 Header */}
-                                <button
-                                    type="button"
-                                    onClick={() => scrollToAnchor(sec.h2.anchor)}
-                                    className={`w-full text-left flex items-start gap-2 text-xs font-semibold transition-colors ${
-                                        isH2Active
-                                            ? "text-primary font-bold"
-                                            : "text-foreground hover:text-primary"
-                                    }`}
-                                >
-                                    <span
-                                        className={`flex items-center justify-center size-4 rounded text-[9px] font-mono shrink-0 mt-0.5 ${
-                                            isH2Active
-                                                ? "bg-primary text-primary-foreground font-bold"
-                                                : "bg-muted text-muted-foreground"
-                                        }`}
-                                    >
-                                        {idx + 1}
-                                    </span>
-                                    <span className="line-clamp-2 leading-tight">
-                                        {sec.h2.title}
-                                    </span>
-                                </button>
-
-                                {/* Nested H3 Subsections */}
-                                {sec.children.length > 0 && (
-                                    <div className="pl-6 space-y-1 pt-1 border-l border-border/80 ml-2">
-                                        {sec.children.map((child) => {
-                                            const isChildActive =
-                                                activeAnchor === child.anchor;
-
-                                            return (
-                                                <button
-                                                    key={child.anchor}
-                                                    type="button"
-                                                    onClick={() =>
-                                                        scrollToAnchor(child.anchor)
-                                                    }
-                                                    className={`w-full text-left block text-[11px] py-0.5 truncate transition-all ${
-                                                        isChildActive
-                                                            ? "text-primary font-bold translate-x-1"
-                                                            : "text-muted-foreground hover:text-foreground hover:translate-x-0.5"
-                                                    }`}
-                                                >
-                                                    • {child.title}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Help Card */}
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-amber-500/5 to-transparent border border-primary/20 space-y-2">
-                <div className="flex items-center gap-2 text-primary font-bold text-xs">
-                    <Briefcase className="w-4 h-4" />
-                    <span>Pusat Bantuan Travel</span>
-                </div>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Butuh panduan teknis operasional lebih lanjut? Hubungi administrator atau supervisor travel Anda.
-                </p>
-            </div>
+                    <span className="mt-1 block text-sm font-medium">{next.title}</span>
+                </Link>
+            )}
         </div>
     );
 }
 
-export default function DocsIndex({
-    tenant,
-    currentRole,
-    currentSlug,
-    navigation,
-    activeDoc,
-    isAuthenticated,
-}: Props) {
-    const [searchQuery, setSearchQuery] = useState("");
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
-    const { theme, setTheme, currentThemeDef } = useTheme();
-
-    const toggleQuickTheme = () => {
-        if (currentThemeDef?.type === "dark") {
-            setTheme("caramellatte");
-        } else {
-            setTheme("luxury");
-        }
-    };
-
-    const roleNavItems = useMemo(() => {
-        if (currentRole === "portal") {
-            return [];
-        }
-        return navigation[currentRole] || [];
-    }, [currentRole, navigation]);
-
-    // Group nav items by category
-    const groupedNavItems = useMemo(() => {
-        const filtered = roleNavItems.filter((item) => {
-            if (!searchQuery.trim()) return true;
-            return (
-                item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                item.category.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-        });
-
-        const groups: Record<string, NavItem[]> = {};
-        filtered.forEach((item) => {
-            const cat = item.category || "Modul Panduan";
-            if (!groups[cat]) {
-                groups[cat] = [];
-            }
-            groups[cat].push(item);
-        });
-
-        return groups;
-    }, [roleNavItems, searchQuery]);
-
-    // Find Previous and Next Articles for pagination
-    const { prevDoc, nextDoc } = useMemo(() => {
-        const currentIndex = roleNavItems.findIndex(
-            (item) => item.slug === currentSlug
-        );
-        if (currentIndex === -1) {
-            return { prevDoc: null, nextDoc: null };
-        }
-        const prev = currentIndex > 0 ? roleNavItems[currentIndex - 1] : null;
-        const next =
-            currentIndex < roleNavItems.length - 1
-                ? roleNavItems[currentIndex + 1]
-                : null;
-        return { prevDoc: prev, nextDoc: next };
-    }, [roleNavItems, currentSlug]);
-
-    // Handle Image Clicks inside Markdown to open Lightbox
+function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
     useEffect(() => {
-        const handleDocClick = (e: MouseEvent) => {
-            const target = e.target as HTMLElement;
-            if (target && target.tagName === "IMG") {
-                const img = target as HTMLImageElement;
-                if (
-                    img.src &&
-                    (img.src.includes("/docs/assets/") || img.src.includes("screenshots"))
-                ) {
-                    e.preventDefault();
-                    setSelectedImage(img.src);
-                }
-            }
-        };
+        const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [onClose]);
 
-        const docContainer = document.getElementById("docs-body-content");
-        if (docContainer) {
-            docContainer.addEventListener("click", handleDocClick);
-        }
-
-        return () => {
-            if (docContainer) {
-                docContainer.removeEventListener("click", handleDocClick);
-            }
-        };
-    }, [activeDoc]);
-
-    const travelName = tenant?.nama_travel || "Hajj & Umroh Travel";
-    const pageTitle = activeDoc ? activeDoc.title : "Buku Panduan";
-    const roleLabel =
-        currentRole === "owner"
-            ? "Owner Travel (Level 1)"
-            : currentRole === "agent"
-            ? "Mitra Agen (Level 2/3)"
-            : "Portal Dokumentasi";
-
-    // Custom CSS for Markdown rendering
-    const markdownStyles = (
-        <style>{`
-            .docs-rendered-markdown h1 {
-                font-size: 1.65rem;
-                font-weight: 800;
-                letter-spacing: -0.025em;
-                color: var(--foreground);
-                padding-bottom: 0.75rem;
-                margin-bottom: 1.25rem;
-                border-bottom: 1px solid var(--border);
-            }
-            .docs-rendered-markdown h2 {
-                font-size: 1.25rem;
-                font-weight: 700;
-                letter-spacing: -0.02em;
-                color: var(--foreground);
-                margin-top: 2rem;
-                margin-bottom: 0.75rem;
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-            }
-            .docs-rendered-markdown h3 {
-                font-size: 1rem;
-                font-weight: 600;
-                color: var(--foreground);
-                margin-top: 1.25rem;
-                margin-bottom: 0.5rem;
-            }
-            .docs-rendered-markdown p {
-                font-size: 0.875rem;
-                line-height: 1.7;
-                color: var(--muted-foreground);
-                margin-bottom: 1rem;
-            }
-            .docs-rendered-markdown blockquote {
-                border-left: 4px solid var(--primary);
-                background: rgba(var(--primary-rgb, 111, 78, 55), 0.08);
-                border-radius: 0 0.75rem 0.75rem 0;
-                padding: 0.85rem 1.25rem;
-                margin: 1.25rem 0;
-                color: var(--foreground);
-                font-size: 0.85rem;
-            }
-            .docs-rendered-markdown blockquote p {
-                margin-bottom: 0.35rem;
-                color: var(--foreground);
-            }
-            .docs-rendered-markdown blockquote p:last-child {
-                margin-bottom: 0;
-            }
-            .docs-rendered-markdown ul {
-                list-style-type: disc;
-                padding-left: 1.4rem;
-                margin: 0.85rem 0;
-                font-size: 0.875rem;
-                color: var(--muted-foreground);
-            }
-            .docs-rendered-markdown ol {
-                list-style-type: decimal;
-                padding-left: 1.4rem;
-                margin: 0.85rem 0;
-                font-size: 0.875rem;
-                color: var(--muted-foreground);
-            }
-            .docs-rendered-markdown li {
-                margin-bottom: 0.4rem;
-                line-height: 1.6;
-            }
-            .docs-rendered-markdown code {
-                background: var(--muted);
-                color: var(--foreground);
-                padding: 0.15rem 0.4rem;
-                border-radius: 0.375rem;
-                font-size: 0.8rem;
-                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-                border: 1px solid var(--border);
-            }
-            .docs-rendered-markdown pre {
-                background: var(--muted);
-                padding: 1rem;
-                border-radius: 0.75rem;
-                overflow-x: auto;
-                margin: 1.25rem 0;
-                border: 1px solid var(--border);
-            }
-            .docs-rendered-markdown table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 1.5rem 0;
-                font-size: 0.8rem;
-                border-radius: 0.75rem;
-                overflow: hidden;
-                border: 1px solid var(--border);
-            }
-            .docs-rendered-markdown th {
-                background: var(--muted);
-                font-weight: 700;
-                text-align: left;
-                padding: 0.75rem 1rem;
-                border: 1px solid var(--border);
-                color: var(--foreground);
-            }
-            .docs-rendered-markdown td {
-                padding: 0.75rem 1rem;
-                border: 1px solid var(--border);
-                color: var(--muted-foreground);
-            }
-            .docs-rendered-markdown tr:hover td {
-                background: rgba(var(--primary-rgb, 111, 78, 55), 0.03);
-            }
-            .docs-rendered-markdown img {
-                border-radius: 1rem;
-                border: 1px solid var(--border);
-                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-                margin: 1.5rem 0;
-                max-width: 100%;
-                cursor: zoom-in;
-                transition: transform 0.2s ease;
-            }
-            .docs-rendered-markdown img:hover {
-                transform: scale(1.005);
-            }
-            .docs-rendered-markdown img[src*="/light/"],
-            .docs-rendered-markdown img[src*="_light.webp"],
-            .docs-rendered-markdown img[src*="#gh-light-mode-only"] {
-                display: block;
-            }
-            .dark .docs-rendered-markdown img[src*="/light/"],
-            .dark .docs-rendered-markdown img[src*="_light.webp"],
-            .dark .docs-rendered-markdown img[src*="#gh-light-mode-only"] {
-                display: none !important;
-            }
-
-            .docs-rendered-markdown img[src*="/dark/"],
-            .docs-rendered-markdown img[src*="_dark.webp"],
-            .docs-rendered-markdown img[src*="#gh-dark-mode-only"] {
-                display: none !important;
-            }
-            .dark .docs-rendered-markdown img[src*="/dark/"],
-            .dark .docs-rendered-markdown img[src*="_dark.webp"],
-            .dark .docs-rendered-markdown img[src*="#gh-dark-mode-only"] {
-                display: block !important;
-            }
-            .docs-rendered-markdown hr {
-                border: 0;
-                border-top: 1px solid var(--border);
-                margin: 2rem 0;
-            }
-            .docs-rendered-markdown a {
-                color: var(--primary);
-                font-weight: 600;
-                text-decoration: underline;
-                text-underline-offset: 3px;
-            }
-            .docs-rendered-markdown a:hover {
-                opacity: 0.85;
-            }
-        `}</style>
-    );
-
-    // Close Lightbox on ESC
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === "Escape") {
-                setSelectedImage(null);
-            }
-        };
-        if (selectedImage) {
-            window.addEventListener("keydown", handleKeyDown);
-        }
-        return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [selectedImage]);
-
-    // Lightbox modal component (Clean Modern Fullscreen Lightbox via Portal)
-    const lightboxModal = selectedImage && typeof document !== "undefined"
-        ? createPortal(
-            <div
-                className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex flex-col items-center justify-between p-4 sm:p-6 select-none animate-in fade-in duration-200"
-                onClick={() => setSelectedImage(null)}
-            >
-                {/* Top Bar Actions */}
-                <div
-                    className="w-full flex items-center justify-between z-10 max-w-7xl px-2 py-1"
-                    onClick={(e) => e.stopPropagation()}
+    return createPortal(
+        <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Pratinjau gambar"
+            className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-4 bg-black/85 p-4"
+            onClick={onClose}
+        >
+            <div className="flex w-full max-w-6xl justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                <a
+                    href={src}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-md bg-white/10 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/20"
                 >
-                    <div className="text-xs text-neutral-400 font-medium flex items-center gap-2">
-                        <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span>Pratinjau Gambar Dokumentasi</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <a
-                            href={selectedImage}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold backdrop-blur-md transition flex items-center gap-1.5"
-                        >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                            <span>Buka Resolusi Penuh</span>
-                        </a>
+                    <ExternalLink className="size-3.5" /> Buka gambar asli
+                </a>
+                <button
+                    type="button"
+                    onClick={onClose}
+                    aria-label="Tutup"
+                    className="rounded-md bg-white/10 p-1.5 text-white hover:bg-white/20"
+                >
+                    <X className="size-4" />
+                </button>
+            </div>
+            <img
+                src={src}
+                alt="Tangkapan layar diperbesar"
+                onClick={(e) => e.stopPropagation()}
+                className="max-h-[82vh] max-w-full rounded-lg border border-white/10 object-contain"
+            />
+        </div>,
+        document.body
+    );
+}
+
+function GuestShell({ travelName, children }: { travelName: string; children: ReactNode }) {
+    const { setTheme, currentThemeDef } = useTheme();
+    const isDark = currentThemeDef?.type === "dark";
+
+    return (
+        <div className="min-h-screen bg-background text-foreground">
+            <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
+                <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
+                    <Link href="/docs" className="flex items-baseline gap-2">
+                        <span className="text-sm font-semibold">{travelName}</span>
+                        <span className="text-sm text-muted-foreground">Buku Panduan</span>
+                    </Link>
+                    <div className="flex items-center gap-1">
                         <button
                             type="button"
-                            onClick={() => setSelectedImage(null)}
-                            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white hover:text-rose-400 transition"
-                            title="Tutup (Esc)"
+                            onClick={() => setTheme(isDark ? "caramellatte" : "luxury")}
+                            aria-label="Ganti tema terang atau gelap"
+                            className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                         >
-                            <X className="w-5 h-5" />
+                            {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
                         </button>
+                        <Link
+                            href="/login"
+                            className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted"
+                        >
+                            <LogIn className="size-4" /> Masuk
+                        </Link>
                     </div>
                 </div>
+            </header>
+            <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">{children}</main>
+        </div>
+    );
+}
 
-                {/* Main Image Container */}
-                <div
-                    className="flex-1 w-full flex items-center justify-center p-2 min-h-0"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <img
-                        src={selectedImage}
-                        alt="Screenshot Zoom"
-                        className="max-h-[85vh] max-w-[95vw] w-auto h-auto object-contain rounded-xl shadow-2xl border border-white/10"
-                    />
-                </div>
+export default function DocsIndex({ tenant, currentRole, currentSlug, navigation, activeDoc, isAuthenticated }: Props) {
+    const [search, setSearch] = useState("");
+    const [navOpen, setNavOpen] = useState(false);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-                {/* Bottom Helper */}
-                <div className="text-[11px] text-neutral-400/80 tracking-wide">
-                    Klik area luar atau tekan <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono text-[10px]">Esc</kbd> untuk menutup
-                </div>
-            </div>,
-            document.body
-        )
-        : null;
+    const travelName = tenant?.nama_travel || "Travel";
+    const pageTitle = activeDoc?.title ?? "Buku Panduan";
 
-    // Common Role Header Banner
-    const roleBanner = (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-border shadow-xs">
-            <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-amber-500 flex items-center justify-center text-primary-foreground shadow-md shadow-primary/20">
-                    <BookOpen className="w-5 h-5" />
-                </div>
-                <div>
-                    <h2 className="text-base font-bold text-foreground">
-                        Pusat Panduan & Dokumentasi
-                    </h2>
-                    <p className="text-xs text-muted-foreground">
-                        Petunjuk operasional sistem travel umroh & haji lengkap dengan CRUD matrix
-                    </p>
-                </div>
+    const roleItems = useMemo(() => (currentRole === "portal" ? [] : navigation[currentRole] ?? []), [currentRole, navigation]);
+
+    const groups = useMemo(() => {
+        const q = search.trim().toLowerCase();
+        const result: Record<string, NavItem[]> = {};
+        roleItems
+            .filter((item) => !q || `${item.title} ${item.category}`.toLowerCase().includes(q))
+            .forEach((item) => {
+                (result[item.category || "Lainnya"] ??= []).push(item);
+            });
+        return result;
+    }, [roleItems, search]);
+
+    const { prevDoc, nextDoc } = useMemo(() => {
+        const index = roleItems.findIndex((item) => item.slug === currentSlug);
+        return {
+            prevDoc: index > 0 ? roleItems[index - 1] : null,
+            nextDoc: index >= 0 && index < roleItems.length - 1 ? roleItems[index + 1] : null,
+        };
+    }, [roleItems, currentSlug]);
+
+    useEffect(() => {
+        const container = document.getElementById("docs-body-content");
+        if (!container) return;
+
+        const onClick = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (target.tagName === "IMG") {
+                e.preventDefault();
+                setSelectedImage((target as HTMLImageElement).src);
+            }
+        };
+        container.addEventListener("click", onClick);
+        return () => container.removeEventListener("click", onClick);
+    }, [activeDoc]);
+
+    useEffect(() => {
+        setNavOpen(false);
+    }, [currentRole, currentSlug]);
+
+    const meta = activeDoc?.meta;
+
+    const portalNav = (
+        <ul className="space-y-0.5">
+            {[
+                { href: "/docs/owner", title: "Panduan owner & staf", count: navigation.owner.length },
+                { href: "/docs/agent", title: "Panduan mitra agen", count: navigation.agent.length },
+            ].map((entry) => (
+                <li key={entry.href}>
+                    <Link
+                        href={entry.href}
+                        className="flex items-baseline justify-between rounded-md px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-background/80 hover:text-foreground"
+                    >
+                        <span>{entry.title}</span>
+                        <span className="text-xs tabular-nums opacity-60">{entry.count} halaman</span>
+                    </Link>
+                </li>
+            ))}
+        </ul>
+    );
+
+    const content = (
+        <div className="space-y-8">
+            <style>{proseStyles}</style>
+            <RoleTabs currentRole={currentRole} />
+
+            <div className="grid gap-8 lg:grid-cols-[17rem_minmax(0,1fr)] xl:grid-cols-[17rem_minmax(0,1fr)_14rem]">
+                <aside className="rounded-xl border border-border/80 bg-muted/40 p-4 shadow-2xs low-scrollbar dark:bg-card/50 lg:sticky lg:top-20 lg:max-h-[calc(100vh-7rem)] lg:self-start lg:overflow-y-auto">
+                    <button
+                        type="button"
+                        onClick={() => setNavOpen((open) => !open)}
+                        aria-expanded={navOpen}
+                        className="mb-3 flex w-full items-center justify-between rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium lg:hidden"
+                    >
+                        <span>Daftar halaman</span>
+                        <ListFilter className="size-4 text-muted-foreground" />
+                    </button>
+                    <div className={`${navOpen ? "block" : "hidden"} lg:block`}>
+                        {currentRole === "portal" ? (
+                            portalNav
+                        ) : (
+                            <PageNav groups={groups} role={currentRole} currentSlug={currentSlug} search={search} onSearch={setSearch} />
+                        )}
+                    </div>
+                </aside>
+
+                <article className="min-w-0 max-w-3xl">
+                    {activeDoc ? (
+                        <>
+                            {(meta?.peran || meta?.kategori || meta?.halaman) && (
+                                <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                                    {[meta?.peran, meta?.kategori].filter(Boolean).join(" / ")}
+                                    {meta?.halaman && <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-foreground">{meta.halaman}</code>}
+                                </div>
+                            )}
+                            <div id="docs-body-content" className="docs-prose" dangerouslySetInnerHTML={{ __html: activeDoc.html }} />
+                            <Pager role={currentRole} prev={prevDoc} next={nextDoc} />
+                        </>
+                    ) : (
+                        <div className="py-16">
+                            <h1 className="text-xl font-semibold">Halaman tidak ditemukan</h1>
+                            <p className="mt-2 text-sm text-muted-foreground">Pilih halaman dari daftar di samping.</p>
+                        </div>
+                    )}
+                </article>
+
+                {activeDoc && (
+                    <aside className="hidden xl:sticky xl:top-20 xl:block xl:self-start">
+                        <TableOfContents headings={activeDoc.headings.filter((h) => h.level <= 3)} />
+                    </aside>
+                )}
             </div>
 
-            {/* Role Switcher Tabs */}
-            <div className="flex items-center p-1 bg-muted/60 rounded-xl border border-border/60 self-start sm:self-auto overflow-x-auto max-w-full">
-                <Link
-                    href="/docs"
-                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap ${
-                        currentRole === "portal"
-                            ? "bg-background text-foreground shadow-xs font-bold"
-                            : "text-muted-foreground hover:text-foreground"
-                    }`}
-                >
-                    <Compass className="w-3.5 h-3.5" />
-                    Portal Ringkasan
-                </Link>
-                <Link
-                    href="/docs/owner"
-                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap ${
-                        currentRole === "owner"
-                            ? "bg-background text-foreground shadow-xs font-bold"
-                            : "text-muted-foreground hover:text-foreground"
-                    }`}
-                >
-                    <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
-                    Owner Travel (Level 1)
-                </Link>
-                <Link
-                    href="/docs/agent"
-                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap ${
-                        currentRole === "agent"
-                            ? "bg-background text-foreground shadow-xs font-bold"
-                            : "text-muted-foreground hover:text-foreground"
-                    }`}
-                >
-                    <Users className="w-3.5 h-3.5 text-emerald-500" />
-                    Mitra Agen (Level 2/3)
-                </Link>
-            </div>
+            {selectedImage && <Lightbox src={selectedImage} onClose={() => setSelectedImage(null)} />}
         </div>
     );
 
-    // ==========================================
-    // 1. GUEST MODE (BELUM LOGIN)
-    // Sidebar utama langsung memuat Navigasi Modul!
-    // ==========================================
     if (!isAuthenticated) {
         return (
-            <SidebarProvider>
-                <Head title={`${pageTitle} - ${travelName} Docs`} />
-                {markdownStyles}
-
-                {/* GUEST DOCS SIDEBAR */}
-                <Sidebar collapsible="icon">
-                    <SidebarHeader className="border-b border-sidebar-border px-4 py-3">
-                        <Link href="/docs" className="flex items-center gap-2.5">
-                            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                                <BookOpen className="size-4" />
-                            </div>
-                            <div className="grid flex-1 text-left text-sm leading-tight">
-                                <span className="truncate font-semibold">{travelName}</span>
-                                <span className="truncate text-xs text-muted-foreground">
-                                    Portal Panduan Resmi
-                                </span>
-                            </div>
-                        </Link>
-                    </SidebarHeader>
-
-                    <SidebarContent className="px-2 py-3 space-y-4">
-                        {/* Search Filter in Sidebar */}
-                        <div className="relative px-2">
-                            <Search className="absolute left-4 top-2.5 w-3.5 h-3.5 text-muted-foreground" />
-                            <input
-                                type="text"
-                                placeholder="Cari modul..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-8 pr-2.5 py-1.5 text-xs rounded-lg bg-sidebar-accent/50 border border-sidebar-border focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-muted-foreground/60"
-                            />
-                        </div>
-
-                        {/* Navigation Menu */}
-                        {currentRole === "portal" ? (
-                            <SidebarGroup>
-                                <SidebarGroupLabel>Pilih Peran Panduan</SidebarGroupLabel>
-                                <SidebarMenu>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton
-                                            render={
-                                                <Link href="/docs/owner" className="flex items-center gap-2">
-                                                    <ShieldCheck className="size-4 text-amber-500" />
-                                                    <span>Panduan Owner (Level 1)</span>
-                                                </Link>
-                                            }
-                                        />
-                                    </SidebarMenuItem>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton
-                                            render={
-                                                <Link href="/docs/agent" className="flex items-center gap-2">
-                                                    <Users className="size-4 text-emerald-500" />
-                                                    <span>Panduan Agen (Level 2/3)</span>
-                                                </Link>
-                                            }
-                                        />
-                                    </SidebarMenuItem>
-                                </SidebarMenu>
-                            </SidebarGroup>
-                        ) : (
-                            Object.entries(groupedNavItems).map(([category, items]) => (
-                                <SidebarGroup key={category} className="p-0">
-                                    <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-wider">
-                                        {category}
-                                    </SidebarGroupLabel>
-                                    <SidebarMenu>
-                                        {items.map((item) => {
-                                            const isActive = item.slug === currentSlug;
-                                            const orderStr =
-                                                item.order > 0
-                                                    ? String(item.order).padStart(2, "0")
-                                                    : "★";
-
-                                            return (
-                                                <SidebarMenuItem key={item.slug}>
-                                                    <SidebarMenuButton
-                                                        isActive={isActive}
-                                                        tooltip={item.title}
-                                                        render={
-                                                            <Link
-                                                                href={`/docs/${currentRole}/${item.slug}`}
-                                                                className="flex items-center gap-2"
-                                                            >
-                                                                <span
-                                                                    className={`w-4 h-4 flex items-center justify-center rounded text-[12px] font-mono shrink-0 ${
-                                                                        isActive
-                                                                            ? "bg-primary text-primary-foreground font-bold"
-                                                                            : "bg-muted text-muted-foreground"
-                                                                    }`}
-                                                                >
-                                                                    {orderStr}
-                                                                </span>
-                                                            </Link>
-                                                        }
-                                                    />
-                                                </SidebarMenuItem>
-                                            );
-                                        })}
-                                    </SidebarMenu>
-                                </SidebarGroup>
-                            ))
-                        )}
-                    </SidebarContent>
-
-                    <SidebarFooter className="border-t border-sidebar-border p-3">
-                        <Link
-                            href="/login"
-                            className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:bg-primary/90 shadow-sm transition-all"
-                        >
-                            <LogIn className="w-4 h-4" />
-                            <span>Login ke Sistem</span>
-                        </Link>
-                    </SidebarFooter>
-                    <SidebarRail />
-                </Sidebar>
-
-                {/* GUEST INSET & HEADER */}
-                <SidebarInset>
-                    <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4 transition-[width,height] ease-linear">
-                        <div className="flex items-center gap-2 min-w-0">
-                            <SidebarTrigger className="-ml-1" />
-                            <Separator
-                                orientation="vertical"
-                                className="mr-1 data-[orientation=vertical]:h-4"
-                            />
-                            <Breadcrumb className="min-w-0">
-                                <BreadcrumbList className="flex-nowrap">
-                                    <BreadcrumbItem className="hidden sm:inline-flex">
-                                        <Link href="/docs" className="text-muted-foreground hover:text-foreground">
-                                            Buku Panduan
-                                        </Link>
-                                    </BreadcrumbItem>
-                                    <BreadcrumbSeparator className="hidden sm:inline-flex" />
-                                    <BreadcrumbItem className="min-w-0">
-                                        <BreadcrumbPage className="truncate max-w-[130px] xs:max-w-[180px] sm:max-w-none">
-                                            {roleLabel}
-                                        </BreadcrumbPage>
-                                    </BreadcrumbItem>
-                                </BreadcrumbList>
-                            </Breadcrumb>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={toggleQuickTheme}
-                                className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
-                                title="Ganti Tema"
-                            >
-                                {currentThemeDef?.type === "dark" ? (
-                                    <Sun className="w-4 h-4 text-amber-400" />
-                                ) : (
-                                    <Moon className="w-4 h-4 text-amber-500" />
-                                )}
-                            </button>
-                            <Link
-                                href="/login"
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all"
-                            >
-                                <LogIn className="w-3.5 h-3.5" />
-                                <span>Login</span>
-                            </Link>
-                        </div>
-                    </header>
-
-                    {/* MAIN ARTICLE AREA FOR GUEST */}
-                    <div className="p-4 sm:p-6 md:p-8 space-y-6 mx-auto w-full">
-                        {roleBanner}
-
-                        <div className="flex flex-col lg:flex-row gap-6 items-start">
-                            {/* Center Article Content */}
-                            <div className="flex-1 min-w-0 bg-card border border-border rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs">
-                                {activeDoc ? (
-                                    <div className="space-y-6">
-                                        <article
-                                            id="docs-body-content"
-                                            className="docs-rendered-markdown"
-                                            dangerouslySetInnerHTML={{ __html: activeDoc.html }}
-                                        />
-
-                                        {/* Next / Prev Navigation */}
-                                        <div className="pt-8 mt-10 border-t border-border flex items-center justify-between gap-4">
-                                            {prevDoc ? (
-                                                <Link
-                                                    href={`/docs/${currentRole}/${prevDoc.slug}`}
-                                                    className="flex flex-col gap-1 p-3.5 rounded-xl border border-border hover:border-primary hover:bg-muted/40 transition-all max-w-[45%]"
-                                                >
-                                                    <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                                                        <ArrowLeft className="w-3 h-3" /> Sebelumnya
-                                                    </span>
-                                                    <span className="text-xs font-bold text-foreground truncate">
-                                                        {prevDoc.title}
-                                                    </span>
-                                                </Link>
-                                            ) : (
-                                                <div />
-                                            )}
-
-                                            {nextDoc && (
-                                                <Link
-                                                    href={`/docs/${currentRole}/${nextDoc.slug}`}
-                                                    className="flex flex-col items-end gap-1 p-3.5 rounded-xl border border-border hover:border-primary hover:bg-muted/40 transition-all max-w-[45%] text-right"
-                                                >
-                                                    <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                                                        Selanjutnya <ArrowRight className="w-3 h-3" />
-                                                    </span>
-                                                    <span className="text-xs font-bold text-foreground truncate">
-                                                        {nextDoc.title}
-                                                    </span>
-                                                </Link>
-                                            )}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="p-12 text-center space-y-3">
-                                        <BookOpen className="w-12 h-12 text-muted-foreground mx-auto" />
-                                        <h3 className="font-bold text-base">Dokumentasi Tidak Ditemukan</h3>
-                                        <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                                            Halaman panduan yang Anda cari tidak tersedia.
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Enhanced Right Table of Contents (Sections) */}
-                            {activeDoc && activeDoc.headings.length > 0 && (
-                                <div className="hidden xl:block w-72 shrink-0 sticky top-4">
-                                    <TableOfContents headings={activeDoc.headings} />
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </SidebarInset>
-
-                {lightboxModal}
-            </SidebarProvider>
+            <GuestShell travelName={travelName}>
+                <Head title={`${pageTitle} - Buku Panduan ${travelName}`} />
+                {content}
+            </GuestShell>
         );
     }
 
-    // ==========================================
-    // 2. AUTHENTICATED MODE (SUDAH LOGIN)
-    // Menggunakan PageLayout Dashboard Lengkap!
-    // ==========================================
     return (
         <PageLayout
             title={`${pageTitle} - Buku Panduan`}
             breadcrumbParent="Buku Panduan"
-            breadcrumbPage={roleLabel}
-            contentClass="p-4 sm:p-6 md:p-8 space-y-6"
+            breadcrumbPage={roleTabs.find((t) => t.role === currentRole)?.label ?? "Panduan"}
+            contentClass="p-4 sm:p-6 md:p-8"
         >
-            {markdownStyles}
-            {roleBanner}
-
-            {/* 3-COLUMN DOCS LAYOUT INSIDE AUTHENTICATED DASHBOARD */}
-            <div className="flex flex-col lg:flex-row gap-6 items-start">
-                {/* INNER LEFT SUB-SIDEBAR: MODULES LIST */}
-                <div className="w-full lg:w-72 shrink-0 bg-card border border-border rounded-2xl p-4 space-y-5 shadow-xs sticky top-4">
-                    {/* Search */}
-                    <div className="relative">
-                        <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
-                        <input
-                            type="text"
-                            placeholder="Cari modul atau topik..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-background border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-muted-foreground/60"
-                        />
-                        {searchQuery && (
-                            <button
-                                type="button"
-                                onClick={() => setSearchQuery("")}
-                                className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground text-xs"
-                            >
-                                <X className="w-3.5 h-3.5" />
-                            </button>
-                        )}
-                    </div>
-
-                    {/* Navigation Groups */}
-                    {currentRole === "portal" ? (
-                        <div className="space-y-3">
-                            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1">
-                                Pilihan Panduan Peran
-                            </span>
-                            <div className="space-y-1.5">
-                                <Link
-                                    href="/docs/owner"
-                                    className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold rounded-xl bg-background hover:bg-muted text-foreground border border-border transition-all group"
-                                >
-                                    <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
-                                        1
-                                    </div>
-                                    <div>
-                                        <div className="font-bold">Panduan Owner Travel</div>
-                                        <div className="text-[10px] text-muted-foreground">
-                                            12 Modul Operasional & Finansial
-                                        </div>
-                                    </div>
-                                    <ChevronRight className="w-4 h-4 ml-auto text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-                                </Link>
-                                <Link
-                                    href="/docs/agent"
-                                    className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold rounded-xl bg-background hover:bg-muted text-foreground border border-border transition-all group"
-                                >
-                                    <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
-                                        2
-                                    </div>
-                                    <div>
-                                        <div className="font-bold">Panduan Mitra Agen</div>
-                                        <div className="text-[10px] text-muted-foreground">
-                                            6 Modul Penjualan & Bio Link
-                                        </div>
-                                    </div>
-                                    <ChevronRight className="w-4 h-4 ml-auto text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-                                </Link>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="space-y-5 max-h-[calc(100vh-20rem)] overflow-y-auto pr-1 no-scrollbar">
-                            {Object.entries(groupedNavItems).map(([category, items]) => (
-                                <div key={category} className="space-y-1">
-                                    <div className="flex items-center gap-1.5 px-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                                        <Layers className="w-3 h-3 text-primary" />
-                                        <span>{category}</span>
-                                    </div>
-                                    <div className="space-y-0.5">
-                                        {items.map((item) => {
-                                            const isActive = item.slug === currentSlug;
-                                            const orderStr =
-                                                item.order > 0
-                                                    ? String(item.order).padStart(2, "0")
-                                                    : "★";
-
-                                            return (
-                                                <Link
-                                                    key={item.slug}
-                                                    href={`/docs/${currentRole}/${item.slug}`}
-                                                    className={`flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-lg transition-all group ${
-                                                        isActive
-                                                            ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                                                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                                                    }`}
-                                                >
-                                                    <span
-                                                        className={`w-4 h-4 flex items-center justify-center rounded text-[12px] font-mono shrink-0 ${isActive
-                                                                ? "bg-primary text-primary-foreground font-bold"
-                                                                : "bg-muted text-muted-foreground"
-                                                            }`}
-                                                    >
-                                                        {orderStr}
-                                                    </span>
-                                                </Link>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* CENTER ARTICLE CONTAINER */}
-                <div className="flex-1 min-w-0 bg-card border border-border rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs">
-                    {activeDoc ? (
-                        <div className="space-y-6">
-                            <article
-                                id="docs-body-content"
-                                className="docs-rendered-markdown"
-                                dangerouslySetInnerHTML={{ __html: activeDoc.html }}
-                            />
-
-                            {/* PREV & NEXT BUTTONS */}
-                            <div className="pt-8 mt-10 border-t border-border flex items-center justify-between gap-4">
-                                {prevDoc ? (
-                                    <Link
-                                        href={`/docs/${currentRole}/${prevDoc.slug}`}
-                                        className="flex flex-col gap-1 p-3.5 rounded-xl border border-border hover:border-primary hover:bg-muted/40 transition-all max-w-[45%]"
-                                    >
-                                        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                                            <ArrowLeft className="w-3 h-3" /> Sebelumnya
-                                        </span>
-                                        <span className="text-xs font-bold text-foreground truncate">
-                                            {prevDoc.title}
-                                        </span>
-                                    </Link>
-                                ) : (
-                                    <div />
-                                )}
-
-                                {nextDoc && (
-                                    <Link
-                                        href={`/docs/${currentRole}/${nextDoc.slug}`}
-                                        className="flex flex-col items-end gap-1 p-3.5 rounded-xl border border-border hover:border-primary hover:bg-muted/40 transition-all max-w-[45%] text-right"
-                                    >
-                                        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                                            Selanjutnya <ArrowRight className="w-3 h-3" />
-                                        </span>
-                                        <span className="text-xs font-bold text-foreground truncate">
-                                            {nextDoc.title}
-                                        </span>
-                                    </Link>
-                                )}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="p-12 text-center space-y-3">
-                            <BookOpen className="w-12 h-12 text-muted-foreground mx-auto" />
-                            <h3 className="font-bold text-base">Dokumentasi Tidak Ditemukan</h3>
-                            <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                                Halaman panduan yang Anda cari tidak tersedia. Silakan pilih modul dari menu di sebelah kiri.
-                            </p>
-                        </div>
-                    )}
-                </div>
-
-                {/* ENHANCED RIGHT SIDEBAR: TABLE OF CONTENTS (SECTIONS) */}
-                {activeDoc && activeDoc.headings.length > 0 && (
-                    <div className="hidden 2xl:block w-72 shrink-0 sticky top-4">
-                        <TableOfContents headings={activeDoc.headings} />
-                    </div>
-                )}
-            </div>
-
-            {lightboxModal}
+            {content}
         </PageLayout>
     );
 }

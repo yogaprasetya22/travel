@@ -470,7 +470,7 @@ export default function TrackingStatus({
             <section className="relative overflow-hidden pt-8 pb-12 sm:pt-12 sm:pb-16 bg-gradient-to-b from-primary/10 via-background to-background border-b border-border/40">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
                     <Badge className="w-fit mx-auto bg-primary/15 text-primary border-primary/30 font-bold text-[11px] sm:text-xs px-3.5 py-1.5 rounded-full shadow-xs">
-                        🔍 Layanan Mandiri Tanpa Perlu Password
+                        Layanan Mandiri Tanpa Password
                     </Badge>
 
                     <h1 className="text-2xl sm:text-4xl font-black text-foreground tracking-tight">
@@ -568,7 +568,7 @@ export default function TrackingStatus({
                         </div>
                         <div className="space-y-2">
                             <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-xs font-bold px-3 py-1">
-                                🛡️ Verifikasi Keamanan 2-Faktor
+                                Verifikasi Keamanan 2-Faktor
                             </Badge>
                             <h3 className="text-lg sm:text-xl font-black text-foreground">
                                 Konfirmasi 4 Digit Terakhir {candidateHint?.pin_label || 'NIK KTP'}
@@ -586,7 +586,7 @@ export default function TrackingStatus({
 
                         {invalidPin && (
                             <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-semibold">
-                                ⚠️ PIN 4-digit {candidateHint?.pin_label || 'NIK KTP'} tidak cocok. Silakan periksa kembali 4 angka terakhir Anda.
+                                PIN 4-digit {candidateHint?.pin_label || 'NIK KTP'} tidak cocok. Silakan periksa kembali 4 angka terakhir Anda.
                             </div>
                         )}
 
@@ -810,13 +810,13 @@ export default function TrackingStatus({
                                     <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/60">
                                         <div className="text-[11px] text-muted-foreground">Hotel Makkah:</div>
                                         <div className="text-xs sm:text-sm font-bold text-foreground mt-0.5 flex items-center gap-1">
-                                            ⭐{jamaah.paket.bintang_makkah || 5} {jamaah.paket.hotel_makkah || 'Setaraf Bintang 5'}
+                                            Bintang {jamaah.paket.bintang_makkah || 5} • {jamaah.paket.hotel_makkah || 'Setaraf'}
                                         </div>
                                     </div>
                                     <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/60">
                                         <div className="text-[11px] text-muted-foreground">Hotel Madinah:</div>
                                         <div className="text-xs sm:text-sm font-bold text-foreground mt-0.5 flex items-center gap-1">
-                                            ⭐{jamaah.paket.bintang_madinah || 5} {jamaah.paket.hotel_madinah || 'Setaraf Bintang 5'}
+                                            Bintang {jamaah.paket.bintang_madinah || 5} • {jamaah.paket.hotel_madinah || 'Setaraf'}
                                         </div>
                                     </div>
                                 </div>
@@ -1190,7 +1190,7 @@ export default function TrackingStatus({
                                                 </span>
                                                 <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
                                                     → Rp {Math.max(0, jamaah.financial_summary.sisa_tagihan - (Number(nominal) || 0)).toLocaleString('id-ID')}
-                                                    {Math.max(0, jamaah.financial_summary.sisa_tagihan - (Number(nominal) || 0)) === 0 && ' (Lunas 🎉)'}
+                                                    {Math.max(0, jamaah.financial_summary.sisa_tagihan - (Number(nominal) || 0)) === 0 && ' (Lunas)'}
                                                 </span>
                                             </>
                                         ) : (
@@ -1233,7 +1233,7 @@ export default function TrackingStatus({
                                             }}
                                             className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-primary/15 hover:bg-primary/25 border border-primary/30 text-primary transition ml-auto"
                                         >
-                                            ✨ Lunasi Sisa Tagihan (Rp {jamaah.financial_summary.sisa_tagihan.toLocaleString('id-ID')})
+                                            Lunasi Sisa Tagihan (Rp {jamaah.financial_summary.sisa_tagihan.toLocaleString('id-ID')})
                                         </button>
                                     )}
                                 </div>

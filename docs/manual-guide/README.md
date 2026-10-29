@@ -1,19 +1,12 @@
-# 📖 PORTAL DOKUMENTASI & PANDUAN PENGGUNA (USER MANUAL GUIDE)
+# Buku Panduan
 
-**Sistem Informasi & Manajemen Operasional Travel Umroh Multi-Tenant**
+Panduan penggunaan sistem manajemen travel umroh dan haji, dibagi menurut peran.
 
-Selamat datang di portal dokumentasi resmi. Dokumentasi telah dipisahkan ke dalam 2 panduan khusus berdasarkan peran dan wewenang pengguna:
+## Pilih panduan Anda
 
-### 🏢 [1. Buku Panduan Khusus Owner Travel (Level 1)](owner/README.md)
-> Panduan komprehensif untuk Direktur / Owner Travel, Staf Operasional, Keuangan, dan Kasir. Mencakup setup master paket umroh, rekening bank, verifikasi kasir, pembagian komisi, logistik gudang, dan hierarki keagenan.
+- [Panduan Owner dan Staf Kantor](owner/README.md): setup travel, paket dan rekening, kasir, logistik, keberangkatan, agen, dan komisi.
+- [Panduan Mitra Agen](agent/README.md): bio link, pendaftaran jamaah, bukti transfer, memantau pipeline, dan komisi.
 
-### 🤝 [2. Buku Panduan Khusus Mitra Agen (Level 2/3)](agent/README.md)
-> Panduan praktis untuk Konsultan & Mitra Agen Umroh. Mencakup kustomisasi Bio Link landing page personal di `/profile`, penyebaran link referral ke publik (`/agen/AG-XXX`), formulir pendaftaran online (`/daftar?ref=...`), input calon jamaah, pengawalan berkas paspor di CRM, dan pemantauan komisi penjualan.
+## Akses
 
----
-
-### 🔑 Akun Akses Demo:
-- **Superadmin Master Platform**: `superadmin@hajjflow.com` | Password: `password`
-- **Owner / Superadmin (Level 1)**: `test@example.com` | Password: `password`
-- **Mitra Agen (Level 2/3)**: `budi@example.com` | Password: `password`
-
+Akun dibuat oleh administrator travel. Bila belum punya akun atau lupa kata sandi, hubungi owner atau supervisor travel Anda.

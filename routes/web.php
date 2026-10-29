@@ -5,8 +5,11 @@ use App\Http\Controllers\CRM\CustomerController;
 use App\Http\Controllers\CRM\DepartureScheduleController;
 use App\Http\Controllers\CRM\GuestRegisterFormController;
 use App\Http\Controllers\CRM\GuestRegisterSubmitController;
+use App\Http\Controllers\CRM\HotelController;
 use App\Http\Controllers\CRM\JamaahDocumentController;
+use App\Http\Controllers\CRM\KeberangkatanController;
 use App\Http\Controllers\CRM\LogisticsDistributionController;
+use App\Http\Controllers\CRM\PenerbanganController;
 use App\Http\Controllers\CRM\StoreJamaahController;
 use App\Http\Controllers\CRM\UpdateJamaahController;
 use App\Http\Controllers\CRM\UpdateStageController;
@@ -94,6 +97,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/crm/logistics/{jamaah}/confirm-delivery', [LogisticsDistributionController::class, 'confirmDelivery'])->name('crm.logistics.confirm-delivery');
     Route::get('/crm/schedules', [DepartureScheduleController::class, 'index'])->name('crm.schedules.index');
     Route::post('/crm/schedules/{jamaah}/update-departure', [DepartureScheduleController::class, 'updateDeparture'])->name('crm.schedules.update-departure');
+
+    Route::get('/crm/keberangkatan', [KeberangkatanController::class, 'index'])->name('crm.keberangkatan.index');
+    Route::post('/crm/keberangkatan', [KeberangkatanController::class, 'store'])->name('crm.keberangkatan.store');
+    Route::put('/crm/keberangkatan/{keberangkatan}', [KeberangkatanController::class, 'update'])->name('crm.keberangkatan.update');
+    Route::delete('/crm/keberangkatan/{keberangkatan}', [KeberangkatanController::class, 'destroy'])->name('crm.keberangkatan.destroy');
+    Route::post('/crm/penerbangan', [PenerbanganController::class, 'store'])->name('crm.penerbangan.store');
+    Route::put('/crm/penerbangan/{penerbangan}', [PenerbanganController::class, 'update'])->name('crm.penerbangan.update');
+    Route::delete('/crm/penerbangan/{penerbangan}', [PenerbanganController::class, 'destroy'])->name('crm.penerbangan.destroy');
+    Route::post('/crm/hotel', [HotelController::class, 'store'])->name('crm.hotel.store');
+    Route::put('/crm/hotel/{hotel}', [HotelController::class, 'update'])->name('crm.hotel.update');
+    Route::delete('/crm/hotel/{hotel}', [HotelController::class, 'destroy'])->name('crm.hotel.destroy');
 
     // Finance/Payment Routes
     Route::get('/finance/payment', ViewPaymentController::class)->name('payment.index');

@@ -1,39 +1,15 @@
-# Setup Profil, Password & Live Customizer Bio Link
+---
+peran: Agen
+kategori: Promosi & Profil Akun
+halaman: /profile
+ringkasan: Atur profil akun, kata sandi, nomor WhatsApp, bio, dan tautan media sosial. Anda bisa melihat pratinjau tampilan di ponsel sebelum membagikannya.
+---
 
-> **Target Peran**: `Mitra Agen (Level 2/3)` | **Login Akun**: `budi@example.com`
-> **Tahapan Alur**: `1. Setup Profil & Branding Mandiri` | **Kategori**: `Promosi & Profil Akun` | **Rute / URL**: `/profile`
+# Profil dan Bio Link
 
-## 📋 Deskripsi Fitur
-Pusat pengaturan profil akun agen, ganti password, nomor WhatsApp konsultasi, bio sambutan, tautan media sosial, serta live preview tampilan mobile sebelum disebarkan ke publik.
+Atur profil akun, kata sandi, nomor WhatsApp, bio, dan tautan media sosial. Anda bisa melihat pratinjau tampilan di ponsel sebelum membagikannya.
 
-## 🖼️ Tampilan Antarmuka Utama
-
-![Tampilan Setup Profil, Password & Live Customizer Bio Link (Light)](screenshots/light/01_setup_bio_link_dan_profil_agen.webp#gh-light-mode-only)
-![Tampilan Setup Profil, Password & Live Customizer Bio Link (Dark)](screenshots/dark/01_setup_bio_link_dan_profil_agen.webp#gh-dark-mode-only)
-
-## 🗂️ Tampilan Drawer, Modal & Aksi Detail
-
-### 📸 Tampilan Live Preview
-
-![Tampilan Live Preview (Light)](screenshots/light/01_setup_bio_link_dan_profil_agen_live_preview.webp#gh-light-mode-only)
-![Tampilan Live Preview (Dark)](screenshots/dark/01_setup_bio_link_dan_profil_agen_live_preview.webp#gh-dark-mode-only)
-
-## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
-
-### 🔍 Read (Lihat / Pencarian / Filter Data)
-- Melihat tampilan preview real-time landing page pada bingkai smartphone mockup di sebelah kanan layar.
-
-### ✏️ Update (Edit / Pembaruan Status)
-- Edit Nama Konsultan, Kota Domisili, Nomor WA Konsultasi, dan Bio Sambutan.
-- Atur tombol tindakan cepat: WhatsApp Konsultasi Pribadi, WhatsApp CS Travel Pusat, atau Formulir Pendaftaran.
-- Tautkan akun sosial media (Instagram, TikTok, YouTube, Facebook).
-- Perbarui Kata Sandi / Password login akun agen.
-
-### ✨ Fitur Khusus & Otomasi
-- Live Mobile Mockup Preview interaktif.
-- Salin Tautan Bio Link Personal (contoh: `http://barokah.travel.com/agen/AG-504A79`) untuk dipasang di bio Instagram/TikTok/WhatsApp.
-
-## 🛠️ Langkah-Langkah Penggunaan
+## Cara menggunakan
 
 1. Login ke sistem menggunakan akun Mitra Agen (`agent2.t2@travel.com`).
 2. Buka menu Profil Akun > Pengaturan Bio Link Agen.
@@ -41,9 +17,34 @@ Pusat pengaturan profil akun agen, ganti password, nomor WhatsApp konsultasi, bi
 4. Periksa hasil tampilan pada Live Mobile Preview di sisi kanan.
 5. Klik tombol "Simpan Perubahan" dan salin link landing page personal Anda.
 
-## 💡 Tips & Catatan Penting
+## Tampilan
 
-- 💡 Pasang tautan Bio Link Anda pada Profil Instagram dan status WhatsApp untuk menjaring calon jamaah secara otomatis.
+![Profil dan Bio Link](screenshots/light/01_setup_bio_link_dan_profil_agen.webp#gh-light-mode-only)
+![Profil dan Bio Link](screenshots/dark/01_setup_bio_link_dan_profil_agen.webp#gh-dark-mode-only)
 
----
-*Buku Panduan Resmi Sistem Travel Umroh Multi-Tenant.*
+### Live Preview
+
+![Live Preview](screenshots/light/01_setup_bio_link_dan_profil_agen_live_preview.webp#gh-light-mode-only)
+![Live Preview](screenshots/dark/01_setup_bio_link_dan_profil_agen_live_preview.webp#gh-dark-mode-only)
+
+## Yang bisa dilakukan
+
+### Melihat dan mencari
+
+- Melihat tampilan preview real-time landing page pada bingkai smartphone mockup di sebelah kanan layar.
+
+### Mengubah data
+
+- Edit Nama Konsultan, Kota Domisili, Nomor WA Konsultasi, dan Bio Sambutan.
+- Atur tombol tindakan cepat: WhatsApp Konsultasi Pribadi, WhatsApp CS Travel Pusat, atau Formulir Pendaftaran.
+- Tautkan akun sosial media (Instagram, TikTok, YouTube, Facebook).
+- Perbarui Kata Sandi / Password login akun agen.
+
+### Fitur lain
+
+- Live Mobile Mockup Preview interaktif.
+- Salin Tautan Bio Link Personal (contoh: `http://barokah.travel.com/agen/AG-504A79`) untuk dipasang di bio Instagram/TikTok/WhatsApp.
+
+## Catatan
+
+- Pasang tautan Bio Link Anda pada Profil Instagram dan status WhatsApp untuk menjaring calon jamaah secara otomatis.

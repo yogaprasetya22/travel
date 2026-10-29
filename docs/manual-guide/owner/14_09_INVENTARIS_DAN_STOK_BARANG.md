@@ -1,45 +1,46 @@
-# Inventaris Stok Fisik Gudang & Barang Masuk
+---
+peran: Owner
+kategori: Gudang & Inventaris
+halaman: /inventaris
+ringkasan: Catat stok perlengkapan di gudang (koper, kain ihram, mukena, seragam) dan riwayat barang masuk dari vendor.
+---
 
-> **Target Peran**: `Owner (Level 1)` | **Login Akun**: `test@example.com`
-> **Tahapan Alur**: `4. Eksekusi & Serah Terima Perlengkapan` | **Kategori**: `Gudang & Inventaris` | **Rute / URL**: `/inventaris`
+# Inventaris dan Stok
 
-## 📋 Deskripsi Fitur
-Pencatatan persediaan fisik perlengkapan travel di gudang (koper, kain ihram, mukena, seragam) beserta riwayat barang masuk dari vendor.
+Catat stok perlengkapan di gudang (koper, kain ihram, mukena, seragam) dan riwayat barang masuk dari vendor.
 
-## 🖼️ Tampilan Antarmuka Utama
-
-![Tampilan Inventaris Stok Fisik Gudang & Barang Masuk (Light)](screenshots/light/09_inventaris_dan_stok_barang.webp#gh-light-mode-only)
-![Tampilan Inventaris Stok Fisik Gudang & Barang Masuk (Dark)](screenshots/dark/09_inventaris_dan_stok_barang.webp#gh-dark-mode-only)
-
-## 🗂️ Tampilan Drawer, Modal & Aksi Detail
-
-### 📸 Tampilan Sheet Restock
-
-![Tampilan Sheet Restock (Light)](screenshots/light/09_inventaris_dan_stok_barang_sheet_restock.webp#gh-light-mode-only)
-![Tampilan Sheet Restock (Dark)](screenshots/dark/09_inventaris_dan_stok_barang_sheet_restock.webp#gh-dark-mode-only)
-
-### 📸 Tampilan Sheet Tambah Barang
-
-![Tampilan Sheet Tambah Barang (Light)](screenshots/light/09_inventaris_dan_stok_barang_sheet_tambah_barang.webp#gh-light-mode-only)
-![Tampilan Sheet Tambah Barang (Dark)](screenshots/dark/09_inventaris_dan_stok_barang_sheet_tambah_barang.webp#gh-dark-mode-only)
-
-## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
-
-### ➕ Create (Tambah / Input Baru)
-- Klik "Daftarkan Barang Baru" untuk memasukkan item inventaris perlengkapan baru.
-- Klik "Restock" pada baris barang untuk mencatat penyesuaian stok masuk (Stock IN).
-
-### 🔍 Read (Lihat / Pencarian / Filter Data)
-- Cek saldo stok fisik terkini dan peringatan stok menipis (*Low Stock Alert*).
-
-### ✏️ Update (Edit / Pembaruan Status)
-- Penyesuaian stok (*Stock Opname*) untuk koreksi jumlah barang fisik.
-
-## 🛠️ Langkah-Langkah Penggunaan
+## Cara menggunakan
 
 1. Buka menu Inventaris > Stok Perlengkapan.
 2. Klik tombol "+ Daftarkan Barang Baru" untuk registrasi barang baru.
 3. Klik tombol "Restock" pada baris barang untuk menambah stok masuk dari vendor.
 
----
-*Buku Panduan Resmi Sistem Travel Umroh Multi-Tenant.*
+## Tampilan
+
+![Inventaris dan Stok](screenshots/light/09_inventaris_dan_stok_barang.webp#gh-light-mode-only)
+![Inventaris dan Stok](screenshots/dark/09_inventaris_dan_stok_barang.webp#gh-dark-mode-only)
+
+### Sheet Restock
+
+![Sheet Restock](screenshots/light/09_inventaris_dan_stok_barang_sheet_restock.webp#gh-light-mode-only)
+![Sheet Restock](screenshots/dark/09_inventaris_dan_stok_barang_sheet_restock.webp#gh-dark-mode-only)
+
+### Sheet Tambah Barang
+
+![Sheet Tambah Barang](screenshots/light/09_inventaris_dan_stok_barang_sheet_tambah_barang.webp#gh-light-mode-only)
+![Sheet Tambah Barang](screenshots/dark/09_inventaris_dan_stok_barang_sheet_tambah_barang.webp#gh-dark-mode-only)
+
+## Yang bisa dilakukan
+
+### Menambah data
+
+- Klik "Daftarkan Barang Baru" untuk memasukkan item inventaris perlengkapan baru.
+- Klik "Restock" pada baris barang untuk mencatat penyesuaian stok masuk (Stock IN).
+
+### Melihat dan mencari
+
+- Cek saldo stok fisik terkini dan peringatan stok menipis (*Low Stock Alert*).
+
+### Mengubah data
+
+- Penyesuaian stok (*Stock Opname*) untuk koreksi jumlah barang fisik.

@@ -29,10 +29,13 @@ class DatabaseSeeder extends Seeder
         // 2. Seed Application Navigation Menus & RBAC Permissions
         $this->call(MenuSeeder::class);
 
-        // 3. Seed Realistic Multi-Tenant Data (2 Tenants, 10,000+ Relational Records Each)
+        // 3. Seed Realistic Multi-Tenant Data (3 Tenants, 10,000+ Relational Records Each)
         $this->call(TenantDatasetSeeder::class);
 
         // 4. Seed Detailed Package Itineraries & Daily Rundowns
         $this->call(PaketRundownSeeder::class);
+
+        // 5. Seed Katalog Penerbangan, Hotel & 100 Paket Keberangkatan (Setia Haramain Tour)
+        $this->call(KeberangkatanDummySeeder::class);
     }
 }

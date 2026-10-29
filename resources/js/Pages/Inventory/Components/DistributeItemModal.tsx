@@ -12,7 +12,7 @@ import TextInput from "@/Components/TextInput"
 import InputLabel from "@/Components/InputLabel"
 import InputError from "@/Components/InputError"
 import PrimaryButton from "@/Components/PrimaryButton"
-import { UserCheck, Search, Users, PackageCheck } from "lucide-react"
+import { UserCheck, Search, Users, PackageCheck, Check } from "lucide-react"
 
 interface InventoryItem {
     id: number
@@ -145,7 +145,10 @@ export default function DistributeItemModal({
                                             </div>
                                         </div>
                                         {isSelected && (
-                                            <span className="text-[11px] font-bold text-primary">Terpilih ✓</span>
+                                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
+                                                <Check className="w-3.5 h-3.5" />
+                                                <span>Terpilih</span>
+                                            </span>
                                         )}
                                     </div>
                                 )

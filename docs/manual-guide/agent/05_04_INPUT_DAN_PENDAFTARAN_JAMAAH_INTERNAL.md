@@ -1,45 +1,46 @@
-# Pendaftaran & Input Data Jamaah Binaan Secara Manual (Internal Agen)
+---
+peran: Agen
+kategori: Penjualan & Pendaftaran
+halaman: /crm
+ringkasan: Gunakan cara ini bila calon jamaah mendaftar langsung atau lewat chat pribadi, tanpa membuka tautan referral.
+---
 
-> **Target Peran**: `Mitra Agen (Level 2/3)` | **Login Akun**: `budi@example.com`
-> **Tahapan Alur**: `2. Pendaftaran & Akuisisi Calon Jamaah` | **Kategori**: `Penjualan & Pendaftaran` | **Rute / URL**: `/crm`
+# Mendaftarkan Jamaah Secara Manual
 
-## 📋 Deskripsi Fitur
-Agen dapat mendaftarkan jamaah secara manual dari dashboard jika calon jamaah mendaftar secara tatap muka (offline) atau melalui chat pribadi tanpa mengklik link referral.
+Gunakan cara ini bila calon jamaah mendaftar langsung atau lewat chat pribadi, tanpa membuka tautan referral.
 
-## 🖼️ Tampilan Antarmuka Utama
-
-![Tampilan Pendaftaran & Input Data Jamaah Binaan Secara Manual (Internal Agen) (Light)](screenshots/light/04_input_dan_pendaftaran_jamaah_internal.webp#gh-light-mode-only)
-![Tampilan Pendaftaran & Input Data Jamaah Binaan Secara Manual (Internal Agen) (Dark)](screenshots/dark/04_input_dan_pendaftaran_jamaah_internal.webp#gh-dark-mode-only)
-
-## 🗂️ Tampilan Drawer, Modal & Aksi Detail
-
-### 📸 Tampilan Form Terisi
-
-![Tampilan Form Terisi (Light)](screenshots/light/04_input_dan_pendaftaran_jamaah_internal_form_terisi.webp#gh-light-mode-only)
-![Tampilan Form Terisi (Dark)](screenshots/dark/04_input_dan_pendaftaran_jamaah_internal_form_terisi.webp#gh-dark-mode-only)
-
-### 📸 Tampilan Modal Tambah
-
-![Tampilan Modal Tambah (Light)](screenshots/light/04_input_dan_pendaftaran_jamaah_internal_modal_tambah.webp#gh-light-mode-only)
-![Tampilan Modal Tambah (Dark)](screenshots/dark/04_input_dan_pendaftaran_jamaah_internal_modal_tambah.webp#gh-dark-mode-only)
-
-## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
-
-### ➕ Create (Tambah / Input Baru)
-- Klik "+ Tambah Calon Nasabah" untuk menginput data calon jamaah binaan (Nama, No WA, Alamat, Pilihan Paket).
-
-### 🔍 Read (Lihat / Pencarian / Filter Data)
-- Melihat daftar seluruh jamaah yang terdaftar di bawah referral agen Anda.
-
-### ✏️ Update (Edit / Pembaruan Status)
-- Perbarui berkas dokumen jamaah (unggah foto Paspor, KTP, Kartu Keluarga, dan Buku Nikah).
-
-## 🛠️ Langkah-Langkah Penggunaan
+## Cara menggunakan
 
 1. Login sebagai Agen, buka menu CRM > Pipeline Leads.
 2. Klik tombol "+ Tambah Calon Nasabah".
 3. Isi formulir: Nama Lengkap, No HP/WA, NIK, Alamat, dan pilih Paket Umroh yang diminati.
-4. Klik Simpan ➔ jamaah otomatis tercatat sebagai binaan agen dan masuk stage New Leads.
+4. Klik Simpan → jamaah otomatis tercatat sebagai binaan agen dan masuk stage New Leads.
 
----
-*Buku Panduan Resmi Sistem Travel Umroh Multi-Tenant.*
+## Tampilan
+
+![Mendaftarkan Jamaah Secara Manual](screenshots/light/04_input_dan_pendaftaran_jamaah_internal.webp#gh-light-mode-only)
+![Mendaftarkan Jamaah Secara Manual](screenshots/dark/04_input_dan_pendaftaran_jamaah_internal.webp#gh-dark-mode-only)
+
+### Form Terisi
+
+![Form Terisi](screenshots/light/04_input_dan_pendaftaran_jamaah_internal_form_terisi.webp#gh-light-mode-only)
+![Form Terisi](screenshots/dark/04_input_dan_pendaftaran_jamaah_internal_form_terisi.webp#gh-dark-mode-only)
+
+### Modal Tambah
+
+![Modal Tambah](screenshots/light/04_input_dan_pendaftaran_jamaah_internal_modal_tambah.webp#gh-light-mode-only)
+![Modal Tambah](screenshots/dark/04_input_dan_pendaftaran_jamaah_internal_modal_tambah.webp#gh-dark-mode-only)
+
+## Yang bisa dilakukan
+
+### Menambah data
+
+- Klik "+ Tambah Calon Nasabah" untuk menginput data calon jamaah binaan (Nama, No WA, Alamat, Pilihan Paket).
+
+### Melihat dan mencari
+
+- Melihat daftar seluruh jamaah yang terdaftar di bawah referral agen Anda.
+
+### Mengubah data
+
+- Perbarui berkas dokumen jamaah (unggah foto Paspor, KTP, Kartu Keluarga, dan Buku Nikah).

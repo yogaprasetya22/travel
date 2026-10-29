@@ -1,36 +1,36 @@
-# Monitoring Pipeline Kanban Jamaah Binaan
+---
+peran: Agen
+kategori: CRM & Follow Up
+halaman: /crm
+ringkasan: Papan Kanban untuk mengikuti jamaah binaan Anda dari booking, DP, kelengkapan berkas, pelunasan, sampai siap berangkat.
+---
 
-> **Target Peran**: `Mitra Agen (Level 2/3)` | **Login Akun**: `budi@example.com`
-> **Tahapan Alur**: `3. Pengawalan Prospek Hingga Lunas` | **Kategori**: `CRM & Follow Up` | **Rute / URL**: `/crm`
+# Memantau Jamaah Binaan di Kanban
 
-## 📋 Deskripsi Fitur
-Papan Kanban visual khusus bagi agen untuk mengawal jamaah binaan melewati setiap tahapan: Booking ➔ DP Terbayar ➔ Berkas Lengkap ➔ Pelunasan ➔ Siap Berangkat.
+Papan Kanban untuk mengikuti jamaah binaan Anda dari booking, DP, kelengkapan berkas, pelunasan, sampai siap berangkat.
 
-## 🖼️ Tampilan Antarmuka Utama
-
-![Tampilan Monitoring Pipeline Kanban Jamaah Binaan (Light)](screenshots/light/05_monitoring_crm_pipeline_binaan.webp#gh-light-mode-only)
-![Tampilan Monitoring Pipeline Kanban Jamaah Binaan (Dark)](screenshots/dark/05_monitoring_crm_pipeline_binaan.webp#gh-dark-mode-only)
-
-## 🗂️ Tampilan Drawer, Modal & Aksi Detail
-
-### 📸 Tampilan Drawer Edit
-
-![Tampilan Drawer Edit (Light)](screenshots/light/05_monitoring_crm_pipeline_binaan_drawer_edit.webp#gh-light-mode-only)
-![Tampilan Drawer Edit (Dark)](screenshots/dark/05_monitoring_crm_pipeline_binaan_drawer_edit.webp#gh-dark-mode-only)
-
-## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
-
-### 🔍 Read (Lihat / Pencarian / Filter Data)
-- Memantau status tahapan terkini dari seluruh jamaah binaan agen.
-
-### ✏️ Update (Edit / Pembaruan Status)
-- Buka laci detail jamaah untuk mengecek status validasi dokumen paspor dan visa oleh pihak travel.
-
-## 🛠️ Langkah-Langkah Penggunaan
+## Cara menggunakan
 
 1. Buka menu CRM > Pipeline Kanban.
 2. Lihat kartu-kartu jamaah binaan Anda di setiap kolom.
 3. Lakukan follow-up pada jamaah yang masih berada di tahap "Booking" agar segera melakukan pembayaran DP.
 
----
-*Buku Panduan Resmi Sistem Travel Umroh Multi-Tenant.*
+## Tampilan
+
+![Memantau Jamaah Binaan di Kanban](screenshots/light/05_monitoring_crm_pipeline_binaan.webp#gh-light-mode-only)
+![Memantau Jamaah Binaan di Kanban](screenshots/dark/05_monitoring_crm_pipeline_binaan.webp#gh-dark-mode-only)
+
+### Drawer Edit
+
+![Drawer Edit](screenshots/light/05_monitoring_crm_pipeline_binaan_drawer_edit.webp#gh-light-mode-only)
+![Drawer Edit](screenshots/dark/05_monitoring_crm_pipeline_binaan_drawer_edit.webp#gh-dark-mode-only)
+
+## Yang bisa dilakukan
+
+### Melihat dan mencari
+
+- Memantau status tahapan terkini dari seluruh jamaah binaan agen.
+
+### Mengubah data
+
+- Buka laci detail jamaah untuk mengecek status validasi dokumen paspor dan visa oleh pihak travel.

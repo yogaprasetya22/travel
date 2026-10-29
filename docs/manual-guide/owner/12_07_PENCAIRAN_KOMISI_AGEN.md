@@ -1,41 +1,42 @@
-# Rekapitulasi & Pencairan Komisi Mitra Agen
+---
+peran: Owner
+kategori: Keuangan & Komisi
+halaman: /commissions
+ringkasan: Periksa hak komisi agen atas jamaah yang sudah lunas, lalu proses transfernya ke rekening agen.
+---
 
-> **Target Peran**: `Owner (Level 1)` | **Login Akun**: `test@example.com`
-> **Tahapan Alur**: `6. Validasi & Pembayaran Komisi` | **Kategori**: `Keuangan & Komisi` | **Rute / URL**: `/commissions`
+# Pencairan Komisi
 
-## 📋 Deskripsi Fitur
-Modul keuangan untuk memvalidasi hak komisi penjualan agen atas jamaah yang telah lunas dan memproses pencairan transfer dana ke rekening bank agen.
+Periksa hak komisi agen atas jamaah yang sudah lunas, lalu proses transfernya ke rekening agen.
 
-## 🖼️ Tampilan Antarmuka Utama
-
-![Tampilan Rekapitulasi & Pencairan Komisi Mitra Agen (Light)](screenshots/light/07_pencairan_komisi_agen.webp#gh-light-mode-only)
-![Tampilan Rekapitulasi & Pencairan Komisi Mitra Agen (Dark)](screenshots/dark/07_pencairan_komisi_agen.webp#gh-dark-mode-only)
-
-## 🗂️ Tampilan Drawer, Modal & Aksi Detail
-
-### 📸 Tampilan Modal Batch Payout
-
-![Tampilan Modal Batch Payout (Light)](screenshots/light/07_pencairan_komisi_agen_modal_batch_payout.webp#gh-light-mode-only)
-![Tampilan Modal Batch Payout (Dark)](screenshots/dark/07_pencairan_komisi_agen_modal_batch_payout.webp#gh-dark-mode-only)
-
-## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
-
-### 🔍 Read (Lihat / Pencarian / Filter Data)
-- Melihat daftar komisi per transaksi jamaah dengan status: Pending, Siap Dicairkan (*Eligible*), atau Selesai Ditransfer (*Paid*).
-
-### ✏️ Update (Edit / Pembaruan Status)
-- Ubah status komisi individual menjadi "Paid" setelah bukti transfer diunggah.
-
-### ✨ Fitur Khusus & Otomasi
-- Fitur **Batch Payout**: Cairkan komisi banyak agen sekaligus dengan sekali centang dan satu klik validasi.
-- Ekspor rekapitulasi pencairan komisi ke format Excel/PDF untuk arsip akuntansi.
-
-## 🛠️ Langkah-Langkah Penggunaan
+## Cara menggunakan
 
 1. Buka menu Keagenan > Pembagian Komisi.
 2. Pilih baris komisi yang berstatus "Siap Dicairkan".
 3. Klik tombol "Cairkan Massal" atau klik "Cairkan" pada baris komisi.
-4. Simpan status pembayaran ➔ Notifikasi terkirim ke dashboard agen.
+4. Simpan status pembayaran → Notifikasi terkirim ke dashboard agen.
 
----
-*Buku Panduan Resmi Sistem Travel Umroh Multi-Tenant.*
+## Tampilan
+
+![Pencairan Komisi](screenshots/light/07_pencairan_komisi_agen.webp#gh-light-mode-only)
+![Pencairan Komisi](screenshots/dark/07_pencairan_komisi_agen.webp#gh-dark-mode-only)
+
+### Modal Batch Payout
+
+![Modal Batch Payout](screenshots/light/07_pencairan_komisi_agen_modal_batch_payout.webp#gh-light-mode-only)
+![Modal Batch Payout](screenshots/dark/07_pencairan_komisi_agen_modal_batch_payout.webp#gh-dark-mode-only)
+
+## Yang bisa dilakukan
+
+### Melihat dan mencari
+
+- Melihat daftar komisi per transaksi jamaah dengan status: Pending, Siap Dicairkan (*Eligible*), atau Selesai Ditransfer (*Paid*).
+
+### Mengubah data
+
+- Ubah status komisi individual menjadi "Paid" setelah bukti transfer diunggah.
+
+### Fitur lain
+
+- Fitur **Batch Payout**: Cairkan komisi banyak agen sekaligus dengan sekali centang dan satu klik validasi.
+- Ekspor rekapitulasi pencairan komisi ke format Excel/PDF untuk arsip akuntansi.

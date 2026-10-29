@@ -294,23 +294,23 @@ export default function ShippingPackageLabelModal({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-4xl w-[95vw] max-h-[94vh] overflow-y-auto p-0 gap-0 border-border bg-card text-foreground low-scrollbar">
-                <DialogHeader className="p-5 border-b border-border bg-muted/60 flex flex-row items-center justify-between flex-wrap gap-3">
+                <DialogHeader className="p-4 border-b border-border bg-muted/40 flex flex-row items-center justify-between flex-wrap gap-3">
                     <div>
-                        <DialogTitle className="text-lg font-bold flex items-center gap-2">
-                            <Truck className="w-5 h-5 text-primary" />
-                            <span>Label Resi Pengiriman (E-Commerce Style)</span>
+                        <DialogTitle className="text-base font-semibold flex items-center gap-2">
+                            <Truck className="w-4 h-4 text-primary" />
+                            <span>Label Resi Pengiriman</span>
                         </DialogTitle>
                         <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                            Format resi standar ekspedisi Shopee/Tokopedia dengan sensor privasi data sensitif &amp; 1 lembar pas tanpa overflow.
+                            Format resi standar ekspedisi dengan sensor privasi data jamaah.
                         </DialogDescription>
                     </div>
                     <div className="flex items-center gap-2 mr-6 sm:mr-8 flex-wrap">
                         <button
                             type="button"
                             onClick={handlePrintOnly}
-                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-background hover:bg-muted text-xs font-semibold text-foreground transition cursor-pointer shadow-2xs"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-border bg-secondary hover:bg-secondary/80 text-xs font-medium text-secondary-foreground transition cursor-pointer"
                         >
-                            <Printer className="w-4 h-4 text-muted-foreground" />
+                            <Printer className="w-3.5 h-3.5 text-muted-foreground" />
                             <span>Hanya Cetak</span>
                         </button>
 
@@ -318,21 +318,21 @@ export default function ShippingPackageLabelModal({
                             type="button"
                             disabled={isSubmitting || checkedItemIds.length === 0}
                             onClick={handlePrintAndShip}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isSubmitting ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
                             ) : (
-                                <Send className="w-4 h-4" />
+                                <Send className="w-3.5 h-3.5" />
                             )}
-                            <span>Cetak &amp; Ubah Status Mengirim</span>
+                            <span>Cetak &amp; Kirim Paket</span>
                         </button>
                     </div>
                 </DialogHeader>
 
                 {validationError && (
                     <div className="px-6 py-2 bg-destructive/10 border-b border-destructive/20 text-destructive text-xs font-semibold flex items-center justify-between">
-                        <span>⚠ {validationError}</span>
+                        <span>{validationError}</span>
                         <button
                             onClick={() => setValidationError(null)}
                             className="text-destructive font-bold text-xs hover:underline cursor-pointer"
@@ -646,7 +646,7 @@ export default function ShippingPackageLabelModal({
 
                         {showNotes && notes.trim() !== "" && (
                             <div className="p-1.5 bg-amber-50 rounded-lg border border-amber-400 mb-2 text-[9px] text-amber-950 font-black flex items-center justify-between">
-                                <span>⚠ {notes}</span>
+                                <span>PERHATIAN: {notes}</span>
                                 <span className="font-mono text-[8px]">ID-JMH: #{customer.id}</span>
                             </div>
                         )}

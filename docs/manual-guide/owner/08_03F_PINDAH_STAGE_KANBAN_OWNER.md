@@ -1,44 +1,44 @@
-# Memindahkan Stage Jamaah di Papan Kanban CRM
+---
+peran: Owner
+kategori: CRM & Penjualan
+halaman: /crm
+ringkasan: Geser kartu jamaah antar tahap (New Leads, Follow Up, Negosiasi, Closing) dengan drag and drop, atau lewat tombol follow-up dan edit.
+---
 
-> **Target Peran**: `Owner (Level 1)` | **Login Akun**: `test@example.com`
-> **Tahapan Alur**: `2. Pengawalan Leads & Prospek` | **Kategori**: `CRM & Penjualan` | **Rute / URL**: `/crm`
+# Memindahkan Tahap di Kanban
 
-## 📋 Deskripsi Fitur
-Owner dapat menggeser kartu jamaah antar-kolom tahapan CRM (New Leads → Follow Up → Negosiasi → Closing) baik secara drag & drop maupun via tombol follow-up dan edit.
+Geser kartu jamaah antar tahap (New Leads, Follow Up, Negosiasi, Closing) dengan drag and drop, atau lewat tombol follow-up dan edit.
 
-## 🖼️ Tampilan Antarmuka Utama
-
-![Tampilan Memindahkan Stage Jamaah di Papan Kanban CRM (Light)](screenshots/light/03f_pindah_stage_kanban_owner.webp#gh-light-mode-only)
-![Tampilan Memindahkan Stage Jamaah di Papan Kanban CRM (Dark)](screenshots/dark/03f_pindah_stage_kanban_owner.webp#gh-dark-mode-only)
-
-## 🗂️ Tampilan Drawer, Modal & Aksi Detail
-
-### 📸 Tampilan Modal Followup
-
-![Tampilan Modal Followup (Light)](screenshots/light/03f_pindah_stage_kanban_owner_modal_followup.webp#gh-light-mode-only)
-![Tampilan Modal Followup (Dark)](screenshots/dark/03f_pindah_stage_kanban_owner_modal_followup.webp#gh-dark-mode-only)
-
-## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
-
-### 🔍 Read (Lihat / Pencarian / Filter Data)
-- Lihat jumlah jamaah per stage di header setiap kolom.
-- Filter kartu berdasarkan nama, nomor HP, paket, atau agen.
-
-### ✏️ Update (Edit / Pembaruan Status)
-- Drag & Drop kartu jamaah dari kolom satu ke kolom berikutnya secara langsung.
-- Atau klik tombol Follow-up pada kartu jamaah untuk mencatat progres negosiasi.
-- Setiap perpindahan stage tercatat otomatis di log aktivitas jamaah.
-
-## 🛠️ Langkah-Langkah Penggunaan
+## Cara menggunakan
 
 1. Buka menu CRM > Pipeline Leads.
 2. Temukan kartu jamaah yang ingin dipindahkan stagenya.
 3. Seret (drag) kartu ke kolom stage yang baru atau klik tombol Follow-up.
 4. Konfirmasi perpindahan — log stage otomatis terupdate di histori jamaah.
 
-## 💡 Tips & Catatan Penting
+## Tampilan
 
-- 💡 Perpindahan dari stage Negosiasi ke Closing hanya bisa dilakukan setelah ada minimal satu pembayaran yang sudah terverifikasi.
+![Memindahkan Tahap di Kanban](screenshots/light/03f_pindah_stage_kanban_owner.webp#gh-light-mode-only)
+![Memindahkan Tahap di Kanban](screenshots/dark/03f_pindah_stage_kanban_owner.webp#gh-dark-mode-only)
 
----
-*Buku Panduan Resmi Sistem Travel Umroh Multi-Tenant.*
+### Modal Followup
+
+![Modal Followup](screenshots/light/03f_pindah_stage_kanban_owner_modal_followup.webp#gh-light-mode-only)
+![Modal Followup](screenshots/dark/03f_pindah_stage_kanban_owner_modal_followup.webp#gh-dark-mode-only)
+
+## Yang bisa dilakukan
+
+### Melihat dan mencari
+
+- Lihat jumlah jamaah per stage di header setiap kolom.
+- Filter kartu berdasarkan nama, nomor HP, paket, atau agen.
+
+### Mengubah data
+
+- Drag & Drop kartu jamaah dari kolom satu ke kolom berikutnya secara langsung.
+- Atau klik tombol Follow-up pada kartu jamaah untuk mencatat progres negosiasi.
+- Setiap perpindahan stage tercatat otomatis di log aktivitas jamaah.
+
+## Catatan
+
+- Perpindahan dari stage Negosiasi ke Closing hanya bisa dilakukan setelah ada minimal satu pembayaran yang sudah terverifikasi.

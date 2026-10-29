@@ -65,6 +65,14 @@ class MenuSeeder extends Seeder
             'urutan' => 3,
         ]);
 
+        Menu::create([
+            'parent_id' => $crmMenu->id,
+            'title' => 'Paket Keberangkatan',
+            'url' => '/crm/keberangkatan',
+            'roles' => ['owner_travel', 'admin_travel', 'supervisor'],
+            'urutan' => 4,
+        ]);
+
         // 4. Keuangan
         $financeMenu = Menu::create([
             'title' => 'Keuangan',

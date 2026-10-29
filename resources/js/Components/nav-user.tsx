@@ -47,7 +47,7 @@ export function NavUser({
             <SidebarMenuItem>
                 <DropdownMenu>
                     <DropdownMenuTrigger
-                        className="peer/menu-button group/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm ring-sidebar-ring outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground h-12 text-sm leading-tight data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                        className="peer/menu-button group/menu-button flex w-full items-center gap-2 overflow-hidden rounded-xl border border-sidebar-border bg-background/60 p-2 shadow-xs text-left text-sm ring-sidebar-ring outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground h-14 text-sm leading-tight group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:shadow-none data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                     >
                         <Avatar className="h-8 w-8 rounded-lg">
                             <AvatarImage src={user.avatar} alt={user.name} />
@@ -56,8 +56,8 @@ export function NavUser({
                             </AvatarFallback>
                         </Avatar>
                         <div className="grid flex-1 text-left text-sm leading-tight">
-                            <span className="truncate font-medium">{user.name}</span>
-                            <span className="truncate text-xs">{user.email}</span>
+                            <span className="truncate font-semibold text-foreground">{user.name}</span>
+                            <span className="truncate text-xs text-muted-foreground">{user.email}</span>
                         </div>
                         <ChevronsUpDown className="ml-auto size-4" />
                     </DropdownMenuTrigger>

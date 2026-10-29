@@ -66,7 +66,7 @@ export interface LandingConfig {
 
 export const DEFAULT_LANDING_CONFIG: LandingConfig = {
     hero: {
-        badge_text: '🕋 Travel Booking Engine Resmi & Terpercaya',
+        badge_text: 'Travel Booking Engine Resmi & Terpercaya',
         title: 'Wujudkan Ibadah ke Baitullah dengan Kepastian Jadwal & Layanan Prima',
         subtitle: 'Transparan, akomodasi dekat pelataran masjid, bimbingan manasik intensif, dan kepastian tiket penerbangan.',
         cta_package_text: 'Jelajahi Paket Umroh & Haji',
@@ -326,7 +326,7 @@ export default function LandingCms({
                                                 ...form,
                                                 hero: { ...form.hero, badge_text: e.target.value },
                                             })}
-                                            placeholder="Contoh: 🕋 Travel Booking Engine Resmi & Terpercaya"
+                                            placeholder="Contoh: Travel Booking Engine Resmi & Terpercaya"
                                             className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground"
                                         />
                                     </div>
@@ -636,8 +636,9 @@ export default function LandingCms({
                                 <CardContent className="space-y-6">
                                     {/* Maskapai */}
                                     <div className="space-y-3">
-                                        <label className="block text-xs font-bold text-foreground">
-                                            ✈️ Daftar Maskapai Penerbangan
+                                        <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                                            <Plane className="w-3.5 h-3.5 text-primary" />
+                                            <span>Daftar Maskapai Penerbangan</span>
                                         </label>
                                         <div className="flex flex-wrap gap-2">
                                             {(form.partners?.airlines ?? []).map((airline, idx) => (
@@ -646,7 +647,8 @@ export default function LandingCms({
                                                     variant="secondary"
                                                     className="px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 bg-muted/60 text-foreground"
                                                 >
-                                                    <span>✈️ {airline}</span>
+                                                    <Plane className="w-3 h-3 text-muted-foreground" />
+                                                    <span>{airline}</span>
                                                     <button
                                                         type="button"
                                                         onClick={() => removeAirline(idx)}
@@ -679,8 +681,9 @@ export default function LandingCms({
 
                                     {/* Hotel */}
                                     <div className="space-y-3 pt-4 border-t border-border/80">
-                                        <label className="block text-xs font-bold text-foreground">
-                                            🏨 Jaringan Hotel Bintang 5 Ring-1
+                                        <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                                            <Building2 className="w-3.5 h-3.5 text-primary" />
+                                            <span>Jaringan Hotel Bintang 5 Ring-1</span>
                                         </label>
                                         <div className="flex flex-wrap gap-2">
                                             {(form.partners?.hotels ?? []).map((hotel, idx) => (
@@ -689,7 +692,8 @@ export default function LandingCms({
                                                     variant="secondary"
                                                     className="px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 bg-muted/60 text-foreground"
                                                 >
-                                                    <span>🏨 {hotel}</span>
+                                                    <Building2 className="w-3 h-3 text-muted-foreground" />
+                                                    <span>{hotel}</span>
                                                     <button
                                                         type="button"
                                                         onClick={() => removeHotel(idx)}

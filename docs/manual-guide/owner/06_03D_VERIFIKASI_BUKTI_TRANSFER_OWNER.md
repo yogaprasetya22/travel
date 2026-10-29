@@ -1,38 +1,15 @@
-# Verifikasi & Persetujuan Bukti Transfer (Finance)
+---
+peran: Owner
+kategori: Keuangan & Verifikasi
+halaman: /finance/payment
+ringkasan: Setujui atau tolak bukti transfer yang diunggah jamaah atau agen. Setelah disetujui, pembayaran tercatat resmi di kas travel.
+---
 
-> **Target Peran**: `Owner (Level 1)` | **Login Akun**: `test@example.com`
-> **Tahapan Alur**: `3. Transaksi & Validasi Pembayaran` | **Kategori**: `Keuangan & Verifikasi` | **Rute / URL**: `/finance/payment`
+# Verifikasi Bukti Transfer
 
-## 📋 Deskripsi Fitur
-Halaman Finance Payment adalah pusat validasi kasir untuk menyetujui atau menolak bukti transfer yang diunggah jamaah atau agen. Setelah diverifikasi, dana dianggap masuk resmi ke kas travel.
+Setujui atau tolak bukti transfer yang diunggah jamaah atau agen. Setelah disetujui, pembayaran tercatat resmi di kas travel.
 
-## 🖼️ Tampilan Antarmuka Utama
-
-![Tampilan Verifikasi & Persetujuan Bukti Transfer (Finance) (Light)](screenshots/light/03d_verifikasi_bukti_transfer_owner.webp#gh-light-mode-only)
-![Tampilan Verifikasi & Persetujuan Bukti Transfer (Finance) (Dark)](screenshots/dark/03d_verifikasi_bukti_transfer_owner.webp#gh-dark-mode-only)
-
-## 🗂️ Tampilan Drawer, Modal & Aksi Detail
-
-### 📸 Tampilan Pratinjau Bukti
-
-![Tampilan Pratinjau Bukti (Light)](screenshots/light/03d_verifikasi_bukti_transfer_owner_pratinjau_bukti.webp#gh-light-mode-only)
-![Tampilan Pratinjau Bukti (Dark)](screenshots/dark/03d_verifikasi_bukti_transfer_owner_pratinjau_bukti.webp#gh-dark-mode-only)
-
-## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
-
-### 🔍 Read (Lihat / Pencarian / Filter Data)
-- Melihat semua pengajuan pembayaran dengan status Pending Verifikasi yang menunggu konfirmasi.
-- Klik "Lihat Bukti" untuk membuka pratinjau lembar foto/scan transfer bank asli.
-
-### ✏️ Update (Edit / Pembaruan Status)
-- Klik tombol "Setujui" untuk mengesahkan pembayaran — status berubah ke Verified.
-- Klik tombol "Tolak" jika bukti transfer tidak valid atau dana belum masuk rekening.
-
-### ✨ Fitur Khusus & Otomasi
-- Setelah diverifikasi, komisi agen terkait otomatis berstatus Eligible (siap dicairkan).
-- Jamaah yang sudah Lunas total otomatis pindah ke stage Closing di Kanban CRM.
-
-## 🛠️ Langkah-Langkah Penggunaan
+## Cara menggunakan
 
 1. Login sebagai Owner, buka menu Finance > Verifikasi Pembayaran.
 2. Cari baris pembayaran dengan status "Pending" (belum diverifikasi).
@@ -40,9 +17,33 @@ Halaman Finance Payment adalah pusat validasi kasir untuk menyetujui atau menola
 4. Konfirmasi kesesuaian nominal dengan mutasi bank travel.
 5. Klik tombol "Setujui" — status berubah menjadi Verified dan sistem memproses komisi agen secara otomatis.
 
-## 💡 Tips & Catatan Penting
+## Tampilan
 
-- 💡 Selalu cocokkan nominal yang tertera di bukti transfer dengan mutasi rekening bank resmi sebelum menyetujui.
+![Verifikasi Bukti Transfer](screenshots/light/03d_verifikasi_bukti_transfer_owner.webp#gh-light-mode-only)
+![Verifikasi Bukti Transfer](screenshots/dark/03d_verifikasi_bukti_transfer_owner.webp#gh-dark-mode-only)
 
----
-*Buku Panduan Resmi Sistem Travel Umroh Multi-Tenant.*
+### Pratinjau Bukti
+
+![Pratinjau Bukti](screenshots/light/03d_verifikasi_bukti_transfer_owner_pratinjau_bukti.webp#gh-light-mode-only)
+![Pratinjau Bukti](screenshots/dark/03d_verifikasi_bukti_transfer_owner_pratinjau_bukti.webp#gh-dark-mode-only)
+
+## Yang bisa dilakukan
+
+### Melihat dan mencari
+
+- Melihat semua pengajuan pembayaran dengan status Pending Verifikasi yang menunggu konfirmasi.
+- Klik "Lihat Bukti" untuk membuka pratinjau lembar foto/scan transfer bank asli.
+
+### Mengubah data
+
+- Klik tombol "Setujui" untuk mengesahkan pembayaran — status berubah ke Verified.
+- Klik tombol "Tolak" jika bukti transfer tidak valid atau dana belum masuk rekening.
+
+### Fitur lain
+
+- Setelah diverifikasi, komisi agen terkait otomatis berstatus Eligible (siap dicairkan).
+- Jamaah yang sudah Lunas total otomatis pindah ke stage Closing di Kanban CRM.
+
+## Catatan
+
+- Selalu cocokkan nominal yang tertera di bukti transfer dengan mutasi rekening bank resmi sebelum menyetujui.

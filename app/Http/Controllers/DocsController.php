@@ -140,10 +140,10 @@ class DocsController extends Controller
         $readmePath = $dir.'/README.md';
         if (File::exists($readmePath)) {
             $items[] = [
-                'title' => 'Ringkasan & Alur Perjalanan (Roadmap)',
+                'title' => 'Ringkasan',
                 'slug' => 'overview',
                 'order' => 0,
-                'category' => 'Alur Utama',
+                'category' => 'Mulai di sini',
                 'filepath' => $readmePath,
             ];
         }
@@ -155,15 +155,13 @@ class DocsController extends Controller
             }
 
             $slug = pathinfo($filename, PATHINFO_FILENAME);
-            $content = File::get($file->getRealPath());
+            [$meta, $content] = $this->splitFrontMatter(File::get($file->getRealPath()));
 
             // Extract Title from first # Heading
             preg_match('/^#\s+(.+)$/m', $content, $titleMatch);
             $title = $titleMatch[1] ?? Str::headline(str_replace('_', ' ', $slug));
 
-            // Extract Category
-            preg_match('/Kategori\*\*:\s+`?([^`\n\|]+)`?/i', $content, $catMatch);
-            $category = isset($catMatch[1]) ? trim($catMatch[1]) : 'Modul Sistem';
+            $category = $meta['kategori'] ?? 'Lainnya';
 
             // Extract Order Number
             preg_match('/^(\d+)_/i', $filename, $orderMatch);
@@ -184,11 +182,33 @@ class DocsController extends Controller
     }
 
     /**
+     * Pisahkan front matter sederhana (`kunci: nilai`) dari isi markdown.
+     *
+     * @return array{0: array<string, string>, 1: string}
+     */
+    private function splitFrontMatter(string $raw): array
+    {
+        if (! preg_match('/\A---\R(.*?)\R---\R*(.*)\z/s', $raw, $parts)) {
+            return [[], $raw];
+        }
+
+        $meta = [];
+        foreach (preg_split('/\R/', $parts[1]) as $line) {
+            if (str_contains($line, ':')) {
+                [$key, $value] = explode(':', $line, 2);
+                $meta[trim($key)] = trim($value);
+            }
+        }
+
+        return [$meta, $parts[2]];
+    }
+
+    /**
      * Parse markdown file and prepare safe HTML with updated image asset paths.
      */
     private function parseMarkdownFile(string $filepath, string $role, string $slug): array
     {
-        $rawMarkdown = File::get($filepath);
+        [$meta, $rawMarkdown] = $this->splitFrontMatter(File::get($filepath));
 
         // Rewrite relative image paths e.g. "screenshots/xxx.png" -> "/docs-assets/{role}/screenshots/xxx.png"
         $processedMarkdown = preg_replace(
@@ -239,7 +259,7 @@ class DocsController extends Controller
                 $cleanText = preg_replace('/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{1F1E0}-\x{1F1FF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u', '', $rawText);
                 $anchor = Str::slug(trim($cleanText)) ?: Str::slug($rawText) ?: 'section-'.uniqid();
 
-                return "<h{$level} id=\"{$anchor}\" class=\"scroll-mt-24 group flex items-center justify-between\"><span>{$matches[2]}</span><a href=\"#{$anchor}\" class=\"opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-primary transition-opacity text-sm ml-2\" title=\"Tautan langsung ke bagian ini\">#</a></h{$level}>";
+                return "<h{$level} id=\"{$anchor}\" class=\"scroll-mt-24 group\">{$matches[2]}<a href=\"#{$anchor}\" class=\"opacity-0 group-hover:opacity-100 transition-opacity\" aria-label=\"Tautan ke bagian ini\">#</a></h{$level}>";
             },
             $htmlContent
         );
@@ -248,6 +268,7 @@ class DocsController extends Controller
             'title' => $title,
             'slug' => $slug,
             'role' => $role,
+            'meta' => $meta,
             'headings' => $headings,
             'html' => $htmlContent,
             'raw' => $processedMarkdown,

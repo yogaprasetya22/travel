@@ -55,7 +55,7 @@ export function TeamSwitcher({ user, activeTenant, tenants = [] }: TeamSwitcherP
             <SidebarMenuItem>
                 <DropdownMenu>
                     <DropdownMenuTrigger
-                        className="peer/menu-button group/menu-button flex w-full items-center gap-2.5 overflow-hidden rounded-xl text-left text-sm ring-sidebar-ring outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground h-12 leading-tight data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-0!"
+                        className="peer/menu-button group/menu-button flex w-full items-center gap-2.5 overflow-hidden rounded-xl border border-sidebar-border bg-background/60 p-2 shadow-xs text-left text-sm ring-sidebar-ring outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground h-14 leading-tight group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:shadow-none data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-0!"
                     >
                         <div className="flex aspect-square size-8 items-center justify-center shrink-0">
                             <ApplicationLogo className="w-8 h-8 group-data-[collapsible=icon]:w-7 group-data-[collapsible=icon]:h-7" />

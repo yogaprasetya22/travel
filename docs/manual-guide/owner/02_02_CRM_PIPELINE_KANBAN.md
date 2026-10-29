@@ -1,48 +1,51 @@
-# Papan CRM Kanban Pipeline Jamaah (Leads to Closing)
+---
+peran: Owner
+kategori: CRM & Penjualan
+halaman: /crm
+ringkasan: Papan visual untuk mengikuti calon jamaah dari kontak pertama, konsultasi, booking, DP, pengumpulan berkas, sampai pelunasan.
+---
 
-> **Target Peran**: `Owner (Level 1)` | **Login Akun**: `test@example.com`
-> **Tahapan Alur**: `2. Pengawalan Leads & Prospek` | **Kategori**: `CRM & Penjualan` | **Rute / URL**: `/crm`
+# Papan Kanban CRM
 
-## 📋 Deskripsi Fitur
-Papan Kanban visual interaktif untuk mengawal alur prospek calon jamaah dari tahap Kontak Pertama, Konsultasi, Booking Kursi, Pembayaran DP, Pengumpulan Berkas, hingga Pelunasan.
+Papan visual untuk mengikuti calon jamaah dari kontak pertama, konsultasi, booking, DP, pengumpulan berkas, sampai pelunasan.
 
-## 🖼️ Tampilan Antarmuka Utama
-
-![Tampilan Papan CRM Kanban Pipeline Jamaah (Leads to Closing) (Light)](screenshots/light/02_crm_pipeline_kanban.webp#gh-light-mode-only)
-![Tampilan Papan CRM Kanban Pipeline Jamaah (Leads to Closing) (Dark)](screenshots/dark/02_crm_pipeline_kanban.webp#gh-dark-mode-only)
-
-## 🗂️ Tampilan Drawer, Modal & Aksi Detail
-
-### 📸 Tampilan Modal Tambah Leads
-
-![Tampilan Modal Tambah Leads (Light)](screenshots/light/02_crm_pipeline_kanban_modal_tambah_leads.webp#gh-light-mode-only)
-![Tampilan Modal Tambah Leads (Dark)](screenshots/dark/02_crm_pipeline_kanban_modal_tambah_leads.webp#gh-dark-mode-only)
-
-## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
-
-### ➕ Create (Tambah / Input Baru)
-- Klik "+ Tambah Calon Nasabah" pada tombol utama untuk memasukkan data prospek baru secara instan.
-
-### 🔍 Read (Lihat / Pencarian / Filter Data)
-- Melihat sebaran jamaah di setiap tahapan pipeline (New Leads, Follow Up, Booking, DP, Pelunasan).
-- Filter kartu jamaah berdasarkan Agen Pembina, Paket Umroh, atau Jadwal Keberangkatan.
-
-### ✏️ Update (Edit / Pembaruan Status)
-- Drag & Drop (geser) kartu jamaah antar-kolom status untuk memindahkan progres secara realtime.
-- Buka laci detail jamaah untuk melengkapi data paspor, foto KTP, dan buku nikah.
-
-### 🗑️ Delete (Hapus Data)
-- Arsipkan atau hapus data prospek yang batal mendaftar dari laci detail.
-
-### ✨ Fitur Khusus & Otomasi
-- Klik tombol WhatsApp pada kartu jamaah untuk mengirim pesan follow-up instan dengan template otomatis.
-
-## 🛠️ Langkah-Langkah Penggunaan
+## Cara menggunakan
 
 1. Buka menu CRM > Pipeline Kanban.
 2. Pantau kolom "New Leads" yang masuk dari formulir website atau referral agen.
 3. Tarik (drag) kartu jamaah ke kolom "Booking / DP" jika calon jamaah sudah menyetujui paket.
 4. Buka kartu untuk memverifikasi dokumen paspor dan visa.
 
----
-*Buku Panduan Resmi Sistem Travel Umroh Multi-Tenant.*
+## Tampilan
+
+![Papan Kanban CRM](screenshots/light/02_crm_pipeline_kanban.webp#gh-light-mode-only)
+![Papan Kanban CRM](screenshots/dark/02_crm_pipeline_kanban.webp#gh-dark-mode-only)
+
+### Modal Tambah Leads
+
+![Modal Tambah Leads](screenshots/light/02_crm_pipeline_kanban_modal_tambah_leads.webp#gh-light-mode-only)
+![Modal Tambah Leads](screenshots/dark/02_crm_pipeline_kanban_modal_tambah_leads.webp#gh-dark-mode-only)
+
+## Yang bisa dilakukan
+
+### Menambah data
+
+- Klik "+ Tambah Calon Nasabah" pada tombol utama untuk memasukkan data prospek baru secara instan.
+
+### Melihat dan mencari
+
+- Melihat sebaran jamaah di setiap tahapan pipeline (New Leads, Follow Up, Booking, DP, Pelunasan).
+- Filter kartu jamaah berdasarkan Agen Pembina, Paket Umroh, atau Jadwal Keberangkatan.
+
+### Mengubah data
+
+- Drag & Drop (geser) kartu jamaah antar-kolom status untuk memindahkan progres secara realtime.
+- Buka laci detail jamaah untuk melengkapi data paspor, foto KTP, dan buku nikah.
+
+### Menghapus data
+
+- Arsipkan atau hapus data prospek yang batal mendaftar dari laci detail.
+
+### Fitur lain
+
+- Klik tombol WhatsApp pada kartu jamaah untuk mengirim pesan follow-up instan dengan template otomatis.

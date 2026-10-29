@@ -146,7 +146,9 @@ class DepartureScheduleController extends Controller
             ->get();
 
         $schedules = $kloterRecords->groupBy(function ($j) {
-            return $j->tanggal_keberangkatan ? $j->tanggal_keberangkatan : 'Belum Ditentukan';
+            return ! empty($j->tanggal_keberangkatan)
+                ? Carbon::parse($j->tanggal_keberangkatan)->format('Y-m-d')
+                : 'Belum Ditentukan';
         });
 
         $pakets = Paket::where('tenant_id', $tenantId)

@@ -1,42 +1,45 @@
-# Alur Form Pendaftaran Publik → Masuk New Leads CRM (Agen)
+---
+peran: Agen
+kategori: Digital Marketing & Leads Capture
+halaman: /daftar
+ringkasan: Data yang diisi calon jamaah di formulir publik langsung masuk ke kolom New Leads di papan CRM Anda, jadi tidak perlu diketik ulang.
+---
 
-> **Target Peran**: `Mitra Agen (Level 2/3)` | **Login Akun**: `budi@example.com`
-> **Tahapan Alur**: `2. Pendaftaran & Akuisisi Calon Jamaah` | **Kategori**: `Digital Marketing & Leads Capture` | **Rute / URL**: `/daftar`
+# Dari Formulir Publik ke New Leads
 
-## 📋 Deskripsi Fitur
-Alur end-to-end: calon jamaah mengisi formulir publik via link referral agen → data otomatis masuk ke sistem sebagai New Leads di papan CRM agen. Agen tidak perlu mengentry ulang data apapun.
+Data yang diisi calon jamaah di formulir publik langsung masuk ke kolom New Leads di papan CRM Anda, jadi tidak perlu diketik ulang.
 
-## 🖼️ Tampilan Antarmuka Utama
-
-![Tampilan Alur Form Pendaftaran Publik → Masuk New Leads CRM (Agen) (Light)](screenshots/light/03a_alur_form_publik_ke_new_leads.webp#gh-light-mode-only)
-![Tampilan Alur Form Pendaftaran Publik → Masuk New Leads CRM (Agen) (Dark)](screenshots/dark/03a_alur_form_publik_ke_new_leads.webp#gh-dark-mode-only)
-
-## ⚡ Aksi & Fitur Lengkap (CRUD Matrix)
-
-### ➕ Create (Tambah / Input Baru)
-- Calon jamaah membuka link referral agen: contoh `/daftar?ref=AG-DXPP4B`.
-- Mengisi formulir: Nama, No WA, Email, NIK, Alamat, dan Pilihan Paket.
-- Klik Submit ➔ data langsung tersimpan di database.
-
-### 🔍 Read (Lihat / Pencarian / Filter Data)
-- Agen login ke dashboard ➔ buka CRM > Kanban ➔ kartu jamaah baru muncul di kolom **New Leads**.
-- Notifikasi otomatis masuk ke dashboard agen bahwa ada leads baru.
-
-### ✨ Fitur Khusus & Otomasi
-- Kode referral agen tertanam otomatis di URL sehingga tidak perlu diisi manual oleh calon jamaah.
-- Agen terdaftar sebagai pembina tetap jamaah tersebut selama proses hingga closing.
-
-## 🛠️ Langkah-Langkah Penggunaan
+## Cara menggunakan
 
 1. Agen menyebarkan link referral: `http://hajjflow.localhost:8000/daftar?ref=AG-DXPP4B` ke WhatsApp atau media sosial.
 2. Calon jamaah membuka link dan mengisi formulir pendaftaran.
 3. Klik tombol Daftar / Submit.
-4. Agen login ke dashboard ➔ buka CRM > Kanban ➔ pastikan kartu jamaah baru muncul di kolom New Leads.
+4. Agen login ke dashboard → buka CRM > Kanban → pastikan kartu jamaah baru muncul di kolom New Leads.
 5. Klik kartu jamaah untuk melengkapi atau memverifikasi data yang diisi.
 
-## 💡 Tips & Catatan Penting
+## Tampilan
 
-- 💡 Bagikan link referral di story Instagram setiap hari untuk mendapatkan leads organik secara konsisten.
+![Dari Formulir Publik ke New Leads](screenshots/light/03a_alur_form_publik_ke_new_leads.webp#gh-light-mode-only)
+![Dari Formulir Publik ke New Leads](screenshots/dark/03a_alur_form_publik_ke_new_leads.webp#gh-dark-mode-only)
 
----
-*Buku Panduan Resmi Sistem Travel Umroh Multi-Tenant.*
+## Yang bisa dilakukan
+
+### Menambah data
+
+- Calon jamaah membuka link referral agen: contoh `/daftar?ref=AG-DXPP4B`.
+- Mengisi formulir: Nama, No WA, Email, NIK, Alamat, dan Pilihan Paket.
+- Klik Submit → data langsung tersimpan di database.
+
+### Melihat dan mencari
+
+- Agen login ke dashboard → buka CRM > Kanban → kartu jamaah baru muncul di kolom **New Leads**.
+- Notifikasi otomatis masuk ke dashboard agen bahwa ada leads baru.
+
+### Fitur lain
+
+- Kode referral agen tertanam otomatis di URL sehingga tidak perlu diisi manual oleh calon jamaah.
+- Agen terdaftar sebagai pembina tetap jamaah tersebut selama proses hingga closing.
+
+## Catatan
+
+- Bagikan link referral di story Instagram setiap hari untuk mendapatkan leads organik secara konsisten.

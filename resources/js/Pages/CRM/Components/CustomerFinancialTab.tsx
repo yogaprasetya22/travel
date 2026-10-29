@@ -243,7 +243,7 @@ export const CustomerFinancialTab: React.FC<CustomerFinancialTabProps> = ({
                                                     </span>
                                                     <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
                                                         → Rp {formatCurrency(Math.max(0, outstanding - (Number(paymentForm.data.nominal) || 0)))}
-                                                        {Math.max(0, outstanding - (Number(paymentForm.data.nominal) || 0)) === 0 && ' (Lunas 🎉)'}
+                                                        {Math.max(0, outstanding - (Number(paymentForm.data.nominal) || 0)) === 0 && ' (Lunas)'}
                                                     </span>
                                                 </>
                                             ) : (

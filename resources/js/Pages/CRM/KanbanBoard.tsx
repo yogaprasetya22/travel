@@ -1306,7 +1306,7 @@ export default function KanbanBoard({
                                     {addForm.data.file_ktp && (
                                         <div className="text-[10px] text-primary font-semibold truncate flex items-center gap-1">
                                             <UploadCloud className="w-3 h-3 shrink-0" />
-                                            <span>✓ {addForm.data.file_ktp.name}</span>
+                                            <span>{addForm.data.file_ktp.name}</span>
                                         </div>
                                     )}
                                     <InputError message={addForm.errors.file_ktp} className="mt-1" />
@@ -1338,7 +1338,7 @@ export default function KanbanBoard({
                                     {addForm.data.file_kk && (
                                         <div className="text-[10px] text-primary font-semibold truncate flex items-center gap-1">
                                             <UploadCloud className="w-3 h-3 shrink-0" />
-                                            <span>✓ {addForm.data.file_kk.name}</span>
+                                            <span>{addForm.data.file_kk.name}</span>
                                         </div>
                                     )}
                                     <InputError message={addForm.errors.file_kk} className="mt-1" />
@@ -1370,7 +1370,7 @@ export default function KanbanBoard({
                                     {addForm.data.file_foto && (
                                         <div className="text-[10px] text-primary font-semibold truncate flex items-center gap-1">
                                             <UploadCloud className="w-3 h-3 shrink-0" />
-                                            <span>✓ {addForm.data.file_foto.name}</span>
+                                            <span>{addForm.data.file_foto.name}</span>
                                         </div>
                                     )}
                                     <InputError message={addForm.errors.file_foto} className="mt-1" />
@@ -1402,7 +1402,7 @@ export default function KanbanBoard({
                                     {addForm.data.file_paspor && (
                                         <div className="text-[10px] text-primary font-semibold truncate flex items-center gap-1">
                                             <UploadCloud className="w-3 h-3 shrink-0" />
-                                            <span>✓ {addForm.data.file_paspor.name}</span>
+                                            <span>{addForm.data.file_paspor.name}</span>
                                         </div>
                                     )}
                                     <InputError message={addForm.errors.file_paspor} className="mt-1" />

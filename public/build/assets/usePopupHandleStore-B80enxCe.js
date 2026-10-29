@@ -1,1 +1,0 @@
-import{d as e,m as t}from"./app-Cpp9vIjZ.js";import{P as n}from"./useScrollLock-Cn4Mx3Le.js";import{a as r}from"./dist-DkaLRFiO.js";var i=t(e(),1),a=n();function o(e){let t=i.useCallback(t=>e===void 0?r:e.subscribeStore(t),[e]),n=i.useCallback(()=>e===void 0?void 0:e.store,[e]);return(0,a.useSyncExternalStore)(t,n,()=>e?.serverStore)}export{o as t};

@@ -1,0 +1,25 @@
+- generic [ref=e3]:
+  - generic [ref=e6]:
+    - link "Barokah Madinah Wisata" [ref=e8] [cursor=pointer]:
+      - /url: /
+    - generic [ref=e22]:
+      - heading "Portal Layanan & Manajemen" [level=1] [ref=e23]
+      - paragraph [ref=e24]: Masuk untuk mengelola dokumentasi perjalanan jamaah, verifikasi pembayaran kuitansi, monitoring koordinasi itinerary, dan persiapan Umroh & Haji secara aman.
+  - generic [ref=e27]:
+    - generic [ref=e28]:
+      - generic [ref=e29]: Selamat Datang Kembali
+      - generic [ref=e30]: Masukkan kredensial Anda untuk mengakses portal manajemen Barokah Madinah Wisata.
+    - generic [ref=e32]:
+      - generic [ref=e33]:
+        - generic [ref=e34]: Alamat Email
+        - textbox "Alamat Email" [active] [ref=e35]
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - generic [ref=e38]: Kata Sandi
+          - link "Lupa kata sandi?" [ref=e39] [cursor=pointer]:
+            - /url: http://localhost:8000/forgot-password
+        - textbox "Kata Sandi" [ref=e40]
+      - generic [ref=e41]:
+        - checkbox [ref=e42]
+        - generic [ref=e43]: Ingat perangkat ini
+      - button "Masuk ke Portal" [ref=e44] [cursor=pointer]

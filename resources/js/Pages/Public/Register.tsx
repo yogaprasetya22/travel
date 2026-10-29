@@ -492,8 +492,9 @@ export default function Register({
                             <div className="flex items-center justify-between text-[10px] text-muted-foreground">
                                 <span>Format JPG, PNG, atau PDF (Maks 5MB)</span>
                                 {data.bukti_transfer && (
-                                    <span className="text-emerald-600 font-semibold truncate max-w-[200px]">
-                                        ✓ {data.bukti_transfer.name}
+                                    <span className="inline-flex items-center gap-1 text-emerald-600 font-medium truncate max-w-[200px]">
+                                        <UploadCloud className="w-3 h-3 shrink-0" />
+                                        <span className="truncate">{data.bukti_transfer.name}</span>
                                     </span>
                                 )}
                             </div>

@@ -17,7 +17,14 @@ use Illuminate\Support\Facades\Hash;
 class TenantDatasetSeeder extends Seeder
 {
     /**
-     * Seed 2 tenants with complete, realistic employee, agent, banking, and relational CRM records.
+     * Bila diisi, hanya tenant dengan subdomain ini yang di-seed (dipakai seeder turunan per tenant).
+     *
+     * @var array<int, string>
+     */
+    protected array $onlySubdomains = [];
+
+    /**
+     * Seed 3 tenants with complete, realistic employee, agent, banking, and relational CRM records.
      */
     public function run(): void
     {
@@ -55,6 +62,22 @@ class TenantDatasetSeeder extends Seeder
                 'bank' => 'Bank Mandiri',
                 'acc_no' => '1420098765432',
                 'acc_name' => 'PT Barokah Madinah Mandiri',
+            ],
+            [
+                'name' => 'Setia Haramain Tour',
+                'subdomain' => 'setiaharamaintour',
+                'no_telepon' => '03155512345',
+                'owner_name' => 'H. Muhammad Ridwan, Lc',
+                'owner_email' => 'setiaharamaintour@travel.id',
+                'owner_nik' => '3578101205780005',
+                'owner_phone' => '081231245577',
+                'owner_city' => 'Surabaya',
+                'owner_address' => 'Jl. Raya Darmo No. 87 RT 04/RW 02, Kel. Darmo, Kec. Wonokromo, Kota Surabaya, Jawa Timur 60264',
+                'owner_bank' => 'Bank Syariah Indonesia (BSI)',
+                'owner_rek' => '7256091834',
+                'bank' => 'Bank Syariah Indonesia (BSI)',
+                'acc_no' => '7256091834',
+                'acc_name' => 'PT Setia Haramain Wisata',
             ],
         ];
 
@@ -159,6 +182,10 @@ class TenantDatasetSeeder extends Seeder
         $couriers = ['JNE Express', 'SiCepat', 'J&T Express', 'POS Indonesia', 'TIKI'];
 
         foreach ($tenantsData as $tIndex => $tData) {
+            if ($this->onlySubdomains && ! in_array($tData['subdomain'], $this->onlySubdomains, true)) {
+                continue;
+            }
+
             $this->command->info('Seeding Tenant '.($tIndex + 1).": {$tData['name']}...");
 
             // Cleanup existing tenant data with same subdomain if exists to allow clean reseeding
@@ -344,6 +371,7 @@ class TenantDatasetSeeder extends Seeder
             $spvNames = [
                 ['H. Rahmat Hidayat, S.Ag', 'Ustadz Fauzan Hakim, Lc'],
                 ['Hj. Dewi Rahmawati, S.E.', 'H. Syamsul Arifin, M.Pd'],
+                ['H. Abdul Karim, S.Pd.I', 'Hj. Nur Laila, S.Ag'],
             ];
             $supervisors = [];
             for ($s = 1; $s <= 2; $s++) {
@@ -375,7 +403,7 @@ class TenantDatasetSeeder extends Seeder
             foreach ($supervisors as $spvIdx => $spv) {
                 for ($tl = 1; $tl <= 2; $tl++) {
                     $tlIdx = ($spvIdx * 2 + $tl);
-                    $tlName = "Leader Pembina {$tlIdx} - ".($tIndex === 0 ? 'Jabodetabek' : 'Jawa Barat');
+                    $tlName = "Leader Pembina {$tlIdx} - ".(['Jabodetabek', 'Jawa Barat', 'Jawa Timur'][$tIndex] ?? 'Nasional');
                     $addrObj = $detailedAddresses[($tlIdx + 6) % count($detailedAddresses)];
                     $teamLeaders[] = User::create([
                         'tenant_id' => $tenant->id,
@@ -414,6 +442,13 @@ class TenantDatasetSeeder extends Seeder
                     'H. Zulkifli Ramadhan', 'Nisa Fauziah', 'Arif Budiman', 'Ustadzah Halimah Tusa\'diyah',
                     'Andri Firmansyah', 'Marisa Nur Hidayah', 'Teguh Wibowo, S.E.', 'Yeni Rahayu, S.H.',
                     'Doni Kurniawan', 'Khadijah Al-Hafidz', 'Harun Ar-Rasyid', 'Salma Fitriyani',
+                ],
+                // Tenant 2: Setia Haramain Tour
+                [
+                    'Moh. Syaiful Anam, S.Pd', 'Lailatul Fitriyah', 'H. Imam Syafi\'i', 'Dian Permatasari, S.E.',
+                    'Ahmad Dahlan Hasibuan', 'Sri Wahyuningsih', 'Choirul Huda', 'Ustadzah Zulaikha Rahmah',
+                    'Bayu Anggara Putra', 'Nur Aini Fadhilah', 'Slamet Riyadi', 'Retno Handayani, S.Kom',
+                    'Fikri Alamsyah', 'Dewi Masitoh', 'Yusuf Maulidi', 'Anisa Rahmawati',
                 ],
             ];
             $agentNames = $agentNamesByTenant[$tIndex] ?? $agentNamesByTenant[0];
@@ -637,6 +672,21 @@ class TenantDatasetSeeder extends Seeder
                         $tanggalSerah = now()->subDays(rand(1, 5));
                     }
 
+                    $closingSeq = ($closingIdx - 90001) % 80;
+                    if ($closingSeq < 8) {
+                        $departureDate = null; // Antrean Belum Ditentukan
+                    } elseif ($closingSeq < 26) {
+                        $departureDate = '2026-11-15'; // Kloter 1: 15 Nov 2026
+                    } elseif ($closingSeq < 46) {
+                        $departureDate = '2026-11-28'; // Kloter 2: 28 Nov 2026
+                    } elseif ($closingSeq < 62) {
+                        $departureDate = '2026-12-12'; // Kloter 3: 12 Des 2026
+                    } elseif ($closingSeq < 76) {
+                        $departureDate = '2026-12-26'; // Kloter 4: 26 Des 2026
+                    } else {
+                        $departureDate = '2027-01-16'; // Kloter 5: 16 Jan 2027
+                    }
+
                     $closingRows[] = [
                         'tenant_id' => $tenant->id,
                         'agen_id' => $agentObj->id,
@@ -658,7 +708,7 @@ class TenantDatasetSeeder extends Seeder
                         'no_hp' => '08'.str_pad((string) (1500000000 + $closingIdx), 10, '0', STR_PAD_LEFT),
                         'email' => "jamaah{$closingIdx}.t{$tenant->id}@mailtest.id",
                         'paket_id' => $selectedPkg['id'],
-                        'tanggal_keberangkatan' => date('Y-m-d', strtotime('+'.rand(30, 150).' days')),
+                        'tanggal_keberangkatan' => $departureDate,
                         'catatan_admin' => "Jamaah lunas terdaftar via agen {$agentObj->name}. Perlengkapan siap diproses.",
                         'status_logistik' => $statusLogistik,
                         'no_resi_logistik' => $resi,

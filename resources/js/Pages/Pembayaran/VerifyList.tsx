@@ -221,16 +221,13 @@ export default function VerifyPayment({
             contentClass="p-6 md:p-8 flex flex-col gap-6 w-full max-w-none"
         >
             {/* 1. Header Section */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border/80 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
                 <div>
-                    <div className="flex items-center gap-2.5">
-                        <div className="h-8 w-1.5 rounded-full bg-primary" />
-                        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                            Verifikasi Pembayaran &amp; Rekonsiliasi Kas
-                        </h1>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1 ml-4">
-                        Validasi bukti transfer jamaah, pantau dana masuk terverifikasi, dan terbitkan kuitansi resmi digital.
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                        Verifikasi Pembayaran
+                    </h1>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                        Validasi bukti transfer jamaah, rekonsiliasi kas masuk, dan penerbitan kuitansi invoice resmi.
                     </p>
                 </div>
             </div>
@@ -238,84 +235,81 @@ export default function VerifyPayment({
             {/* 2. Financial Summary KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Card 1: Total Dana Terverifikasi */}
-                <div className="bg-card/70 backdrop-blur-md border border-border/80 rounded-2xl p-5 shadow-xs flex items-center justify-between">
-                    <div className="space-y-1">
-                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                            <Wallet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <div className="bg-card border border-border rounded-lg p-5 flex items-start justify-between">
+                    <div>
+                        <span className="text-xs font-medium text-muted-foreground">
                             Total Dana Masuk Sah
                         </span>
-                        <div className="text-xl sm:text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400">
+                        <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-1">
                             {toRupiah(stats.total_verified_nominal)}
                         </div>
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground mt-1">
                             {stats.verified_count} transaksi terverifikasi
                         </p>
                     </div>
-                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-2xl shrink-0">
-                        <CheckCircle2 className="w-6 h-6" />
+                    <div className="p-2.5 bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 rounded-lg shrink-0">
+                        <CheckCircle2 className="w-5 h-5" />
                     </div>
                 </div>
 
                 {/* Card 2: Dana Menunggu Verifikasi */}
-                <div className="bg-card/70 backdrop-blur-md border border-border/80 rounded-2xl p-5 shadow-xs flex items-center justify-between">
-                    <div className="space-y-1">
-                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                            <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <div className="bg-card border border-border rounded-lg p-5 flex items-start justify-between">
+                    <div>
+                        <span className="text-xs font-medium text-muted-foreground">
                             Dana Menunggu Verifikasi
                         </span>
-                        <div className="text-xl sm:text-2xl font-black font-mono text-amber-600 dark:text-amber-400">
+                        <div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-1">
                             {toRupiah(stats.total_pending_nominal)}
                         </div>
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground mt-1">
                             {stats.pending_count} pembayaran menunggu approval
                         </p>
                     </div>
-                    <div className="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 rounded-2xl shrink-0">
-                        <AlertCircle className="w-6 h-6" />
+                    <div className="p-2.5 bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 rounded-lg shrink-0">
+                        <Clock className="w-5 h-5" />
                     </div>
                 </div>
 
                 {/* Card 3: Total Transaksi */}
-                <div className="bg-card/70 backdrop-blur-md border border-border/80 rounded-2xl p-5 shadow-xs flex items-center justify-between sm:col-span-2 lg:col-span-1">
-                    <div className="space-y-1">
-                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                            <Receipt className="w-4 h-4 text-primary" />
+                <div className="bg-card border border-border rounded-lg p-5 flex items-start justify-between sm:col-span-2 lg:col-span-1">
+                    <div>
+                        <span className="text-xs font-medium text-muted-foreground">
                             Total Mutasi Transaksi
                         </span>
-                        <div className="text-xl sm:text-2xl font-black font-mono text-foreground">
+                        <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
                             {stats.total_count} Transaksi
                         </div>
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground mt-1">
                             {stats.rejected_count} transaksi ditolak
                         </p>
                     </div>
-                    <div className="p-3 bg-primary/10 border border-primary/20 text-primary rounded-2xl shrink-0">
-                        <Receipt className="w-6 h-6" />
+                    <div className="p-2.5 bg-muted text-muted-foreground rounded-lg shrink-0">
+                        <Receipt className="w-5 h-5" />
                     </div>
                 </div>
             </div>
 
             {/* 3. Comprehensive Multi-Criteria Filter Toolbar */}
-            <div className="flex flex-col gap-3.5 bg-card/70 backdrop-blur-md p-4 rounded-2xl border border-border/80 shadow-xs">
+            <div className="flex flex-col gap-3 bg-card p-4 rounded-lg border border-border">
                 {/* Row 1: Search & Quick Status Tabs & Reset */}
                 <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
                     <div className="relative w-full md:w-80">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <input
                             type="text"
-                            placeholder="Cari jamaah, NIK, HP, ID transaksi..."
+                            placeholder="Cari jamaah, NIK, HP, nomor invoice..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground placeholder:text-muted-foreground"
+                            className="w-full pl-9 pr-3 py-1.5 text-xs bg-background border border-input rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary focus:border-primary text-foreground placeholder:text-muted-foreground"
                         />
                     </div>
 
-                    <div className="flex items-center gap-2.5 self-end md:self-auto flex-wrap">
+                    <div className="flex items-center gap-2 self-end md:self-auto flex-wrap">
                         {hasActiveFilters && (
                             <button
                                 type="button"
                                 onClick={handleResetFilters}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl hover:bg-rose-500/20 transition cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 border border-destructive/20 rounded-md transition cursor-pointer"
                             >
                                 <RotateCcw className="w-3.5 h-3.5" />
                                 <span>Reset Filter</span>
@@ -326,17 +320,16 @@ export default function VerifyPayment({
                 </div>
 
                 {/* Row 2: Filter Categories (Status, Rekening Kas, Tipe Pembayaran, Pilihan Paket) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-border/60 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-border text-xs">
                     {/* Filter 1: Status Verifikasi */}
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
-                            <span>Status Verifikasi</span>
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-muted-foreground">
+                            Status Verifikasi
                         </label>
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
+                            className="w-full py-1.5 px-2.5 text-xs bg-background border border-input rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary focus:border-primary text-foreground cursor-pointer"
                         >
                             <option value="all">Semua Status ({stats.total_count})</option>
                             <option value="Pending">Menunggu Verifikasi ({stats.pending_count})</option>
@@ -346,35 +339,33 @@ export default function VerifyPayment({
                     </div>
 
                     {/* Filter 2: Rekening Kas Tujuan */}
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                            <CreditCard className="w-3.5 h-3.5 text-primary" />
-                            <span>Rekening Kas Tujuan</span>
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-muted-foreground">
+                            Rekening Kas Tujuan
                         </label>
                         <select
                             value={rekeningFilter}
                             onChange={(e) => setRekeningFilter(e.target.value)}
-                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
+                            className="w-full py-1.5 px-2.5 text-xs bg-background border border-input rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary focus:border-primary text-foreground cursor-pointer"
                         >
                             <option value="all">Semua Rekening Kas</option>
                             {banks.map((b) => (
                                 <option key={b.id} value={b.id}>
-                                    {b.nama_bank} - {b.nomor_rekening} (a.n {b.atas_nama})
+                                    {b.nama_bank} - {b.nomor_rekening} ({b.atas_nama})
                                 </option>
                             ))}
                         </select>
                     </div>
 
                     {/* Filter 3: Tipe Pembayaran */}
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                            <Wallet className="w-3.5 h-3.5 text-primary" />
-                            <span>Tipe Pembayaran</span>
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-muted-foreground">
+                            Tipe Pembayaran
                         </label>
                         <select
                             value={tipeFilter}
                             onChange={(e) => setTipeFilter(e.target.value)}
-                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
+                            className="w-full py-1.5 px-2.5 text-xs bg-background border border-input rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary focus:border-primary text-foreground cursor-pointer"
                         >
                             <option value="all">Semua Tipe Pembayaran</option>
                             <option value="DP">Uang Muka (DP)</option>
@@ -386,15 +377,14 @@ export default function VerifyPayment({
                     </div>
 
                     {/* Filter 4: Pilihan Paket */}
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                            <Package className="w-3.5 h-3.5 text-primary" />
-                            <span>Pilihan Paket</span>
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-muted-foreground">
+                            Pilihan Paket
                         </label>
                         <select
                             value={paketFilter}
                             onChange={(e) => setPaketFilter(e.target.value)}
-                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
+                            className="w-full py-1.5 px-2.5 text-xs bg-background border border-input rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary focus:border-primary text-foreground cursor-pointer"
                         >
                             <option value="all">Semua Paket Umroh / Haji</option>
                             {packages.map((pkg) => (
@@ -407,71 +397,70 @@ export default function VerifyPayment({
                 </div>
 
                 {/* Row 3: DateRangePicker Component */}
-                <div className="pt-3 border-t border-border/60 text-xs">
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                            <Calendar className="w-3.5 h-3.5 text-primary" />
-                            <span>Rentang Tanggal Transaksi</span>
+                <div className="pt-3 border-t border-border text-xs">
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-muted-foreground">
+                            Rentang Tanggal Transaksi
                         </label>
                         <DatePickerWithRange
                             dateRange={dateRange}
                             onChange={handleDateRangeChange}
-                            placeholder="Pilih rentang tanggal transaksi (dari - sampai)..."
+                            placeholder="Pilih rentang tanggal transaksi..."
                         />
                     </div>
                 </div>
             </div>
 
             {/* 4. Data Table */}
-            <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/70 backdrop-blur-md shadow-xs">
+            <div className="overflow-hidden rounded-lg border border-border bg-card">
                 <div className="overflow-x-auto low-scrollbar">
                     <table className="w-full text-left border-collapse text-sm">
                         <thead>
-                            <tr className="bg-muted/40 text-muted-foreground font-semibold text-xs border-b border-border/80 uppercase tracking-wider">
-                                <th className="p-4 pl-6 w-14 text-center">ID</th>
-                                <th className="p-4">Jamaah &amp; Paket</th>
-                                <th className="p-4">Rincian Pembayaran</th>
-                                <th className="p-4">Rekening Kas Tujuan</th>
-                                <th className="p-4 text-center">Bukti Transfer</th>
-                                <th className="p-4 text-center">Status</th>
-                                <th className="p-4 pr-6 text-right">Aksi &amp; Kuitansi</th>
+                            <tr className="bg-muted/40 text-muted-foreground text-xs font-medium border-b border-border">
+                                <th className="px-4 py-3 w-16">Invoice</th>
+                                <th className="px-4 py-3">Jamaah &amp; Paket</th>
+                                <th className="px-4 py-3 text-right">Nominal</th>
+                                <th className="px-4 py-3">Tipe &amp; Tanggal</th>
+                                <th className="px-4 py-3">Rekening Tujuan</th>
+                                <th className="px-4 py-3 text-center">Bukti</th>
+                                <th className="px-4 py-3 text-center">Status</th>
+                                <th className="px-4 py-3 text-right">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-border/60">
+                        <tbody className="divide-y divide-border">
                             {paymentList.map((payment) => {
                                 const isVerified = payment.status_verifikasi === 'Verified';
                                 const isPending = payment.status_verifikasi === 'Pending';
                                 const isRejected = payment.status_verifikasi === 'Rejected';
 
                                 return (
-                                    <tr key={payment.id} className="hover:bg-muted/20 transition-colors">
-                                        <td className="p-4 pl-6 text-center font-mono text-xs font-semibold text-foreground">
+                                    <tr key={payment.id} className="hover:bg-muted/30 transition-colors">
+                                        <td className="px-4 py-3 font-mono text-xs font-medium text-foreground">
                                             {payment.nomor_invoice || `#${payment.id}`}
                                         </td>
-                                        <td className="p-4">
-                                            <div className="font-semibold text-foreground">
+                                        <td className="px-4 py-3">
+                                            <div className="font-medium text-foreground">
                                                 {payment.jamaah?.nama_lengkap || 'Jamaah'}
                                             </div>
                                             <div className="text-xs text-muted-foreground">
                                                 {payment.jamaah?.paket?.nama_paket || 'Belum Pilih Paket'}
                                             </div>
                                             {payment.jamaah?.no_hp && (
-                                                <div className="text-[11px] text-muted-foreground/80 font-mono mt-0.5">
+                                                <div className="text-[11px] text-muted-foreground font-mono mt-0.5">
                                                     {payment.jamaah.no_hp}
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="p-4">
-                                            <div className="font-bold font-mono text-foreground">
+                                        <td className="px-4 py-3 text-right">
+                                            <div className="font-semibold tabular-nums text-foreground">
                                                 {toRupiah(payment.nominal)}
                                             </div>
-                                            <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                                                <span>Tipe:</span>
-                                                <span className="px-1.5 py-0.2 rounded text-[10px] font-bold uppercase bg-primary/10 text-primary border border-primary/20">
-                                                    {payment.tipe_pembayaran}
-                                                </span>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-secondary text-secondary-foreground">
+                                                {payment.tipe_pembayaran}
                                             </div>
-                                            <div className="text-[11px] text-muted-foreground/70 mt-0.5">
+                                            <div className="text-[11px] text-muted-foreground mt-0.5">
                                                 {new Date(payment.created_at || Date.now()).toLocaleDateString('id-ID', {
                                                     day: 'numeric',
                                                     month: 'short',
@@ -481,18 +470,18 @@ export default function VerifyPayment({
                                                 })}
                                             </div>
                                         </td>
-                                        <td className="p-4">
-                                            <div className="font-medium text-foreground">
+                                        <td className="px-4 py-3">
+                                            <div className="font-medium text-foreground text-xs">
                                                 {payment.rekening_tenant?.nama_bank || 'Bank Travel'}
                                             </div>
-                                            <div className="text-xs font-mono text-primary font-semibold">
+                                            <div className="text-xs font-mono text-muted-foreground">
                                                 {payment.rekening_tenant?.nomor_rekening || '-'}
                                             </div>
                                             <div className="text-[11px] text-muted-foreground">
                                                 a.n {payment.rekening_tenant?.atas_nama || '-'}
                                             </div>
                                         </td>
-                                        <td className="p-4 text-center">
+                                        <td className="px-4 py-3 text-center">
                                             {payment.bukti_transfer ? (
                                                 <button
                                                     type="button"
@@ -503,49 +492,51 @@ export default function VerifyPayment({
                                                                 : `/storage/${payment.bukti_transfer}`
                                                         )
                                                     }
-                                                    className="inline-flex items-center gap-1 text-xs text-primary underline font-medium hover:opacity-80 cursor-pointer"
+                                                    className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium cursor-pointer"
                                                 >
                                                     <Eye className="w-3.5 h-3.5" />
                                                     <span>Lihat Bukti</span>
                                                 </button>
                                             ) : (
-                                                <span className="text-xs text-muted-foreground italic">Tidak ada slip</span>
+                                                <span className="text-xs text-muted-foreground italic">Tidak ada</span>
                                             )}
                                         </td>
-                                        <td className="p-4 text-center">
+                                        <td className="px-4 py-3 text-center">
                                             <span
-                                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${isVerified
-                                                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                                                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                    isVerified
+                                                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400'
                                                         : isRejected
-                                                            ? 'bg-destructive/10 text-destructive border-destructive/20'
-                                                            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                                                    }`}
+                                                        ? 'bg-destructive/10 text-destructive'
+                                                        : 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400'
+                                                }`}
                                             >
                                                 <span
-                                                    className={`w-1.5 h-1.5 rounded-full ${isVerified
+                                                    className={`w-1.5 h-1.5 rounded-full ${
+                                                        isVerified
                                                             ? 'bg-emerald-500'
                                                             : isRejected
-                                                                ? 'bg-destructive'
-                                                                : 'bg-amber-500'
-                                                        }`}
+                                                            ? 'bg-destructive'
+                                                            : 'bg-amber-500'
+                                                    }`}
                                                 />
                                                 {payment.status_verifikasi}
                                             </span>
                                         </td>
-                                        <td className="p-4 pr-6 text-right">
+                                        <td className="px-4 py-3 text-right">
                                             {isPending ? (
-                                                <div className="flex justify-end gap-2">
+                                                <div className="flex items-center justify-end gap-1.5">
                                                     <button
                                                         type="button"
                                                         onClick={() => handleVerify(payment.id, 'Verified')}
-                                                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer"
+                                                        className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-medium transition cursor-pointer"
                                                     >
                                                         Setujui
                                                     </button>
                                                     <button
                                                         type="button"
                                                         onClick={() => handleVerify(payment.id, 'Rejected')}
-                                                        className="px-3 py-1.5 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer"
+                                                        className="px-2.5 py-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-md text-xs font-medium transition cursor-pointer"
                                                     >
                                                         Tolak
                                                     </button>
@@ -556,15 +547,15 @@ export default function VerifyPayment({
                                                         <button
                                                             type="button"
                                                             onClick={() => setSelectedInvoice(payment)}
-                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground border border-primary/20 rounded-xl text-xs font-semibold transition cursor-pointer shadow-2xs"
+                                                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-secondary hover:bg-secondary/80 text-secondary-foreground border border-border rounded-md text-xs font-medium transition cursor-pointer"
                                                             title="Lihat Kuitansi & Cetak Invoice Resmi"
                                                         >
                                                             <Receipt className="w-3.5 h-3.5" />
                                                             <span>Invoice</span>
                                                         </button>
                                                     )}
-                                                    <span className="text-[11px] text-muted-foreground font-medium">
-                                                        Oleh: {(typeof payment.verified_by === 'object' && payment.verified_by?.name) || payment.verified_by_user?.name || (payment as any).verifiedBy?.name || 'Petugas Keuangan'}
+                                                    <span className="text-[11px] text-muted-foreground">
+                                                        Oleh: {(typeof payment.verified_by === 'object' && payment.verified_by?.name) || payment.verified_by_user?.name || (payment as any).verifiedBy?.name || 'Petugas'}
                                                     </span>
                                                 </div>
                                             )}
@@ -575,11 +566,11 @@ export default function VerifyPayment({
 
                             {paymentList.length === 0 && (
                                 <tr>
-                                    <td colSpan={7} className="p-12 text-center text-muted-foreground space-y-2">
-                                        <Receipt className="w-10 h-10 mx-auto text-muted-foreground/40 mb-2" />
-                                        <p className="font-semibold text-foreground">Tidak ada data pembayaran ditemukan</p>
+                                    <td colSpan={8} className="p-12 text-center text-muted-foreground space-y-2">
+                                        <Receipt className="w-8 h-8 mx-auto text-muted-foreground/40 mb-2" />
+                                        <p className="font-semibold text-foreground text-sm">Tidak ada data pembayaran ditemukan</p>
                                         <p className="text-xs text-muted-foreground">
-                                            Coba ubah kriteria filter pencarian atau tanggal transaksi.
+                                            Coba sesuaikan kriteria filter pencarian atau tanggal transaksi.
                                         </p>
                                     </td>
                                 </tr>
@@ -589,7 +580,7 @@ export default function VerifyPayment({
                 </div>
 
                 {/* Pagination Controls */}
-                <div className="border-t border-border/80 px-4 bg-muted/20">
+                <div className="border-t border-border px-4 py-2 bg-muted/20">
                     <DataTablePagination
                         links={payments.links}
                         from={payments.from}

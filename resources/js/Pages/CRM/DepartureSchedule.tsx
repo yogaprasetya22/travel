@@ -198,6 +198,23 @@ export default function DepartureSchedule({
         return null;
     }
 
+    const formatDateLabel = (dateStr: string) => {
+        if (!dateStr || dateStr === 'Belum Ditentukan') return 'Antrean Belum Plot Tanggal Terbang';
+        try {
+            const cleanStr = dateStr.split(' ')[0];
+            const parts = cleanStr.split('-');
+            if (parts.length === 3) {
+                const y = parseInt(parts[0], 10);
+                const m = parseInt(parts[1], 10) - 1;
+                const d = parseInt(parts[2], 10);
+                return new Date(y, m, d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            }
+            return dateStr;
+        } catch {
+            return dateStr;
+        }
+    };
+
     const scheduleKeys = Object.keys(schedules);
     const jamaahTableData = paginatedJamaah.data || [];
 
@@ -234,7 +251,7 @@ export default function DepartureSchedule({
     };
 
     const handleExportManifest = (dateKey: string, members: JamaahSchedule[]) => {
-        const title = dateKey === 'Belum Ditentukan' ? 'Manifest_Antrean_Belum_Terjadwal' : `Manifest_Kloter_${dateKey}`;
+        const title = dateKey === 'Belum Ditentukan' ? 'Manifest_Antrean_Belum_Terjadwal' : `Manifest_Kloter_${dateKey.split(' ')[0]}`;
         const headers = ['No', 'Nama Jamaah', 'No HP', 'No Paspor', 'Paket Umroh/Haji', 'Mitra Agen', 'Tanggal Keberangkatan'];
 
         const rows = members.map((m, idx) => [
@@ -244,7 +261,7 @@ export default function DepartureSchedule({
             `"${m.nomor_paspor || '-'}"`,
             `"${m.paket?.nama_paket || '-'}"`,
             `"${m.agen?.name || 'Direct / Pusat'}"`,
-            `"${m.tanggal_keberangkatan || 'Belum Terjadwal'}"`,
+            `"${m.tanggal_keberangkatan ? m.tanggal_keberangkatan.split(' ')[0] : 'Belum Terjadwal'}"`,
         ]);
 
         const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
@@ -265,28 +282,29 @@ export default function DepartureSchedule({
             contentClass="p-6 md:p-8 flex flex-col gap-6 w-full max-w-none"
         >
             {/* Header */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border/80 shadow-xs">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-card p-5 rounded-lg border border-border">
                 <div>
                     <div className="flex items-center gap-2.5">
-                        <div className="h-8 w-1.5 rounded-full bg-primary" />
-                        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                        <div className="h-6 w-1 rounded-full bg-primary" />
+                        <h1 className="text-xl font-bold tracking-tight text-foreground">
                             Manifest &amp; Jadwal Penerbangan Jamaah
                         </h1>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1 ml-4">
+                    <p className="text-xs text-muted-foreground mt-1 ml-3.5">
                         Pengelompokan kloter jamaah resmi berdasarkan tanggal keberangkatan umroh, manasik, dan verifikasi paspor.
                     </p>
                 </div>
 
                 {/* View Switcher Button */}
-                <div className="flex items-center bg-muted/60 p-1 rounded-xl border border-border/70 shrink-0">
+                <div className="flex items-center bg-muted/60 p-1 rounded-md border border-border shrink-0">
                     <button
                         type="button"
                         onClick={() => setViewMode('group')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${viewMode === 'group'
-                                ? 'bg-card text-foreground shadow-xs'
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-semibold transition cursor-pointer ${
+                            viewMode === 'group'
+                                ? 'bg-card text-foreground shadow-2xs'
                                 : 'text-muted-foreground hover:text-foreground'
-                            }`}
+                        }`}
                     >
                         <LayoutGrid className="w-3.5 h-3.5" />
                         <span>Kloter Grup</span>
@@ -294,10 +312,11 @@ export default function DepartureSchedule({
                     <button
                         type="button"
                         onClick={() => setViewMode('table')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${viewMode === 'table'
-                                ? 'bg-card text-foreground shadow-xs'
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-semibold transition cursor-pointer ${
+                            viewMode === 'table'
+                                ? 'bg-card text-foreground shadow-2xs'
                                 : 'text-muted-foreground hover:text-foreground'
-                            }`}
+                        }`}
                     >
                         <TableIcon className="w-3.5 h-3.5" />
                         <span>Tabel Manifest</span>
@@ -307,57 +326,57 @@ export default function DepartureSchedule({
 
             {/* Metrics Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-card/70 border border-border/80 rounded-2xl p-5 shadow-xs flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                        <Users className="w-6 h-6" />
+                <div className="bg-card border border-border rounded-lg p-4 flex items-center gap-3.5">
+                    <div className="h-10 w-10 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <Users className="w-5 h-5" />
                     </div>
                     <div>
-                        <div className="text-xs font-semibold text-muted-foreground">Total Jamaah Closing</div>
-                        <div className="text-2xl font-extrabold text-foreground mt-0.5">
+                        <div className="text-xs font-medium text-muted-foreground">Total Jamaah Closing</div>
+                        <div className="text-xl font-bold text-foreground mt-0.5">
                             {metrics?.total_closing || 0} <span className="text-xs font-normal text-muted-foreground">Orang</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-card/70 border border-border/80 rounded-2xl p-5 shadow-xs flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                        <Plane className="w-6 h-6" />
+                <div className="bg-card border border-border rounded-lg p-4 flex items-center gap-3.5">
+                    <div className="h-10 w-10 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                        <Plane className="w-5 h-5" />
                     </div>
                     <div>
-                        <div className="text-xs font-semibold text-muted-foreground">Sudah Ada Jadwal Terbang</div>
-                        <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                        <div className="text-xs font-medium text-muted-foreground">Sudah Ada Jadwal Terbang</div>
+                        <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
                             {metrics?.total_scheduled || 0} <span className="text-xs font-normal text-muted-foreground">Orang</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-card/70 border border-border/80 rounded-2xl p-5 shadow-xs flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                        <Clock className="w-6 h-6" />
+                <div className="bg-card border border-border rounded-lg p-4 flex items-center gap-3.5">
+                    <div className="h-10 w-10 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                        <Clock className="w-5 h-5" />
                     </div>
                     <div>
-                        <div className="text-xs font-semibold text-muted-foreground">Antrean Belum Dijadwalkan</div>
-                        <div className="text-2xl font-extrabold text-amber-600 dark:text-amber-400 mt-0.5">
+                        <div className="text-xs font-medium text-muted-foreground">Antrean Belum Dijadwalkan</div>
+                        <div className="text-xl font-bold text-amber-600 dark:text-amber-400 mt-0.5">
                             {metrics?.total_unscheduled || 0} <span className="text-xs font-normal text-muted-foreground">Orang</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-card/70 border border-border/80 rounded-2xl p-5 shadow-xs flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-                        <FileCheck className="w-6 h-6" />
+                <div className="bg-card border border-border rounded-lg p-4 flex items-center gap-3.5">
+                    <div className="h-10 w-10 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <FileCheck className="w-5 h-5" />
                     </div>
                     <div>
-                        <div className="text-xs font-semibold text-muted-foreground">Paspor Terverifikasi</div>
-                        <div className="text-2xl font-extrabold text-purple-600 dark:text-purple-400 mt-0.5">
+                        <div className="text-xs font-medium text-muted-foreground">Paspor Terverifikasi</div>
+                        <div className="text-xl font-bold text-foreground mt-0.5">
                             {metrics?.total_passport_ready || 0} <span className="text-xs font-normal text-muted-foreground">Orang</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Comprehensive Multi-Criteria Filter Toolbar */}
-            <div className="flex flex-col gap-3.5 bg-card/60 p-4 rounded-2xl border border-border/80 shadow-xs">
+            {/* Filter Toolbar */}
+            <div className="flex flex-col gap-3.5 bg-card p-4 rounded-lg border border-border">
                 {/* Row 1: Search & Secondary Controls */}
                 <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
                     <div className="relative w-full md:w-80">
@@ -367,7 +386,7 @@ export default function DepartureSchedule({
                             placeholder="Cari nama, HP, paspor, paket, agen..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground placeholder:text-muted-foreground"
+                            className="w-full pl-9 pr-4 py-2 text-xs bg-background border border-border rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary focus:border-primary text-foreground placeholder:text-muted-foreground"
                         />
                     </div>
 
@@ -376,7 +395,7 @@ export default function DepartureSchedule({
                             <button
                                 type="button"
                                 onClick={handleResetFilters}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl hover:bg-rose-500/20 transition cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 border border-destructive/20 rounded-md transition cursor-pointer"
                             >
                                 <RotateCcw className="w-3.5 h-3.5" />
                                 <span>Reset Filter</span>
@@ -386,18 +405,17 @@ export default function DepartureSchedule({
                     </div>
                 </div>
 
-                {/* Row 2: 5 Filter Dropdowns (Jadwal, Periode Bulan, Paspor, Paket, Pelunasan) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-3 border-t border-border/60 text-xs">
-                    {/* Filter 1: Status Jadwal Keberangkatan */}
+                {/* Row 2: 5 Filter Dropdowns */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-3 border-t border-border text-xs">
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                        <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                             <Plane className="w-3.5 h-3.5 text-primary" />
                             <span>Status Jadwal</span>
                         </label>
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
+                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary focus:border-primary text-foreground cursor-pointer"
                         >
                             <option value="ALL">Semua Status Jadwal</option>
                             <option value="SCHEDULED">Sudah Terjadwal</option>
@@ -405,16 +423,15 @@ export default function DepartureSchedule({
                         </select>
                     </div>
 
-                    {/* Filter 2: Periode Bulan Terbang */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                        <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                             <Calendar className="w-3.5 h-3.5 text-primary" />
                             <span>Periode Terbang</span>
                         </label>
                         <select
                             value={periodFilter}
                             onChange={(e) => setPeriodFilter(e.target.value)}
-                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
+                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary focus:border-primary text-foreground cursor-pointer"
                         >
                             <option value="ALL">Semua Periode Terbang</option>
                             {availablePeriods.map((p) => (
@@ -425,16 +442,15 @@ export default function DepartureSchedule({
                         </select>
                     </div>
 
-                    {/* Filter 3: Status Paspor / Visa */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                        <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                             <FileCheck className="w-3.5 h-3.5 text-primary" />
                             <span>Status Paspor</span>
                         </label>
                         <select
                             value={docFilter}
                             onChange={(e) => setDocFilter(e.target.value)}
-                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
+                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary focus:border-primary text-foreground cursor-pointer"
                         >
                             <option value="ALL">Semua Status Paspor</option>
                             <option value="PASSPORT_READY">Paspor Lengkap / Siap</option>
@@ -442,16 +458,15 @@ export default function DepartureSchedule({
                         </select>
                     </div>
 
-                    {/* Filter 4: Pilihan Paket */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                        <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                             <Package className="w-3.5 h-3.5 text-primary" />
                             <span>Pilihan Paket</span>
                         </label>
                         <select
                             value={paketFilter}
                             onChange={(e) => setPaketFilter(e.target.value)}
-                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
+                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary focus:border-primary text-foreground cursor-pointer"
                         >
                             <option value="ALL">Semua Paket</option>
                             {pakets.map((p) => (
@@ -462,16 +477,15 @@ export default function DepartureSchedule({
                         </select>
                     </div>
 
-                    {/* Filter 5: Status Pelunasan */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                        <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                             <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
                             <span>Status Pembayaran</span>
                         </label>
                         <select
                             value={paymentStatusFilter}
                             onChange={(e) => setPaymentStatusFilter(e.target.value)}
-                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground cursor-pointer"
+                            className="w-full py-2 px-3 text-xs bg-background border border-border rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary focus:border-primary text-foreground cursor-pointer"
                         >
                             <option value="ALL">Semua Pembayaran</option>
                             <option value="LUNAS">Sudah Lunas (100%)</option>
@@ -483,33 +497,58 @@ export default function DepartureSchedule({
 
             {/* MODE 1: KLOTER GROUPS */}
             {viewMode === 'group' && (
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-5">
                     {scheduleKeys.map((dateKey) => {
-                        const group = schedules[dateKey];
+                        const group = schedules[dateKey] || [];
                         const isUnassigned = dateKey === 'Belum Ditentukan';
                         const isCollapsed = !!collapsedKloters[dateKey];
 
                         const currentPage = kloterPages[dateKey] || 1;
                         const totalPages = Math.ceil(group.length / kloterPageSize);
                         const displayedGroup = group.slice((currentPage - 1) * kloterPageSize, currentPage * kloterPageSize);
+                        const readyPassports = group.filter((j) => !!j.nomor_paspor).length;
+                        const uniquePakets = Array.from(new Set(group.map((j) => j.paket?.nama_paket).filter(Boolean)));
 
                         return (
                             <div
                                 key={dateKey}
-                                className="bg-card/70 border border-border/80 rounded-2xl p-6 shadow-xs flex flex-col gap-4 transition-all"
+                                className="bg-card border border-border rounded-lg p-5 flex flex-col gap-4"
                             >
-                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pb-3 border-b border-border/60">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`p-2.5 rounded-xl ${isUnassigned ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-primary/10 text-primary'}`}>
-                                            {isUnassigned ? <Clock className="w-5 h-5" /> : <Plane className="w-5 h-5" />}
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pb-3.5 border-b border-border">
+                                    <div className="flex items-start sm:items-center gap-3">
+                                        <div className={`p-2 rounded-md shrink-0 ${isUnassigned ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-primary/10 text-primary'}`}>
+                                            {isUnassigned ? <Clock className="w-4 h-4" /> : <Plane className="w-4 h-4" />}
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-base text-foreground">
-                                                {isUnassigned ? 'Antrean Belum Plot Tanggal Terbang' : `Kloter Penerbangan: ${new Date(dateKey).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`}
-                                            </h3>
-                                            <p className="text-xs text-muted-foreground">
-                                                Total: {group.length} Jamaah Terdaftar dalam Kloter Ini {totalPages > 1 && `(Halaman ${currentPage} dari ${totalPages})`}
-                                            </p>
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <h3 className="font-bold text-sm text-foreground">
+                                                    {isUnassigned ? 'Antrean Belum Plot Tanggal Terbang' : `Kloter ${formatDateLabel(dateKey)}`}
+                                                </h3>
+                                                <span className={`text-[11px] font-medium px-2 py-0.5 rounded border ${
+                                                    isUnassigned
+                                                        ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                                                        : 'bg-primary/10 text-primary border-primary/20'
+                                                }`}>
+                                                    {group.length} Jamaah
+                                                </span>
+                                            </div>
+
+                                            <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-muted-foreground">
+                                                <span className="inline-flex items-center gap-1">
+                                                    <FileCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                                                    <span>{readyPassports}/{group.length} Paspor Siap</span>
+                                                </span>
+                                                {uniquePakets.map((pName) => (
+                                                    <span key={pName} className="text-[11px] px-2 py-0.5 rounded bg-muted text-foreground border border-border/60">
+                                                        {pName}
+                                                    </span>
+                                                ))}
+                                                {totalPages > 1 && (
+                                                    <span className="text-muted-foreground text-[11px]">
+                                                        (Hlm {currentPage} dari {totalPages})
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
 
@@ -517,17 +556,17 @@ export default function DepartureSchedule({
                                         <button
                                             type="button"
                                             onClick={() => handleExportManifest(dateKey, group)}
-                                            className="px-3 py-1.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground flex items-center gap-1.5 transition cursor-pointer shadow-2xs"
+                                            className="px-2.5 py-1.5 rounded-md border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground flex items-center gap-1.5 transition cursor-pointer"
                                             title="Export Manifest CSV"
                                         >
-                                            <Download className="w-3.5 h-3.5 text-primary" />
+                                            <Download className="w-3.5 h-3.5 text-muted-foreground" />
                                             <span>Export Manifest</span>
                                         </button>
 
                                         <button
                                             type="button"
                                             onClick={() => toggleKloterCollapse(dateKey)}
-                                            className="px-3 py-1.5 rounded-xl border border-border bg-muted/40 hover:bg-muted text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition cursor-pointer"
+                                            className="px-2.5 py-1.5 rounded-md border border-border bg-muted/40 hover:bg-muted text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition cursor-pointer"
                                         >
                                             <span>{isCollapsed ? 'Tampilkan' : 'Sembunyikan'} ({group.length})</span>
                                             {isCollapsed ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
@@ -537,26 +576,26 @@ export default function DepartureSchedule({
 
                                 {!isCollapsed && (
                                     <>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                             {displayedGroup.map((jm) => (
                                                 <div
                                                     key={jm.id}
                                                     onClick={() => setSelectedJamaah(jm)}
-                                                    className="p-4 rounded-xl border border-border/60 bg-muted/20 hover:bg-card hover:border-primary/50 transition-all flex flex-col gap-2 cursor-pointer group shadow-2xs"
+                                                    className="p-3.5 rounded-lg border border-border bg-card hover:border-primary/50 transition flex flex-col gap-2 cursor-pointer group"
                                                 >
-                                                    <div className="flex justify-between items-start">
-                                                        <div className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">
+                                                    <div className="flex justify-between items-start gap-2">
+                                                        <div className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors line-clamp-1">
                                                             {jm.nama_lengkap}
                                                         </div>
-                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${jm.nomor_paspor
+                                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium border shrink-0 ${jm.nomor_paspor
                                                                 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
                                                                 : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
                                                             }`}>
                                                             {jm.nomor_paspor ? `Paspor: ${jm.nomor_paspor}` : 'Paspor Pending'}
                                                         </span>
                                                     </div>
-                                                    <div className="text-xs text-primary font-medium">{jm.paket?.nama_paket}</div>
-                                                    <div className="text-xs text-muted-foreground flex justify-between items-center pt-2 border-t border-border/40">
+                                                    <div className="text-[11px] text-muted-foreground line-clamp-1">{jm.paket?.nama_paket || '-'}</div>
+                                                    <div className="text-[11px] text-muted-foreground flex justify-between items-center pt-2 border-t border-border">
                                                         <span>HP: {jm.no_hp}</span>
                                                         <span>{jm.agen ? `Agen: ${jm.agen.name}` : 'Direct'}</span>
                                                     </div>
@@ -566,7 +605,7 @@ export default function DepartureSchedule({
 
                                         {/* Per-Kloter Pagination Controls */}
                                         {totalPages > 1 && (
-                                            <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-3 border-t border-border/50 text-xs">
+                                            <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-3 border-t border-border text-xs">
                                                 <span className="text-muted-foreground font-medium">
                                                     Menampilkan {(currentPage - 1) * kloterPageSize + 1} - {Math.min(currentPage * kloterPageSize, group.length)} dari {group.length} jamaah
                                                 </span>
@@ -575,7 +614,7 @@ export default function DepartureSchedule({
                                                         type="button"
                                                         disabled={currentPage === 1}
                                                         onClick={() => setKloterPages((prev) => ({ ...prev, [dateKey]: Math.max(1, currentPage - 1) }))}
-                                                        className="px-2.5 py-1 rounded-lg border border-border bg-card hover:bg-muted text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                                                        className="px-2.5 py-1 rounded-md border border-border bg-card hover:bg-muted text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
                                                     >
                                                         Sebelumnya
                                                     </button>
@@ -586,8 +625,8 @@ export default function DepartureSchedule({
                                                                     key={pg}
                                                                     type="button"
                                                                     onClick={() => setKloterPages((prev) => ({ ...prev, [dateKey]: pg }))}
-                                                                    className={`w-7 h-7 rounded-lg text-xs font-bold transition cursor-pointer ${currentPage === pg
-                                                                            ? 'bg-primary text-primary-foreground shadow-xs'
+                                                                    className={`w-7 h-7 rounded-md text-xs font-bold transition cursor-pointer ${currentPage === pg
+                                                                            ? 'bg-primary text-primary-foreground'
                                                                             : 'border border-border bg-card hover:bg-muted text-foreground'
                                                                         }`}
                                                                 >
@@ -607,7 +646,7 @@ export default function DepartureSchedule({
                                                         type="button"
                                                         disabled={currentPage === totalPages}
                                                         onClick={() => setKloterPages((prev) => ({ ...prev, [dateKey]: Math.min(totalPages, currentPage + 1) }))}
-                                                        className="px-2.5 py-1 rounded-lg border border-border bg-card hover:bg-muted text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                                                        className="px-2.5 py-1 rounded-md border border-border bg-card hover:bg-muted text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
                                                     >
                                                         Selanjutnya
                                                     </button>
@@ -621,7 +660,7 @@ export default function DepartureSchedule({
                     })}
 
                     {scheduleKeys.length === 0 && (
-                        <div className="py-16 text-center text-sm text-muted-foreground bg-card/20 rounded-2xl border border-dashed border-border">
+                        <div className="py-16 text-center text-sm text-muted-foreground bg-card rounded-lg border border-dashed border-border">
                             Tidak ada kloter jadwal yang cocok dengan kriteria pencarian.
                         </div>
                     )}
@@ -631,56 +670,50 @@ export default function DepartureSchedule({
             {/* MODE 2: TABEL MANIFEST LENGKAP */}
             {viewMode === 'table' && (
                 <div className="flex flex-col gap-4">
-                    <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/70 backdrop-blur-md shadow-xs">
+                    <div className="overflow-hidden rounded-lg border border-border bg-card">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-xs border-collapse">
                                 <thead>
-                                    <tr className="border-b border-border/80 bg-muted/50 text-muted-foreground">
-                                        <th className="px-5 py-3.5 font-bold">Nama Jamaah &amp; Kontak</th>
-                                        <th className="px-5 py-3.5 font-bold">No. Paspor</th>
-                                        <th className="px-5 py-3.5 font-bold">Paket Umroh / Haji</th>
-                                        <th className="px-5 py-3.5 font-bold">Mitra Agen</th>
-                                        <th className="px-5 py-3.5 font-bold">Jadwal Keberangkatan</th>
-                                        <th className="px-5 py-3.5 font-bold text-center">Aksi</th>
+                                    <tr className="border-b border-border bg-muted/40 text-muted-foreground">
+                                        <th className="px-4 py-3 font-semibold">Nama Jamaah &amp; Kontak</th>
+                                        <th className="px-4 py-3 font-semibold">No. Paspor</th>
+                                        <th className="px-4 py-3 font-semibold">Paket Umroh / Haji</th>
+                                        <th className="px-4 py-3 font-semibold">Mitra Agen</th>
+                                        <th className="px-4 py-3 font-semibold">Jadwal Keberangkatan</th>
+                                        <th className="px-4 py-3 font-semibold text-center">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-border/60">
+                                <tbody className="divide-y divide-border">
                                     {jamaahTableData.map((jm) => (
                                         <tr
                                             key={jm.id}
                                             onClick={() => setSelectedJamaah(jm)}
                                             className="hover:bg-muted/30 transition-colors cursor-pointer"
                                         >
-                                            <td className="px-5 py-3.5">
-                                                <div className="font-bold text-sm text-foreground">{jm.nama_lengkap}</div>
+                                            <td className="px-4 py-3">
+                                                <div className="font-semibold text-foreground">{jm.nama_lengkap}</div>
                                                 <div className="text-muted-foreground mt-0.5">HP: {jm.no_hp}</div>
                                             </td>
-                                            <td className="px-5 py-3.5">
+                                            <td className="px-4 py-3">
                                                 {jm.nomor_paspor ? (
-                                                    <span className="font-mono font-bold text-foreground bg-muted/60 px-2 py-0.5 rounded border border-border/40">
+                                                    <span className="font-mono font-medium text-foreground bg-muted px-2 py-0.5 rounded border border-border">
                                                         {jm.nomor_paspor}
                                                     </span>
                                                 ) : (
                                                     <span className="text-amber-600 dark:text-amber-400 italic">Belum Diisi</span>
                                                 )}
                                             </td>
-                                            <td className="px-5 py-3.5 font-semibold text-foreground">
+                                            <td className="px-4 py-3 font-medium text-foreground">
                                                 {jm.paket?.nama_paket || '-'}
                                             </td>
-                                            <td className="px-5 py-3.5 text-muted-foreground">
+                                            <td className="px-4 py-3 text-muted-foreground">
                                                 {jm.agen ? jm.agen.name : <span className="italic">Direct / Pusat</span>}
                                             </td>
-                                            <td className="px-5 py-3.5">
+                                            <td className="px-4 py-3">
                                                 {jm.tanggal_keberangkatan ? (
-                                                    <span className="font-bold text-primary flex items-center gap-1.5">
+                                                    <span className="font-medium text-primary flex items-center gap-1.5">
                                                         <Plane className="w-3.5 h-3.5" />
-                                                        <span>
-                                                            {new Date(jm.tanggal_keberangkatan).toLocaleDateString('id-ID', {
-                                                                day: 'numeric',
-                                                                month: 'short',
-                                                                year: 'numeric',
-                                                            })}
-                                                        </span>
+                                                        <span>{formatDateLabel(jm.tanggal_keberangkatan)}</span>
                                                     </span>
                                                 ) : (
                                                     <span className="text-amber-600 dark:text-amber-400 font-medium">
@@ -688,14 +721,14 @@ export default function DepartureSchedule({
                                                     </span>
                                                 )}
                                             </td>
-                                            <td className="px-5 py-3.5 text-center">
+                                            <td className="px-4 py-3 text-center">
                                                 <button
                                                     type="button"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setSelectedJamaah(jm);
                                                     }}
-                                                    className="px-3 py-1 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground font-semibold rounded-lg transition cursor-pointer"
+                                                    className="px-2.5 py-1 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground font-medium rounded-md transition cursor-pointer"
                                                 >
                                                     Detail &amp; Plot
                                                 </button>
@@ -728,17 +761,15 @@ export default function DepartureSchedule({
 
             {/* DETAILING & RESCHEDULE DRAWER (SLIDE-OUT SHEET) */}
             <Sheet open={!!selectedJamaah} onOpenChange={(open) => { if (!open) setSelectedJamaah(null); }}>
-                <SheetContent side="right" className="w-full sm:max-w-5xl md:w-1/2 flex flex-col justify-between">
-                    <div className="flex flex-col gap-6 p-4 flex-1 overflow-y-auto">
-                        <SheetHeader className="pb-4 border-b border-border/60">
+                <SheetContent side="right" className="w-full sm:max-w-2xl md:w-1/2 flex flex-col justify-between">
+                    <div className="flex flex-col gap-5 p-4 flex-1 overflow-y-auto">
+                        <SheetHeader className="pb-3 border-b border-border">
                             <div className="flex justify-between items-start gap-4">
                                 <div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs font-bold text-primary uppercase tracking-wider">
-                                            Rincian Manifest Jamaah &amp; Jadwal
-                                        </span>
+                                    <div className="text-xs font-semibold text-primary uppercase tracking-wider">
+                                        Rincian Manifest Jamaah &amp; Jadwal
                                     </div>
-                                    <SheetTitle className="text-2xl font-bold text-foreground mt-1">
+                                    <SheetTitle className="text-xl font-bold text-foreground mt-1">
                                         {selectedJamaah?.nama_lengkap}
                                     </SheetTitle>
                                     <SheetDescription className="text-xs text-muted-foreground mt-0.5">
@@ -746,7 +777,7 @@ export default function DepartureSchedule({
                                     </SheetDescription>
                                 </div>
                                 <span
-                                    className={`text-xs font-bold px-3 py-1.5 rounded-full border shrink-0 ${selectedJamaah?.tanggal_keberangkatan
+                                    className={`text-xs font-medium px-2.5 py-1 rounded-md border shrink-0 ${selectedJamaah?.tanggal_keberangkatan
                                             ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
                                             : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
                                         }`}
@@ -757,27 +788,27 @@ export default function DepartureSchedule({
                         </SheetHeader>
 
                         {/* Quick Reschedule / Assign Kloter Form */}
-                        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 shadow-xs flex flex-col gap-3">
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                        <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 flex flex-col gap-3">
+                            <h4 className="text-xs font-semibold uppercase tracking-wider text-primary flex items-center gap-1.5">
                                 <Plane className="w-4 h-4" />
                                 <span>Plot / Ubah Tanggal Keberangkatan (Kloter)</span>
                             </h4>
                             <form onSubmit={handleUpdateDeparture} className="flex flex-col sm:flex-row gap-3 items-end">
                                 <div className="flex-1 w-full">
-                                    <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                                    <label className="block text-xs font-medium text-muted-foreground mb-1">
                                         Tanggal Terbang / Kloter:
                                     </label>
                                     <input
                                         type="date"
                                         value={rescheduleDate}
                                         onChange={(e) => setRescheduleDate(e.target.value)}
-                                        className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                        className="w-full bg-background border border-border rounded-md px-3 py-2 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                                     />
                                 </div>
                                 <button
                                     type="submit"
                                     disabled={isSubmittingSchedule}
-                                    className="w-full sm:w-auto px-4 py-2 bg-primary text-primary-foreground text-xs font-bold rounded-xl hover:opacity-90 transition cursor-pointer flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-50"
+                                    className="w-full sm:w-auto px-4 py-2 bg-primary text-primary-foreground text-xs font-semibold rounded-md hover:opacity-90 transition cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
                                 >
                                     <Check className="w-3.5 h-3.5" />
                                     <span>{isSubmittingSchedule ? 'Menyimpan...' : 'Simpan Jadwal'}</span>
@@ -786,8 +817,8 @@ export default function DepartureSchedule({
                         </div>
 
                         {/* Customer Info Card */}
-                        <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs flex flex-col gap-3">
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        <div className="bg-card border border-border rounded-lg p-4 flex flex-col gap-3">
+                            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                 Data Identitas, Paspor &amp; Pembina
                             </h4>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -811,20 +842,20 @@ export default function DepartureSchedule({
                         </div>
 
                         {/* Verified Payment History */}
-                        <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs flex flex-col gap-3">
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                        <div className="bg-card border border-border rounded-lg p-4 flex flex-col gap-3">
+                            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                                 <Receipt className="w-4 h-4 text-primary" />
                                 <span>Riwayat Pembayaran &amp; DP</span>
                             </h4>
                             <div className="flex flex-col gap-2">
                                 {selectedJamaah?.pembayaran && selectedJamaah.pembayaran.length > 0 ? (
                                     selectedJamaah.pembayaran.map((p) => (
-                                        <div key={p.id} className="p-3 bg-muted/30 rounded-xl border border-border/50 flex justify-between items-center text-xs">
+                                        <div key={p.id} className="p-2.5 bg-muted/40 rounded-md border border-border flex justify-between items-center text-xs">
                                             <div>
-                                                <div className="font-bold text-foreground capitalize">{p.tipe_pembayaran}</div>
+                                                <div className="font-semibold text-foreground capitalize">{p.tipe_pembayaran}</div>
                                                 <div className="text-[11px] text-muted-foreground">Status: {p.status_verifikasi}</div>
                                             </div>
-                                            <div className="font-bold text-emerald-600 dark:text-emerald-400">
+                                            <div className="font-semibold text-emerald-600 dark:text-emerald-400">
                                                 {toRupiah(p.nominal)}
                                             </div>
                                         </div>
@@ -837,15 +868,15 @@ export default function DepartureSchedule({
 
                         {/* Allocated Logistics Overview */}
                         {selectedJamaah?.inventaris_transaksi && selectedJamaah.inventaris_transaksi.length > 0 && (
-                            <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs flex flex-col gap-3">
-                                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                            <div className="bg-card border border-border rounded-lg p-4 flex flex-col gap-3">
+                                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                                     <Package className="w-4 h-4 text-primary" />
                                     <span>Alokasi Barang &amp; Perlengkapan</span>
                                 </h4>
                                 <div className="flex flex-wrap gap-1.5">
                                     {selectedJamaah.inventaris_transaksi.map((tx) => (
-                                        <span key={tx.id} className="text-xs font-medium px-2.5 py-1 rounded-lg bg-muted/40 border border-border text-foreground flex items-center gap-1.5">
-                                            <span>{tx.qty}x {tx.inventaris.nama_barang}</span>
+                                        <span key={tx.id} className="text-xs font-medium px-2 py-0.5 rounded-md bg-muted border border-border text-foreground">
+                                            {tx.qty}x {tx.inventaris.nama_barang}
                                         </span>
                                     ))}
                                 </div>
@@ -854,11 +885,11 @@ export default function DepartureSchedule({
                     </div>
 
                     {/* Drawer Footer Actions */}
-                    <SheetFooter className="p-4 border-t border-border/60 flex sm:justify-between items-center gap-3">
+                    <SheetFooter className="p-4 border-t border-border flex sm:justify-between items-center gap-3">
                         <button
                             type="button"
                             onClick={() => setSelectedJamaah(null)}
-                            className="px-4 py-2.5 border border-border rounded-xl text-xs font-semibold hover:bg-muted transition cursor-pointer"
+                            className="px-3.5 py-2 border border-border rounded-md text-xs font-medium hover:bg-muted transition cursor-pointer"
                         >
                             Tutup Detail
                         </button>

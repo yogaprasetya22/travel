@@ -454,8 +454,8 @@ export default function Monitoring({
                                                                 </span>
                                                             </div>
                                                         </div>
-                                                        <span className="text-[9px] text-primary/80 italic mt-1 font-semibold">
-                                                            👉 Klik untuk buka drawer nasabah
+                                                        <span className="text-[10px] text-muted-foreground mt-1">
+                                                            Klik untuk melihat detail jamaah
                                                         </span>
                                                     </div>
                                                 );
@@ -948,8 +948,8 @@ export default function Monitoring({
                                 )}
 
                                 {!drawerHasMore && drawerJamaahList.length > 0 && (
-                                    <div className="py-3 text-center text-[11px] text-muted-foreground font-semibold">
-                                        ✓ Semua {totalJamaahInDrawer} nasabah telah dimuat
+                                    <div className="py-3 text-center text-[11px] text-muted-foreground">
+                                        Semua {totalJamaahInDrawer} jamaah telah dimuat
                                     </div>
                                 )}
                             </div>
