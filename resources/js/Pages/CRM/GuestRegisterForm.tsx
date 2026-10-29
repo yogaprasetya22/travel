@@ -51,7 +51,7 @@ export default function GuestRegisterForm({ email, packages, tenant }: GuestRegi
                         Pilgrim Registration
                     </h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        Welcome to {tenant?.nama_travel || 'HajjFlow Pro'}. Please complete your registration details.
+                        Welcome to {tenant?.nama_travel || 'Travel Kolibrinektara'}. Please complete your registration details.
                     </p>
                 </div>
 

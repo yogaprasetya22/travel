@@ -64,7 +64,7 @@ export default function VerifyInvoice({ tenant, payment }: Props) {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col items-center justify-center p-4 sm:p-6 selection:bg-emerald-500 selection:text-white font-sans antialiased">
-            <Head title={`Verifikasi Kuitansi ${invoiceNumber} - ${tenant?.nama_travel || 'HajjFlow'}`} />
+            <Head title={`Verifikasi Kuitansi ${invoiceNumber} - ${tenant?.nama_travel || 'Travel Kolibrinektara'}`} />
 
             <div className="w-full max-w-lg flex flex-col gap-5">
                 {/* Header Branding */}

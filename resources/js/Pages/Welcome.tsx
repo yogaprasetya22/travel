@@ -122,7 +122,7 @@ export default function Welcome({
     banks = [],
     canLogin = true,
 }: Props) {
-    const travelName = tenant?.nama_travel || 'HajjFlow Umroh & Haji';
+    const travelName = tenant?.nama_travel || 'Travel Kolibrinektara';
     const rawPhone = tenant?.no_telepon || '6281234567890';
     const cleanPhone = rawPhone.replace(/[^0-9]/g, '').replace(/^0/, '62');
     const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Assalamu'alaikum CS ${travelName}, saya ingin konsultasi seputar informasi paket Umroh & Haji.`)}`;

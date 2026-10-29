@@ -63,7 +63,7 @@ interface Props extends PageProps {
 }
 
 export default function RegisterSuccess({ tenant, jamaah }: Props) {
-    const travelName = tenant?.nama_travel || 'HajjFlow Umroh & Haji';
+    const travelName = tenant?.nama_travel || 'Travel Kolibrinektara';
     const regCode = jamaah?.kode_pendaftaran || `REG-${String(jamaah?.id || 1).padStart(5, '0')}`;
     const cleanPhone = (tenant?.no_telepon || '6281234567890').replace(/[^0-9]/g, '').replace(/^0/, '62');
 

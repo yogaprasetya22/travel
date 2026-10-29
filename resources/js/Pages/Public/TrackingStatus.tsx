@@ -222,7 +222,7 @@ export default function TrackingStatus({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-    const travelName = tenant?.nama_travel || 'HajjFlow Umroh & Haji';
+    const travelName = tenant?.nama_travel || 'Travel Kolibrinektara';
     const rawPhone = tenant?.no_telepon || '6281234567890';
     const cleanPhone = rawPhone.replace(/[^0-9]/g, '').replace(/^0/, '62');
     const csWaUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Assalamu'alaikum CS ${travelName}, saya ingin menanyakan status pendaftaran/pembayaran saya (${jamaah?.kode_pendaftaran || searchCode}).`)}`;

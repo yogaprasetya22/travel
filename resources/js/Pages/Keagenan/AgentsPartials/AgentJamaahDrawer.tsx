@@ -56,7 +56,7 @@ export function AgentJamaahDrawer({
     const [isCopied, setIsCopied] = React.useState(false);
 
     const handleCopyBioLink = async (agent: Agent) => {
-        const url = getAgentBioUrl(agent.referral_code, agent.tenant?.domain_atau_subdomain);
+        const url = getAgentBioUrl(agent.referral_code, agent.tenant?.domain_atau_subdomain, agent.tenant?.public_url);
         if (!url) return;
         await copyToClipboard(url);
         setIsCopied(true);

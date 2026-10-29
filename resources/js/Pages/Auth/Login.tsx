@@ -19,7 +19,7 @@ export default function Login({
 }) {
     const { auth, tenant } = usePage<any>().props;
     const activeTenant = tenant || auth?.active_tenant;
-    const travelName = activeTenant?.nama_travel || 'HajjFlow Pro';
+    const travelName = activeTenant?.nama_travel || 'Travel Kolibrinektara';
     const logoUrl = activeTenant?.logo;
     const themeName = (activeTenant?.theme_name as keyof typeof themeData.themes) || 'coffee';
     const themeStyles = (themeData.themes[themeName]?.variables || themeData.themes['coffee'].variables) as React.CSSProperties;

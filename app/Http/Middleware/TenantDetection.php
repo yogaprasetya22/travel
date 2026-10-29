@@ -14,14 +14,7 @@ class TenantDetection
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $host = $request->getHost();
-        $subdomain = explode('.', $host)[0];
-
-        $tenant = null;
-
-        if (! in_array($subdomain, ['localhost', 'travel', 'app', 'www', '127']) && ! filter_var($host, FILTER_VALIDATE_IP)) {
-            $tenant = Tenant::where('domain_atau_subdomain', $subdomain)->first();
-        }
+        $tenant = Tenant::fromHost($request->getHost());
 
         if (! $tenant && $request->hasSession() && $request->session()->has('tenant_id')) {
             $tenant = Tenant::find($request->session()->get('tenant_id'));

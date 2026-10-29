@@ -56,6 +56,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Default Tenant
+    |--------------------------------------------------------------------------
+    |
+    | Tenant yang dilayani pada host dasar (APP_URL, mis. travel.kolibrinektara.com).
+    | Tenant lain dilayani lewat subdomain: {subdomain}.{host dasar}.
+    |
+    */
+
+    'default_tenant' => env('DEFAULT_TENANT_SUBDOMAIN', 'kolibrinektara'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

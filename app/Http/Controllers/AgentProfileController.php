@@ -16,9 +16,8 @@ class AgentProfileController extends Controller
     public function show(Request $request, $referralCode)
     {
         $host = $request->getHost();
-        $subdomain = explode('.', $host)[0];
 
-        $tenant = Tenant::where('domain_atau_subdomain', $subdomain)->first();
+        $tenant = Tenant::fromHost($host) ?? (Tenant::isBaseHost($host) ? Tenant::default() : null);
         if (! $tenant) {
             abort(404, 'Tenant not found');
         }

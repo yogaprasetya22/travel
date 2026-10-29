@@ -44,7 +44,7 @@ export default function Edit({
     const [copied, setCopied] = useState(false);
     const [activeTab, setActiveTab] = useState<string>('linktree');
 
-    const agentProfileUrl = getAgentBioUrl(user.referral_code, user.tenant?.domain_atau_subdomain);
+    const agentProfileUrl = getAgentBioUrl(user.referral_code, user.tenant?.domain_atau_subdomain, user.tenant?.public_url);
 
     const handleCopy = async () => {
         if (!agentProfileUrl) return;

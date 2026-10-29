@@ -33,7 +33,7 @@ class TenantDatasetSeeder extends Seeder
         $tenantsData = [
             [
                 'name' => 'Travel Kolibrinektara',
-                'subdomain' => 'hajjflow',
+                'subdomain' => 'kolibrinektara',
                 'no_telepon' => '02178901234',
                 'owner_name' => 'H. Abdullah Hakim, Lc',
                 'owner_email' => 'test@example.com',

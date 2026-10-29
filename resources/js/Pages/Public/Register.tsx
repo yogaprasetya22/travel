@@ -74,7 +74,7 @@ export default function Register({
     selectedPackageId,
     referralAgent,
 }: Props) {
-    const travelName = tenant?.nama_travel || 'HajjFlow Umroh & Haji';
+    const travelName = tenant?.nama_travel || 'Travel Kolibrinektara';
 
     const { data, setData, post, processing, errors } = useForm<{
         nama_lengkap: string;

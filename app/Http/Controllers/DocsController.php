@@ -30,12 +30,7 @@ class DocsController extends Controller
             return app('tenant');
         }
 
-        $host = $request->getHost();
-        $subdomain = explode('.', $host)[0];
-
-        $tenant = Tenant::where('domain_atau_subdomain', $subdomain)->first();
-
-        return $tenant ?: Tenant::oldest('id')->first();
+        return Tenant::fromHost($request->getHost()) ?? Tenant::default();
     }
 
     /**

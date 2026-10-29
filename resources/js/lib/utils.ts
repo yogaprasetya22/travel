@@ -8,10 +8,19 @@ export function cn(...inputs: ClassValue[]) {
 /**
  * Membangun URL Bio Link Agen dengan subdomain tenant yang sesuai.
  * Mendukung nip.io, raw IP, localhost, dan custom domain.
- * Contoh: http://hajjflow.72.62.125.68.nip.io:8085/agen/AG-06063D
+ * Contoh: https://barokah.travel.kolibrinektara.com/agen/AG-06063D
  */
-export function getAgentBioUrl(referralCode?: string | null, tenantSubdomain?: string | null): string {
+export function getAgentBioUrl(
+    referralCode?: string | null,
+    tenantSubdomain?: string | null,
+    tenantPublicUrl?: string | null
+): string {
     if (!referralCode || typeof window === 'undefined') return '';
+
+    // URL publik tenant dihitung server dari APP_URL: host dasar untuk tenant default, selain itu subdomain.
+    if (tenantPublicUrl) {
+        return `${tenantPublicUrl.replace(/\/$/, '')}/agen/${referralCode}`;
+    }
 
     const subdomain = tenantSubdomain || 'hajjflow';
     const { protocol, hostname, port } = window.location;

@@ -187,7 +187,7 @@ export default function UpdateAgentLandingForm({
         });
     };
 
-    const previewUrl = getAgentBioUrl(user.referral_code, user.tenant?.domain_atau_subdomain);
+    const previewUrl = getAgentBioUrl(user.referral_code, user.tenant?.domain_atau_subdomain, user.tenant?.public_url);
 
     // Formatted phone numbers for simulation in live preview
     const cleanAgentPhone = data.no_hp.replace(/[^0-9]/g, '');

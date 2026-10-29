@@ -37,16 +37,8 @@ class HandleInertiaRequests extends Middleware
                 if (app()->bound('tenant')) {
                     return app('tenant');
                 }
-                $host = $request->getHost();
-                $subdomain = explode('.', $host)[0];
-                if (! in_array($subdomain, ['localhost', 'travel', 'app', 'www', '127']) && ! filter_var($host, FILTER_VALIDATE_IP)) {
-                    $t = Tenant::where('domain_atau_subdomain', $subdomain)->first();
-                    if ($t) {
-                        return $t;
-                    }
-                }
 
-                return Tenant::oldest('id')->first();
+                return Tenant::fromHost($request->getHost()) ?? Tenant::default();
             },
             'auth' => [
                 'user' => $request->user() ? $request->user()->load('tenant') : null,
@@ -56,16 +48,8 @@ class HandleInertiaRequests extends Middleware
                         if (app()->bound('tenant')) {
                             return app('tenant');
                         }
-                        $host = $request->getHost();
-                        $subdomain = explode('.', $host)[0];
-                        if (! in_array($subdomain, ['localhost', 'travel', 'app', 'www', '127']) && ! filter_var($host, FILTER_VALIDATE_IP)) {
-                            $t = Tenant::where('domain_atau_subdomain', $subdomain)->first();
-                            if ($t) {
-                                return $t;
-                            }
-                        }
 
-                        return Tenant::oldest('id')->first();
+                        return Tenant::fromHost($request->getHost()) ?? Tenant::default();
                     }
                     if ($user->role === 'super_admin_master') {
                         $tenantId = $request->session()->get('tenant_id', Tenant::oldest('id')->first()?->id);

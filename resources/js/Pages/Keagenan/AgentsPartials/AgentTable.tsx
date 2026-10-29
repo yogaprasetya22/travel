@@ -74,7 +74,7 @@ export function AgentTable({
     const [copiedAgentId, setCopiedAgentId] = React.useState<number | null>(null);
 
     const handleCopyBioLink = async (agent: Agent) => {
-        const url = getAgentBioUrl(agent.referral_code, agent.tenant?.domain_atau_subdomain);
+        const url = getAgentBioUrl(agent.referral_code, agent.tenant?.domain_atau_subdomain, agent.tenant?.public_url);
         if (!url) return;
         await copyToClipboard(url);
         setCopiedAgentId(agent.id);
@@ -219,7 +219,8 @@ export function AgentTable({
                             {agentList.map((agent) => {
                                 const bioUrl = getAgentBioUrl(
                                     agent.referral_code,
-                                    agent.tenant?.domain_atau_subdomain
+                                    agent.tenant?.domain_atau_subdomain,
+                                    agent.tenant?.public_url
                                 );
                                 const isCopied = copiedAgentId === agent.id;
 

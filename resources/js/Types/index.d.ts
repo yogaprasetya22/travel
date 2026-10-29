@@ -2,6 +2,8 @@ export interface Tenant {
     id: number;
     nama_travel: string;
     domain_atau_subdomain: string;
+    /** URL publik: host dasar untuk tenant default, selain itu {subdomain}.{host dasar}. */
+    public_url?: string;
     logo?: string | null;
     no_telepon?: string | null;
     theme_name?: string | null;
